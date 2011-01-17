@@ -31,6 +31,7 @@ namespace V
 	public:
 		OpenNIUser( boost::int32_t id, OpenNIDevice* device );
 		~OpenNIUser();
+		void OpenNIUser::init();
 		void OpenNIUser::update();
 		void OpenNIUser::updatePixels();
 		void OpenNIUser::updateBody();

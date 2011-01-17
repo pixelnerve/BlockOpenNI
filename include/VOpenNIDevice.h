@@ -33,7 +33,7 @@ namespace V
 
 
 	// Callback class
-	class OpenNIDevice;
+	/*class OpenNIDevice;
 	class OpenNIDeviceCallback
 	{
 	public:
@@ -48,7 +48,7 @@ namespace V
 	public:
 		OpenNIDevice* mCallbackObj;
 		CallbackFunction mCallbackFunc;
-	};
+	};*/
 
 
 
@@ -71,7 +71,7 @@ namespace V
 
 
 
-		void CallbackFunc( int arg )
+		/*void CallbackFunc( int arg )
 		{
 			std::stringstream ss;
 			ss << "--> Value is: " << arg << std::endl;
@@ -83,7 +83,7 @@ namespace V
 		virtual void OnCalibrationStart() {}
 		virtual void OnCalibrationEnd() {}
 		virtual void OnPoseStart() {}
-		virtual void OnPoseEnd() {}
+		virtual void OnPoseEnd() {}*/
 
 		void OpenNIDevice::release();
 
@@ -187,10 +187,9 @@ namespace V
 		xn::AudioMetaData*		_audioMetaData;
 
 		// Users
-		//std::vector<std::shared_ptr<OpenNIUser*>> mUserList;
+		//std::vector<std::shared_ptr<OpenNIUser>> mUserList;
 
-
-		OpenNIDeviceCallback*		_callback;
+		//OpenNIDeviceCallback*		_callback;
 	};
 
 
@@ -203,7 +202,7 @@ namespace V
 	/************************************************************************/
 	//typedef std::shared_ptr<std::vector<OpenNIDevice>> OpenNIDeviceList;
 	typedef std::list<OpenNIUser*> OpenNIUserList;
-	//std::vector<std::shared_ptr<OpenNIUser*>> mUserList;
+	//std::vector<std::shared_ptr<OpenNIUser>> mUserList;
 
 	// A singleton
 	class OpenNIDeviceManager : private boost::noncopyable
@@ -212,7 +211,7 @@ namespace V
 		OpenNIDeviceManager();
 		~OpenNIDeviceManager();
 
-		boost::uint32_t OpenNIDeviceManager::enumDevices();
+		//boost::uint32_t OpenNIDeviceManager::enumDevices();
 		OpenNIDevice* createDevice( const std::string& xmlFile="", bool allocUserIfNoNode=false );
 		OpenNIDevice* createDevice( int nodeTypeFlags );
 		void destroyDevice( OpenNIDevice* device );
@@ -294,7 +293,7 @@ namespace V
 		std::list<DeviceInfo*>			mDeviceList;
 		//static std::list<DeviceInfo*>	mDeviceList;
 
-		// Generic user list. This users have no knowledge of which device they come from
+		// Generic user list. These users have no knowledge of which device they come from
 		OpenNIUserList					mUserList;
 	};
 

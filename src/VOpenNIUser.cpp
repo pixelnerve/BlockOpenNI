@@ -36,15 +36,7 @@ namespace V
 
 		_userPixels = NULL;
 
-		mColor[0] = mColor[1] = mColor[2] = 1;
-
-		for( int i=0; i<BONE_COUNT; i++ )
-		{
-			mBoneIndexArray[i] = i+1;
-
-			Bone* bone = new Bone;
-			mBoneList.push_back( bone );
-		}
+		init();
 	}
 
 
@@ -61,6 +53,21 @@ namespace V
 		mBoneList.clear();
 	}
 
+
+	void OpenNIUser::init()
+	{
+		// Set default color
+		mColor[0] = mColor[1] = mColor[2] = 1;
+
+		// Allocate memory for every bone/joint
+		for( int i=0; i<BONE_COUNT; i++ )
+		{
+			// Index array. same as the joint enumeration values
+			mBoneIndexArray[i] = i+1;
+
+			mBoneList.push_back( new Bone() );
+		}
+	}
 
 	void OpenNIUser::update()
 	{

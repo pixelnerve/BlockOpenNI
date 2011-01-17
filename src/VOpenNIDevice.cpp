@@ -176,8 +176,8 @@ namespace V
 
 		_bpp = 3;
 
-		_callback = NULL;
-		_callback = new OpenNIDeviceCallback( this, &OpenNIDevice::CallbackFunc );
+		//_callback = NULL;
+		//_callback = new OpenNIDeviceCallback( this, &OpenNIDevice::CallbackFunc );
 	}
 
 
@@ -185,6 +185,7 @@ namespace V
 	{
 		_context = NULL;
 		//_openni = NULL;
+		release();
 	}
 
 
@@ -480,7 +481,7 @@ namespace V
 		SAFE_DELETE( _depthMetaData );
 		SAFE_DELETE( _audioMetaData );
 
-		SAFE_DELETE( _callback );
+		//SAFE_DELETE( _callback );
 	}
 
 
@@ -996,13 +997,13 @@ namespace V
 		//assert( !_singletonPointer && "Tried to create multiple instances of a singleton class!" );
 		//_singletonPointer = (OpenNIDeviceManager*)this;
 
-		XnStatus status = _context.Init();
+		/*XnStatus status = _context.Init();
 		if( status != XN_STATUS_OK )
 		{
 			std::stringstream ss;
 			ss << "Couldn't create context" << std::endl;
 			OutputDebugStringA( ss.str().c_str() );
-		}
+		}*/
 
 		_idCount = 0;
 
@@ -1012,11 +1013,12 @@ namespace V
 
 	OpenNIDeviceManager::~OpenNIDeviceManager()
 	{
+		mDebugInfo = "";
 		//_singletonPointer = NULL;
 	}
 
 
-	uint32_t OpenNIDeviceManager::enumDevices( void )
+	/*uint32_t OpenNIDeviceManager::enumDevices( void )
 	{
 		int count = 0;
 
@@ -1045,7 +1047,7 @@ namespace V
 
 
 		return count;
-	}
+	}*/
 
 
 	OpenNIDevice* OpenNIDeviceManager::createDevice( const std::string& xmlFile, bool allocUserIfNoNode )
@@ -1090,7 +1092,7 @@ namespace V
 				mDeviceList.remove( *it );
 				DeviceInfo* devinfo = *it;
 				//destroy_device( devinfo->id );
-				devinfo->dev->release();
+				//devinfo->dev->release();
 				SAFE_DELETE( devinfo->dev );
 				SAFE_DELETE( devinfo );
 
@@ -1184,11 +1186,13 @@ namespace V
 	{
 		if( !OpenNIDevice::USE_THREAD )
 		{
+			// Handle device update
 			for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 			{
 				(*it)->dev->update();
 			}
 		}
+		// Handle user update
 		for ( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
 			(*it)->update();
