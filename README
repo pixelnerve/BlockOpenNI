@@ -1,0 +1,4 @@
+#pragma once
+
+Block OpenNI
+A wrapper for OpenNI framework for C++
