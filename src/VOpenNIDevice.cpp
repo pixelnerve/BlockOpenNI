@@ -127,7 +127,7 @@ namespace V
 	/* OpenNI Device Class
 	*/
 	/************************************************************************/
-	const bool OpenNIDevice::USE_THREAD = true;
+	const bool OpenNIDevice::USE_THREAD = false;
 
 
 	OpenNIDevice::OpenNIDevice( xn::Context* context )
@@ -493,6 +493,8 @@ namespace V
 			_thread = boost::shared_ptr<boost::thread>( new boost::thread(&OpenNIDevice::run, this) );
 			_isRunning = true;
 		}
+		else
+			_isRunning = false;
 	}
 
 
@@ -1128,7 +1130,7 @@ namespace V
 			if( id == (*it)->getId() )
 			{
 				mUserList.remove( *it );
-				SAFE_DELETE( *it );
+				//SAFE_DELETE( *it );
 				return;
 			}
 		}
@@ -1180,6 +1182,13 @@ namespace V
 
 	void OpenNIDeviceManager::update()
 	{
+		if( !OpenNIDevice::USE_THREAD )
+		{
+			for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+			{
+				(*it)->dev->update();
+			}
+		}
 		for ( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
 			(*it)->update();

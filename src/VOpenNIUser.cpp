@@ -146,7 +146,7 @@ namespace V
 	void OpenNIUser::updateBody()
 	{
 		UserGenerator* user = _device->getUserGenerator();
-		assert( !user );
+		//assert( !user );
 
 		// If not tracking, bail out!
 		if( !user->GetSkeletonCap().IsTracking(mId) )
@@ -219,8 +219,10 @@ namespace V
 	{
 		if( _device->getUserGenerator()->GetSkeletonCap().IsTracking(mId) )
 		{
-			DepthGenerator* depth= _device->getDepthGenerator();
+			DepthGenerator* depth = _device->getDepthGenerator();
+			if( !depth ) return;
 
+			// Old OpenGL rendering method. it works for what we want here.
 			glDisable( GL_TEXTURE_2D );
 			glBegin( GL_QUADS );
 			int index = 1;
@@ -243,8 +245,72 @@ namespace V
 				glVertex3f( -sx+point.X,  sy+point.Y, 0 );//point.Z );
 			}
 			glEnd();
+
+			//
+			// Render body connecting lines
+			//
+			renderBone( SKEL_HEAD, SKEL_NECK );
+
+			renderBone( SKEL_NECK, SKEL_LEFT_SHOULDER );
+			renderBone( SKEL_LEFT_SHOULDER, SKEL_LEFT_ELBOW );
+			renderBone( SKEL_LEFT_ELBOW, SKEL_LEFT_HAND );
+
+			renderBone( SKEL_NECK, SKEL_RIGHT_SHOULDER );
+			renderBone( SKEL_RIGHT_SHOULDER, SKEL_RIGHT_ELBOW );
+			renderBone( SKEL_RIGHT_ELBOW, SKEL_RIGHT_HAND );
+
+			renderBone( SKEL_LEFT_SHOULDER, SKEL_TORSO );
+			renderBone( SKEL_RIGHT_SHOULDER, SKEL_TORSO );
+
+			renderBone( SKEL_TORSO, SKEL_LEFT_HIP );
+			renderBone( SKEL_LEFT_HIP, SKEL_LEFT_KNEE );
+			renderBone( SKEL_LEFT_KNEE, SKEL_LEFT_FOOT );
+
+			renderBone( SKEL_TORSO, SKEL_RIGHT_HIP );
+			renderBone( SKEL_RIGHT_HIP, SKEL_RIGHT_KNEE );
+			renderBone( SKEL_RIGHT_KNEE, SKEL_RIGHT_FOOT );
+
+			renderBone( SKEL_LEFT_HIP, SKEL_RIGHT_HIP );
+
+			// Restore texture
 			glEnable( GL_TEXTURE_2D );
 		}
+	}
+	void OpenNIUser::renderBone( XnPoint3D& point1, XnPoint3D& point2 )
+	{
+		glLineWidth( 2 );
+		glBegin( GL_LINES );
+		glColor4f( 1-mColor[0], 1-mColor[1], 1-mColor[2], 1 );
+		glVertex3f( point1.X, point1.Y, 0 );	//point.Z );
+		glVertex3f( point2.X, point2.Y, 0 );	//point.Z );
+		glEnd();
+	}
+	void OpenNIUser::renderBone( int joint1, int joint2 )
+	{
+		Bone* bone1 = mBoneList[joint1-1];
+		Bone* bone2 = mBoneList[joint2-1];
+
+		// Convert a point from world coordinates to screen coordinates
+		XnPoint3D point1, point2;
+		XnPoint3D realJointPos1, realJointPos2;
+		realJointPos1.X = bone1->position[0];
+		realJointPos1.Y = bone1->position[1];
+		realJointPos1.Z = bone1->position[2];
+		realJointPos2.X = bone2->position[0];
+		realJointPos2.Y = bone2->position[1];
+		realJointPos2.Z = bone2->position[2];
+
+		DepthGenerator* depth = _device->getDepthGenerator();
+		if( !depth ) return;
+		depth->ConvertRealWorldToProjective( 1, &realJointPos1, &point1 );
+		depth->ConvertRealWorldToProjective( 1, &realJointPos2, &point2 );
+
+		glLineWidth( 2 );
+		glBegin( GL_LINES );
+		glColor4f( 1-mColor[0], 1-mColor[1], 1-mColor[2], 1 );
+		glVertex3f( point1.X, point1.Y, 0 );	//point.Z );
+		glVertex3f( point2.X, point2.Y, 0 );	//point.Z );
+		glEnd();
 	}
 
 
