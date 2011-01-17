@@ -184,7 +184,6 @@ namespace V
 	OpenNIDevice::~OpenNIDevice()
 	{
 		_context = NULL;
-		//_openni = NULL;
 		release();
 	}
 
@@ -382,14 +381,9 @@ namespace V
 		{
 			_userGen = new UserGenerator();
 			_sceneMetaData = new xn::SceneMetaData();
-			_status = _context->FindExistingNode( XN_NODE_TYPE_USER, *_userGen );
-			if( _status != XN_STATUS_OK )
-			{
-				// If no present node, we create one
-				_status = _userGen->Create( *_context );
-				CHECK_RC( _status, "Create user generator" );
-				_isUserOn = true;
-			}
+			_status = _userGen->Create( *_context );
+			CHECK_RC( _status, "Create user generator" );
+			_isUserOn = true;
 		}
 
 
@@ -466,19 +460,21 @@ namespace V
 		SAFE_DELETE_ARRAY( _depthData );
 		SAFE_DELETE_ARRAY( _depthData8 );
 		SAFE_DELETE_ARRAY( _depthDataRGB );
+		SAFE_DELETE_ARRAY( _backDepthData );
 		SAFE_DELETE_ARRAY( g_pTexMap );
 		SAFE_DELETE_ARRAY( g_pDepthHist );
-		SAFE_DELETE_ARRAY( _backDepthData );
 
+		_primaryGen = NULL;	// just null the pointer
 		SAFE_DELETE( _imageGen );
 		SAFE_DELETE( _irGen );
 		SAFE_DELETE( _depthGen );
-		SAFE_DELETE( _userGen );
 		SAFE_DELETE( _audioGen );
+		SAFE_DELETE( _userGen );
 		
 		SAFE_DELETE( _imageMetaData );
 		SAFE_DELETE( _irMetaData );
 		SAFE_DELETE( _depthMetaData );
+		SAFE_DELETE( _sceneMetaData );
 		SAFE_DELETE( _audioMetaData );
 
 		//SAFE_DELETE( _callback );
@@ -986,6 +982,8 @@ namespace V
 	/* Device Manager
 	/************************************************************************/
 
+	const bool OpenNIDeviceManager::USE_THREAD = true;
+
 	//std::shared_ptr<OpenNIDeviceManager> OpenNIDeviceManager::_singletonPointerRef;
 	OpenNIDeviceManager OpenNIDeviceManager::_singletonPointer;
 	//OpenNIDeviceManager* OpenNIDeviceManager::_singletonPointer = NULL;
@@ -1005,8 +1003,8 @@ namespace V
 			OutputDebugStringA( ss.str().c_str() );
 		}*/
 
+		_isRunning = false;
 		_idCount = 0;
-
 		mDebugInfo = "No debug information\n";
 	}
 
@@ -1061,47 +1059,60 @@ namespace V
 		}
 		else
 		{
-			DeviceInfo* devinfo = new DeviceInfo;
+			DeviceInfo devinfo;
+			devinfo.dev = new OpenNIDevice( &_context );
+			devinfo.dev->initFromXmlFile( xmlFile, allocUserIfNoNode );	
+			devinfo.id = mDeviceList.size();
+			mDeviceList.push_back( devinfo );
+			return devinfo.dev;
+
+			/*DeviceInfo* devinfo = new DeviceInfo;
 			devinfo->dev = new OpenNIDevice( &_context );
 			devinfo->dev->initFromXmlFile( xmlFile, allocUserIfNoNode );	
 			devinfo->id = mDeviceList.size();
 			mDeviceList.push_back( devinfo );
-			return devinfo->dev;
-		}
+			return devinfo->dev;*/
+}
 		return NULL;
 	}
 
 	OpenNIDevice* OpenNIDeviceManager::createDevice( int nodeTypeFlags )
 	{
 		if( mDeviceList.size() >= MAX_DEVICES ) return NULL;
-		DeviceInfo* devinfo = new DeviceInfo;
+
+		DeviceInfo devinfo;
+		devinfo.dev = new OpenNIDevice( &_context );
+		devinfo.dev->init( nodeTypeFlags );
+		devinfo.id = mDeviceList.size();
+		mDeviceList.push_back( devinfo );
+		return devinfo.dev;
+
+		/*DeviceInfo* devinfo = new DeviceInfo;
 		devinfo->dev = new OpenNIDevice( &_context );
 		devinfo->dev->init( nodeTypeFlags );
 		devinfo->id = mDeviceList.size();
 		mDeviceList.push_back( devinfo );
-		return devinfo->dev;
+		return devinfo->dev;*/
 	}
 
 
 	void OpenNIDeviceManager::destroyDevice( OpenNIDevice* device )
 	{
-		for ( std::list<OpenNIDeviceManager::DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		for ( std::list<OpenNIDeviceManager::DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 		{		
-			if ( device == (*it)->dev )
+			if ( device == (*it).dev )
 			{
-				mDeviceList.remove( *it );
-				DeviceInfo* devinfo = *it;
+				//mDeviceList.remove( *it );
+				DeviceInfo devinfo = *it;
 				//destroy_device( devinfo->id );
 				//devinfo->dev->release();
-				SAFE_DELETE( devinfo->dev );
-				SAFE_DELETE( devinfo );
+				SAFE_DELETE( devinfo.dev );
+				//SAFE_DELETE( devinfo );
+				mDeviceList.erase( it );
 
 				return;
 			}
 		}
-
-		//device->release();
-		//SAFE_DELETE( device );
 	}
 
 
@@ -1111,27 +1122,33 @@ namespace V
 	{
 		// TODO! associate user generator to its current device
 		// for the moment we always pick first device available
-		std::list<DeviceInfo*>::iterator it = mDeviceList.begin();
-		OpenNIUser* newUser = new OpenNIUser( id, (*it)->dev );
-		mUserList.push_back( newUser );
+		std::list<DeviceInfo>::iterator it = mDeviceList.begin();
+
+		OpenNIUser* newUser = new OpenNIUser( id, (*it).dev );
+		mUserList.push_back( *newUser );
 		return newUser;
+
+		/*OpenNIUser* newUser = new OpenNIUser( id, (*it).dev );
+		mUserList.push_back( newUser );
+		return newUser;*/
 	}
 
 	void OpenNIDeviceManager::removeUser( OpenNIUser* user )
 	{
 		if( mUserList.size() <= 0 ) return;
-		mUserList.remove( user );
-		SAFE_DELETE( user );
+		//mUserList.remove( user );
+		//SAFE_DELETE( user );
 	}
 
 	void OpenNIDeviceManager::removeUser( uint32_t id )
 	{
 		if( mUserList.size() <= 0 ) return;
-		for ( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		for ( std::list<OpenNIUser>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
-			if( id == (*it)->getId() )
+			if( id == (*it).getId() )
 			{
-				mUserList.remove( *it );
+				mUserList.erase( it );
+				//mUserList.remove( *it );
 				//SAFE_DELETE( *it );
 				return;
 			}
@@ -1141,39 +1158,67 @@ namespace V
 
 	void OpenNIDeviceManager::destroyAll( void )
 	{
-		_context.Shutdown();
+		// Stop thread
+		if( _isRunning && USE_THREAD )
+		{
+			_isRunning = false;		
+			OutputDebugStringA( "Stop running thread on device manager\n" );
+			assert( _thread );
+			_thread->join();
+		}
 
 		// Delete device list
-		for ( std::list<OpenNIDeviceManager::DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		for ( std::list<OpenNIDeviceManager::DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 		{		
-			DeviceInfo* devinfo = *it;
-			//destroy_device( devinfo->id );
-			devinfo->dev->release();
-			SAFE_DELETE( devinfo->dev );
-			SAFE_DELETE( devinfo );
+			//destroy_device( (*it).id );
+			SAFE_DELETE( (*it).dev );
+			//SAFE_DELETE( *it );
 			//mDeviceList.remove( *it );
+			//mDeviceList.erase( it );
 		}
 		mDeviceList.clear();
 
 
 		// Now delete users
-		for ( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		/*for ( std::list<OpenNIUser>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
+			//SAFE_DELETE( *it );
 			//mUserList.remove( *it );
-			SAFE_DELETE( *it );
-		}
+			//mUserList.erase( it );
+		}*/
 		mUserList.clear();
+
+
+		_context.Shutdown();
 	}
 
 
 
+	void OpenNIDeviceManager::run()
+	{
+		while( _isRunning )
+		{
+			update();
+		}
+	}
+
 
 	void OpenNIDeviceManager::start()
 	{
-		// Start all devices ( a full-speed thread per device)
-		for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		_isRunning = false;
+		if( USE_THREAD ) 
 		{
-			(*it)->dev->start();
+			OutputDebugStringA( "Starting thread on device manager" );
+			assert( !_thread );
+			_thread = boost::shared_ptr<boost::thread>( new boost::thread(&OpenNIDeviceManager::run, this) );
+			_isRunning = true;
+		}
+
+		// Start all devices
+		for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		{
+			if( (*it).dev ) 
+				(*it).dev->start();
 		}
 
 		// Start generation
@@ -1187,24 +1232,24 @@ namespace V
 		if( !OpenNIDevice::USE_THREAD )
 		{
 			// Handle device update
-			for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+			for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 			{
-				(*it)->dev->update();
+				(*it).dev->update();
 			}
 		}
 		// Handle user update
-		for ( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		for ( std::list<OpenNIUser>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
-			(*it)->update();
+			(*it).update();
 		}
 	}
 
 
 	void OpenNIDeviceManager::renderJoints( float pointSize )
 	{
-		for ( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		for ( std::list<OpenNIUser>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
-			(*it)->renderJoints( pointSize );
+			(*it).renderJoints( pointSize );
 		}
 	}
 
@@ -1213,10 +1258,10 @@ namespace V
 	OpenNIUser* OpenNIDeviceManager::getUser( int id )
 	{
 		if( mUserList.size() == 0 ) return NULL;
-		for ( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		for ( std::list<OpenNIUser>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
-			if( id == (*it)->getId() )
-				return *it;
+			if( id == (*it).getId() )
+				return &(*it);
 		}
 		return NULL;
 	}

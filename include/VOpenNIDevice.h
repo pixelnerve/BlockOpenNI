@@ -111,6 +111,8 @@ namespace V
 		boost::uint8_t* getDepthMap24();
 		boost::uint16_t* getRawDepthMap();
 
+		xn::DepthMetaData* getDepthMetaData()		{ return _depthMetaData; }
+		xn::SceneMetaData* getUserMetaData()		{ return _sceneMetaData; }
 		xn::ImageGenerator*	getImageGenerator()		{ return _imageGen;	}
 		xn::IRGenerator* getIRGenerator()			{ return _irGen;	}
 		xn::DepthGenerator*	getDepthGenerator()		{ return _depthGen;	}
@@ -134,8 +136,8 @@ namespace V
 		xn::EnumerationErrors	_errors;
 		XnStatus				_status;
 
-		xn::Context*			_context;
-		xn::Device				_device;
+		xn::Context*			_context;	// Pointer to context in device manager
+		xn::Device				_device;	// Device object
 
 		XnFPSData				_fpsData;
 
@@ -201,7 +203,7 @@ namespace V
 	*/
 	/************************************************************************/
 	//typedef std::shared_ptr<std::vector<OpenNIDevice>> OpenNIDeviceList;
-	typedef std::list<OpenNIUser*> OpenNIUserList;
+	typedef std::list<OpenNIUser> OpenNIUserList;
 	//std::vector<std::shared_ptr<OpenNIUser>> mUserList;
 
 	// A singleton
@@ -272,6 +274,12 @@ namespace V
 		OpenNIDeviceManager( const OpenNIDeviceManager& ) {};
 		// Operators
 		OpenNIDeviceManager& operator = ( const OpenNIDeviceManager& ) {};
+		void OpenNIDeviceManager::run();
+
+
+	public:
+		static const bool				USE_THREAD;
+
 	protected:
 		struct DeviceInfo
 		{
@@ -283,6 +291,9 @@ namespace V
 		static OpenNIDeviceManager		_singletonPointer;
 		//static OpenNIDeviceManager*		_singletonPointer;
 
+		boost::shared_ptr<boost::thread> _thread;
+		bool							_isRunning;
+
 		xn::Context						_context;
 
 		std::string						mDebugInfo;
@@ -290,7 +301,7 @@ namespace V
 		int								_idCount;
 
 		// Device list
-		std::list<DeviceInfo*>			mDeviceList;
+		std::list<DeviceInfo>			mDeviceList;
 		//static std::list<DeviceInfo*>	mDeviceList;
 
 		// Generic user list. These users have no knowledge of which device they come from

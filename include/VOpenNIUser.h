@@ -24,6 +24,7 @@ namespace V
 
 
 	typedef std::vector<Bone*> UserBoneList;
+
 	class OpenNIUser
 	{
 		friend class OpenNIDeviceManager;
@@ -36,7 +37,6 @@ namespace V
 		void OpenNIUser::updatePixels();
 		void OpenNIUser::updateBody();
 		void OpenNIUser::renderJoints( float pointSize );
-		void OpenNIUser::renderBone( XnPoint3D& point1, XnPoint3D& point2 );
 		void OpenNIUser::renderBone( int joint1, int joint2 );
 
 		UserBoneList	getBoneList();
@@ -49,6 +49,8 @@ namespace V
 		boost::uint8_t*	getPixels()			{ return _userPixels; }
 		uint32_t		getId()				{ return mId; }
 		float*			getCenterOfMass()	{ return mCenter; }
+
+
 	protected:
 		OpenNIDevice*	_device;
 		std::string		_debugInfo;
@@ -56,10 +58,10 @@ namespace V
 
 		uint32_t		mId;
 		float			mCenter[3];	// Center point
-
 		float			mColor[3];
 
-		int				mBoneIndexArray[BONE_COUNT];
+		uint32_t		mWidth, mHeight;	// Current dimensions of depthmap
+
 		UserBoneList	mBoneList;
 	};
 
