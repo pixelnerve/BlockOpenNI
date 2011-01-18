@@ -14,7 +14,7 @@ namespace V
 	/* Callbacks
 	*/
 	/************************************************************************/
-
+	
 	static char g_strPose[1023];
 	static bool g_bNeedPose;
 	static xn::UserGenerator g_UserGenObj;
