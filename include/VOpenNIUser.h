@@ -1,10 +1,6 @@
 #pragma once
 
-#include <string>
-#include <vector>
-#include <boost/cstdint.hpp>
 #include "VOpenNICommon.h"
-#include "VOpenNIBone.h"
 
 
 
@@ -12,7 +8,7 @@ namespace V
 {
 	// Forward declaration
 	class OpenNIDevice;
-
+	struct OpenNIBone;
 
 	enum UserState
 	{
@@ -23,7 +19,7 @@ namespace V
 	};
 
 
-	typedef std::vector<Bone*> UserBoneList;
+	typedef std::vector<OpenNIBone*> UserBoneList;
 
 	class OpenNIUser
 	{
@@ -40,7 +36,7 @@ namespace V
 		void OpenNIUser::renderBone( int joint1, int joint2 );
 
 		UserBoneList	getBoneList();
-		Bone*			getBone( int id );
+		OpenNIBone*		getBone( int id );
 
 		void			setText( const std::string& info )	{ _debugInfo = info; }
 		const std::string& getText()		{ return _debugInfo; }

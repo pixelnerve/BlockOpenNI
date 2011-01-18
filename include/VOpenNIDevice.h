@@ -1,10 +1,5 @@
 #pragma once
 
-#include <string>
-#include <vector>
-#include <boost/noncopyable.hpp>
-#include <boost/cstdint.hpp>
-#include <boost/thread/thread.hpp>
 #include "VOpenNICommon.h"
 #include "VOpenNISurface.h"
 
@@ -133,23 +128,23 @@ namespace V
 
 		std::string				_configFile;
 
+		xn::Context*			_context;	// Pointer to context in device manager
+
+		xn::Device				_device;	// Device object
+
 		xn::EnumerationErrors	_errors;
 		XnStatus				_status;
 
-		xn::Context*			_context;	// Pointer to context in device manager
-		xn::Device				_device;	// Device object
-
-		XnFPSData				_fpsData;
-
+		//XnFPSData				_fpsData;
 		XnMapOutputMode			_mapMode; 
 
 
 		// Buffers
-		V::OpenNISurface8*		mColorSurface;
-		V::OpenNISurface8*		mIRSurface;
-		V::OpenNISurface16*		mDepthSurface;
+		OpenNISurface8*			mColorSurface;
+		OpenNISurface8*			mIRSurface;
+		OpenNISurface16*		mDepthSurface;
 
-		int						_bpp;
+		const int				mBitsPerPixel;
 		//boost::uint8_t*			_colorData;
 		boost::uint16_t*		_irData;
 		boost::uint8_t*			_irData8;
@@ -292,6 +287,8 @@ namespace V
 		//static OpenNIDeviceManager*		_singletonPointer;
 
 		boost::shared_ptr<boost::thread> _thread;
+		boost::mutex					 _contextMutex;
+		boost::recursive_mutex			 _mutex;
 		bool							_isRunning;
 
 		xn::Context						_context;

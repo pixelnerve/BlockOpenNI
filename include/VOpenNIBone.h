@@ -33,8 +33,10 @@ namespace V
 	};
 	static const int BONE_COUNT = 24;
 
+
+
 	// Defines a body joint in space
-	struct Bone
+	struct OpenNIBone
 	{
 		// is this bone active?
 		bool active;

@@ -129,8 +129,7 @@ namespace V
 	/************************************************************************/
 	const bool OpenNIDevice::USE_THREAD = false;
 
-
-	OpenNIDevice::OpenNIDevice( xn::Context* context )
+	OpenNIDevice::OpenNIDevice( xn::Context* context ) : mBitsPerPixel( 3 )
 	{
 		_context = context;
 
@@ -173,8 +172,6 @@ namespace V
 		_isDepthOn = false;
 		_isUserOn = false;
 		_isAudioOn = false;
-
-		_bpp = 3;
 
 		//_callback = NULL;
 		//_callback = new OpenNIDeviceCallback( this, &OpenNIDevice::CallbackFunc );
@@ -409,13 +406,13 @@ namespace V
 		if( flags & NODE_TYPE_IMAGE )
 		{
 			_imageGen->GetMapOutputMode( mode );
-			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*_bpp];
+			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, mode.nXRes, mode.nYRes );
 		}
 		if( flags & NODE_TYPE_IR )
 		{
 			_irGen->GetMapOutputMode( mode );
-			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*_bpp];
+			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, mode.nXRes, mode.nYRes );
 			_irData = new boost::uint16_t[mode.nXRes*mode.nYRes];
 			_irData8 = new boost::uint8_t[mode.nXRes*mode.nYRes];
@@ -426,7 +423,7 @@ namespace V
 			_backDepthData = new boost::uint16_t[mode.nXRes*mode.nYRes];
 			_depthData = new boost::uint16_t[mode.nXRes*mode.nYRes];
 			_depthData8 = new boost::uint8_t[mode.nXRes*mode.nYRes];
-			_depthDataRGB = new boost::uint8_t[mode.nXRes*mode.nYRes*_bpp];
+			_depthDataRGB = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			g_pTexMap = new XnRGB24Pixel[ mode.nXRes * mode.nYRes * sizeof(XnRGB24Pixel) ];
 			g_MaxDepth = MAX_DEPTH;
 			g_pDepthHist = new float[g_MaxDepth];
@@ -515,7 +512,7 @@ namespace V
 	{
 		if( flags & NODE_TYPE_IMAGE )
 		{
-			//_colorData = new boost::uint8_t[width*height*_bpp];
+			//_colorData = new boost::uint8_t[width*height*mBitsPerPixel];
 			mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, width, height );
 		}
 		if( flags & NODE_TYPE_IR )
@@ -530,7 +527,7 @@ namespace V
 			_backDepthData = new boost::uint16_t[width*height];
 			_depthData = new boost::uint16_t[width*height];
 			_depthData8 = new boost::uint8_t[width*height];
-			_depthDataRGB = new boost::uint8_t[width*height*_bpp];
+			_depthDataRGB = new boost::uint8_t[width*height*mBitsPerPixel];
 			mDepthSurface = new OpenNISurface16( NODE_TYPE_DEPTH, width, height );
 		}
 	}
@@ -627,7 +624,7 @@ namespace V
 		{
 		case NODE_TYPE_IMAGE:
 			//SAFE_DELETE_ARRAY( _colorData );
-			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*_bpp];
+			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			mColorSurface->remap( mode.nXRes, mode.nYRes );
 			break;
 		case NODE_TYPE_IR:
@@ -635,7 +632,7 @@ namespace V
 			//SAFE_DELETE_ARRAY( _colorData );
 			SAFE_DELETE_ARRAY( _irData );
 			SAFE_DELETE_ARRAY( _irData8 );
-			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*_bpp];
+			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			_irData = new boost::uint16_t[mode.nXRes*mode.nYRes];
 			_irData8 = new boost::uint8_t[mode.nXRes*mode.nYRes];
 			break;
@@ -724,14 +721,14 @@ namespace V
 		case NODE_TYPE_IMAGE:
 			mColorSurface->remap( mode.nXRes, mode.nYRes );
 			//SAFE_DELETE_ARRAY( _colorData );
-			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*_bpp];
+			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			break;
 		case NODE_TYPE_IR:
 			mColorSurface->remap( mode.nXRes, mode.nYRes );
 			//SAFE_DELETE_ARRAY( _colorData );
 			SAFE_DELETE_ARRAY( _irData );
 			SAFE_DELETE_ARRAY( _irData8 );
-			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*_bpp];
+			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			_irData = new boost::uint16_t[mode.nXRes*mode.nYRes];
 			_irData8 = new boost::uint8_t[mode.nXRes*mode.nYRes];
 			break;
@@ -878,7 +875,7 @@ namespace V
 			mColorSurface->update( (uint8_t*)(pImage) );
 			//int w = _depthMetaData->XRes();
 			//int h = _depthMetaData->YRes();
-			//memcpy( mColorSurface->getData(), pImage, w*h*_bpp*sizeof(XnUInt8) );
+			//memcpy( mColorSurface->getData(), pImage, w*h*mBitsPerPixel*sizeof(XnUInt8) );
 		}
 
 		if( _irGen && _irGen->IsValid() )
@@ -1229,6 +1226,8 @@ namespace V
 
 	void OpenNIDeviceManager::update()
 	{
+		boost::lock_guard<boost::recursive_mutex> lock( _mutex );
+
 		if( !OpenNIDevice::USE_THREAD )
 		{
 			// Handle device update

@@ -1,5 +1,4 @@
-#include <Windows.h>
-#include <gl/GL.h>
+#include "VOpenNIBone.h"
 #include "VOpenNIDevice.h"
 #include "VOpenNIUser.h"
 
@@ -48,7 +47,7 @@ namespace V
 
 		SAFE_DELETE_ARRAY( _userPixels );
 
-		for ( std::vector<Bone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); it++ )
+		for ( std::vector<OpenNIBone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); it++ )
 		{
 			SAFE_DELETE( *it );
 		}
@@ -67,7 +66,7 @@ namespace V
 			// Index array. same as the joint enumeration values
 			//g_BoneIndexArray[i] = i+1;
 
-			mBoneList.push_back( new Bone() );
+			mBoneList.push_back( new OpenNIBone() );
 		}
 	}
 
@@ -192,14 +191,15 @@ namespace V
 			XnSkeletonJointPosition jointPos;
 			XnSkeletonJointOrientation jointOri;
 			int index = 0;
-			for( std::vector<Bone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); it++, index++ )
+			for( std::vector<OpenNIBone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); it++, index++ )
 			{
 				user->GetSkeletonCap().GetSkeletonJointPosition( mId, (XnSkeletonJoint)g_BoneIndexArray[index], jointPos );
 				user->GetSkeletonCap().GetSkeletonJointOrientation( mId, (XnSkeletonJoint)g_BoneIndexArray[index], jointOri );
 
 				//if( jointOri.fConfidence >= 0.25f && jointPos.fConfidence >= 0.25f )
 				{
-					Bone* bone = *it;
+					OpenNIBone* bone = *it;
+
 					// Is active?
 					bone->active = true;
 
@@ -241,9 +241,10 @@ namespace V
 			//glDisable( GL_TEXTURE_2D );
 			glBegin( GL_QUADS );
 			int index = 1;
-			for( std::vector<Bone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); it++, index++ )
+			for( std::vector<OpenNIBone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); it++, index++ )
 			{
-				Bone* bone = *it;
+				OpenNIBone* bone = *it;
+
 				// Convert a point from world coordinates to screen coordinates
 				XnPoint3D point;
 				XnPoint3D realJointPos;
@@ -301,8 +302,8 @@ namespace V
 		DepthGenerator* depth = _device->getDepthGenerator();
 		if( !depth ) return;
 
-		Bone* bone1 = mBoneList[joint1-1];
-		Bone* bone2 = mBoneList[joint2-1];
+		OpenNIBone* bone1 = mBoneList[joint1-1];
+		OpenNIBone* bone2 = mBoneList[joint2-1];
 
 		// Convert a point from world coordinates to screen coordinates
 		XnPoint3D point1, point2;
@@ -326,7 +327,7 @@ namespace V
 	}
 
 
-	Bone* OpenNIUser::getBone( int id )
+	OpenNIBone* OpenNIUser::getBone( int id )
 	{
 		assert( id < 1 || id >= BONE_COUNT );
 		return mBoneList[id-1];
