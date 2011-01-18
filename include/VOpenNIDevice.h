@@ -13,44 +13,6 @@ namespace V
 
 
 	/************************************************************************/
-	/* Callbacks
-	*/
-	/************************************************************************/
-
-	typedef void (*JoinCallback)( int deviceId );
-	typedef void (*LeaveCallback)( int deviceId );
-
-
-	int CreateDevice( JoinCallback join, LeaveCallback leave );
-	void DestroyDevice( int device_id );
-	void PollDevices();
-
-
-
-	// Callback class
-	/*class OpenNIDevice;
-	class OpenNIDeviceCallback
-	{
-	public:
-		typedef void (OpenNIDevice::*CallbackFunction)(int arg);
-		OpenNIDeviceCallback( OpenNIDevice* obj, CallbackFunction function )
-		{
-			mCallbackObj = obj;
-			mCallbackFunc = function;
-		}
-		virtual ~OpenNIDeviceCallback() {}
-
-	public:
-		OpenNIDevice* mCallbackObj;
-		CallbackFunction mCallbackFunc;
-	};*/
-
-
-
-
-
-
-	/************************************************************************/
 	/*                                                                      */
 	/************************************************************************/
 
@@ -64,45 +26,28 @@ namespace V
 		bool init( boost::uint64_t nodeTypeFlags );
 		bool initFromXmlFile( const std::string& xmlFile, bool allocUserIfNoNode=false );
 
+		void release();
 
+		void start();
+		void update();
 
-		/*void CallbackFunc( int arg )
-		{
-			std::stringstream ss;
-			ss << "--> Value is: " << arg << std::endl;
-			OutputDebugStringA( ss.str().c_str() );
-		}
+		void allocate( int flags, int width, int height );
 
-		virtual void OnJoin() {}
-		virtual void OnLeave() {}
-		virtual void OnCalibrationStart() {}
-		virtual void OnCalibrationEnd() {}
-		virtual void OnPoseStart() {}
-		virtual void OnPoseEnd() {}*/
+		bool requestUserCalibration();
+		void setResolution( ProductionNodeType nodeType, int res, int fps );
+		void setFPS( ProductionNodeType nodeType, int fps );
+		void setMapOutputMode( ProductionNodeType nodeType, int width, int height, int fps );
+		void readFrame();
+		void setPrimaryBuffer( int type );
 
-		void OpenNIDevice::release();
-
-		void OpenNIDevice::start();
-		void OpenNIDevice::run();
-		void OpenNIDevice::update();
-
-		void OpenNIDevice::allocate( int flags, int width, int height );
-
-		bool OpenNIDevice::requestUserCalibration();
-		void OpenNIDevice::setResolution( ProductionNodeType nodeType, int res, int fps );
-		void OpenNIDevice::setFPS( ProductionNodeType nodeType, int fps );
-		void OpenNIDevice::setMapOutputMode( ProductionNodeType nodeType, int width, int height, int fps );
-		void OpenNIDevice::readFrame();
-		void OpenNIDevice::setPrimaryBuffer( int type );
-
-		void OpenNIDevice::setDepthInvert( bool flag );
-		bool OpenNIDevice::getDepthInvert()			{ return _isDepthInverted; }
+		void setDepthInvert( bool flag );
+		bool getDepthInvert()						{ return _isDepthInverted; }
 
 		boost::uint8_t* getColorMap();
 		boost::uint16_t* getIRMap();
 		boost::uint8_t* getIRMap8i();
 		boost::uint16_t* getDepthMap();
-		boost::uint8_t* getDepthMap8i();
+		//boost::uint8_t* getDepthMap8i();
 		boost::uint8_t* getDepthMap24();
 		boost::uint16_t* getRawDepthMap();
 
@@ -114,23 +59,25 @@ namespace V
 		xn::UserGenerator* getUserGenerator()		{ return _userGen;	}
 		xn::Context*	getContext()				{ return _context;	}
 
-		const std::string& getDebugInfo()			{ return mDebugInfo;}
+		//const std::string& getDebugInfo()			{ return mDebugInfo;}
+	private:
+		void run();
 
 	public:
 		static const bool		USE_THREAD;
 		boost::shared_ptr<boost::thread> _thread;
 
 		std::string				mDeviceName;
-		std::string				mDebugInfo;
+		//std::string				mDebugInfo;
 
 		bool					_isRunning;
 		bool					_isDepthInverted;
 
-		std::string				_configFile;
+		//std::string				_configFile;
 
 		xn::Context*			_context;	// Pointer to context in device manager
 
-		xn::Device				_device;	// Device object
+		xn::Device*				_device;	// Device object
 
 		xn::EnumerationErrors	_errors;
 		XnStatus				_status;
@@ -150,7 +97,7 @@ namespace V
 		boost::uint8_t*			_irData8;
 		boost::uint16_t*		_depthData;
 		boost::uint16_t*		_backDepthData;
-		boost::uint8_t*			_depthData8;
+		//boost::uint8_t*			_depthData8;
 		boost::uint8_t*			_depthDataRGB;
 
 		XnRGB24Pixel*			g_pTexMap;
@@ -185,8 +132,6 @@ namespace V
 
 		// Users
 		//std::vector<std::shared_ptr<OpenNIUser>> mUserList;
-
-		//OpenNIDeviceCallback*		_callback;
 	};
 
 
@@ -208,29 +153,25 @@ namespace V
 		OpenNIDeviceManager();
 		~OpenNIDeviceManager();
 
-		//boost::uint32_t OpenNIDeviceManager::enumDevices();
+		uint32_t enumDevices();
 		OpenNIDevice* createDevice( const std::string& xmlFile="", bool allocUserIfNoNode=false );
+		OpenNIDevice* createDevice2( const std::string& xmlFile, bool allocUserIfNoNode=false );
 		OpenNIDevice* createDevice( int nodeTypeFlags );
 		void destroyDevice( OpenNIDevice* device );
+		void destroyAll( void );
 
-		OpenNIUser* OpenNIDeviceManager::addUser( xn::UserGenerator* userGen, uint32_t id );
-		void OpenNIDeviceManager::removeUser( OpenNIUser* user );
-		void OpenNIDeviceManager::removeUser( uint32_t id );
-		void OpenNIDeviceManager::destroyAll( void );
-		void OpenNIDeviceManager::start();
+		OpenNIUser* addUser( xn::UserGenerator* userGen, uint32_t id );
+		void removeUser( OpenNIUser* user );
+		void removeUser( uint32_t id );
+		void start();
 
-		void OpenNIDeviceManager::update();
-		void OpenNIDeviceManager::renderJoints( float pointSize );
-		bool hasUsers()						{ return (mUserList.size()>0)?true:false; }
-		OpenNIUser* OpenNIDeviceManager::getUser( int id );
+		void update();
+		void renderJoints( float pointSize );
+		bool hasUsers()								{ return (mUserList.size()>0)?true:false; }
+		OpenNIUser* getUser( int id );
 
 		const std::string& getDebugInfo()			{ return mDebugInfo;}
-		void setText( const std::string& info )	{ mDebugInfo = info; }
-
-
-		//static void OpenNIDeviceManager::DeviceJoin( int deviceId );
-		//static void OpenNIDeviceManager::DeviceLeave( int deviceId );
-
+		void setText( const std::string& info )		{ mDebugInfo = info; }
 
 
 		//
@@ -269,8 +210,7 @@ namespace V
 		OpenNIDeviceManager( const OpenNIDeviceManager& ) {};
 		// Operators
 		OpenNIDeviceManager& operator = ( const OpenNIDeviceManager& ) {};
-		void OpenNIDeviceManager::run();
-
+		void run();
 
 	public:
 		static const bool				USE_THREAD;
@@ -287,18 +227,18 @@ namespace V
 		//static OpenNIDeviceManager*		_singletonPointer;
 
 		boost::shared_ptr<boost::thread> _thread;
-		boost::mutex					 _contextMutex;
 		boost::recursive_mutex			 _mutex;
 		bool							_isRunning;
 
 		xn::Context						_context;
+		xn::Context*					_context1;
 
 		std::string						mDebugInfo;
 
 		int								_idCount;
 
 		// Device list
-		std::list<DeviceInfo>			mDeviceList;
+		std::list<DeviceInfo*>			mDeviceList;
 		//static std::list<DeviceInfo*>	mDeviceList;
 
 		// Generic user list. These users have no knowledge of which device they come from

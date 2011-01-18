@@ -1,3 +1,4 @@
+//#include "VOpenNICommon.h"
 #include "VOpenNIUser.h"
 #include "VOpenNIDevice.h"
 
@@ -133,11 +134,13 @@ namespace V
 	{
 		_context = context;
 
-		_configFile = "";
-		mDebugInfo = "No debug information\n";
+		//_configFile = "";
+		//mDebugInfo = "No debug information\n";
 
 		_isRunning = false;
 		_isDepthInverted = false;
+
+		_device = NULL;
 
 		_primaryGen = NULL;
 		_imageGen = NULL;
@@ -155,7 +158,7 @@ namespace V
 		_irData = NULL;
 		_irData8 = NULL;
 		_depthData = NULL;
-		_depthData8 = NULL;
+		//_depthData8 = NULL;
 		_depthDataRGB = NULL;
 		_backDepthData = NULL;
 		g_pTexMap = NULL;
@@ -210,10 +213,10 @@ namespace V
 				switch ((*it).GetDescription().Type)
 				{
 				case XN_NODE_TYPE_DEVICE:
-					(*it).GetInstance( _device );
-					ss << "Device: " << _device.GetName() << std::endl;
+					(*it).GetInstance( *_device );
+					ss << "Device: " << _device->GetName() << std::endl;
 					OutputDebugStringA( ss.str().c_str() );
-					mDeviceName = _device.GetName();
+					mDeviceName = _device->GetName();
 					break;
 				}
 			}
@@ -292,7 +295,7 @@ namespace V
 
 	bool OpenNIDevice::initFromXmlFile( const std::string& xmlFile, bool allocUserIfNoNode )
 	{
-		_configFile = xmlFile;
+		//_configFile = xmlFile;
 
 		_status = _context->InitFromXmlFile( xmlFile.c_str(), &_errors );
 		if( _status != XN_STATUS_OK )
@@ -314,10 +317,11 @@ namespace V
 				switch ((*it).GetDescription().Type)
 				{
 				case XN_NODE_TYPE_DEVICE:
-					(*it).GetInstance( _device );
-					ss << "Device: " << _device.GetName() << std::endl;
+					_device = new xn::Device();
+					(*it).GetInstance( *_device );
+					ss << "Device: " << _device->GetName() << std::endl;
 					OutputDebugStringA( ss.str().c_str() );
-					mDeviceName = _device.GetName();
+					mDeviceName = _device->GetName();
 					break;
 				case XN_NODE_TYPE_IMAGE:
 					_imageGen = new ImageGenerator();
@@ -363,13 +367,6 @@ namespace V
 			}
 		}
 
-		if( _imageGen ) _imageGen->GetMetaData( *_imageMetaData );
-		if( _irGen )	_irGen->GetMetaData( *_irMetaData );
-		if( _depthGen ) _depthGen->GetMetaData( *_depthMetaData );
-		if( _userGen ) _userGen->GetUserPixels( 0, *_sceneMetaData );
-		if( _audioGen ) _audioGen->GetMetaData( *_audioMetaData );
-
-
 
 		//
 		// In case the config file has no user node, we create one if so we want to
@@ -382,6 +379,17 @@ namespace V
 			CHECK_RC( _status, "Create user generator" );
 			_isUserOn = true;
 		}
+
+
+		//
+		// First time get meta data
+		//
+		if( _imageGen ) _imageGen->GetMetaData( *_imageMetaData );
+		if( _irGen )	_irGen->GetMetaData( *_irMetaData );
+		if( _depthGen ) _depthGen->GetMetaData( *_depthMetaData );
+		if( _userGen ) _userGen->GetUserPixels( 0, *_sceneMetaData );
+		if( _audioGen ) _audioGen->GetMetaData( *_audioMetaData );
+
 
 
 		//
@@ -422,7 +430,7 @@ namespace V
 			_depthGen->GetMapOutputMode( mode );
 			_backDepthData = new boost::uint16_t[mode.nXRes*mode.nYRes];
 			_depthData = new boost::uint16_t[mode.nXRes*mode.nYRes];
-			_depthData8 = new boost::uint8_t[mode.nXRes*mode.nYRes];
+			//_depthData8 = new boost::uint8_t[mode.nXRes*mode.nYRes];
 			_depthDataRGB = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			g_pTexMap = new XnRGB24Pixel[ mode.nXRes * mode.nYRes * sizeof(XnRGB24Pixel) ];
 			g_MaxDepth = MAX_DEPTH;
@@ -436,6 +444,7 @@ namespace V
 
 	void OpenNIDevice::release()
 	{
+		/*
 		// Stop thread
 		if( _isRunning && USE_THREAD )
 		{
@@ -443,7 +452,7 @@ namespace V
 			OutputDebugStringA( "Stop running thread\n" );
 			assert( _thread );
 			_thread->join();
-		}
+		}*/
 
 		// Delete buffers
 
@@ -455,13 +464,14 @@ namespace V
 		SAFE_DELETE_ARRAY( _irData );
 		SAFE_DELETE_ARRAY( _irData8 );
 		SAFE_DELETE_ARRAY( _depthData );
-		SAFE_DELETE_ARRAY( _depthData8 );
+		//SAFE_DELETE_ARRAY( _depthData8 );
 		SAFE_DELETE_ARRAY( _depthDataRGB );
 		SAFE_DELETE_ARRAY( _backDepthData );
 		SAFE_DELETE_ARRAY( g_pTexMap );
 		SAFE_DELETE_ARRAY( g_pDepthHist );
 
 		_primaryGen = NULL;	// just null the pointer
+		SAFE_DELETE( _device );
 		SAFE_DELETE( _imageGen );
 		SAFE_DELETE( _irGen );
 		SAFE_DELETE( _depthGen );
@@ -481,14 +491,13 @@ namespace V
 
 	void OpenNIDevice::start()
 	{
-		if( USE_THREAD ) 
+		_isRunning = false;
+		/*if( USE_THREAD ) 
 		{
 			assert( !_thread );
 			_thread = boost::shared_ptr<boost::thread>( new boost::thread(&OpenNIDevice::run, this) );
 			_isRunning = true;
-		}
-		else
-			_isRunning = false;
+		}*/
 	}
 
 
@@ -526,7 +535,7 @@ namespace V
 		{
 			_backDepthData = new boost::uint16_t[width*height];
 			_depthData = new boost::uint16_t[width*height];
-			_depthData8 = new boost::uint8_t[width*height];
+			//_depthData8 = new boost::uint8_t[width*height];
 			_depthDataRGB = new boost::uint8_t[width*height*mBitsPerPixel];
 			mDepthSurface = new OpenNISurface16( NODE_TYPE_DEPTH, width, height );
 		}
@@ -560,7 +569,7 @@ namespace V
 			//_userGen->GetPoseDetectionCap().RegisterToPoseCallbacks( Callback_PoseDetected, Callback_PoseDetectionEnd, NULL, hPoseCallbacks );
 			_userGen->GetSkeletonCap().GetCalibrationPose( g_strPose );
 			std::stringstream ss;
-			ss << "--> User post name: '" << g_strPose << "'" << std::endl;
+			ss << "--> User pose name: '" << g_strPose << "'" << std::endl;
 			OutputDebugStringA( ss.str().c_str() );
 		}
 		_userGen->GetSkeletonCap().SetSkeletonProfile( XN_SKEL_PROFILE_ALL );
@@ -638,9 +647,11 @@ namespace V
 			break;
 		case NODE_TYPE_DEPTH:
 			SAFE_DELETE_ARRAY( _depthData );
-			SAFE_DELETE_ARRAY( _depthData8 );
+			//SAFE_DELETE_ARRAY( _depthData8 );
+			SAFE_DELETE_ARRAY( _depthDataRGB );
 			_depthData = new boost::uint16_t[mode.nXRes*mode.nYRes];
-			_depthData8 = new boost::uint8_t[mode.nXRes*mode.nYRes];
+			//_depthData8 = new boost::uint8_t[mode.nXRes*mode.nYRes];
+			_depthDataRGB = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			break;
 		default:
 			OutputDebugStringA( "Can't change bitmap size." );
@@ -729,14 +740,16 @@ namespace V
 			SAFE_DELETE_ARRAY( _irData );
 			SAFE_DELETE_ARRAY( _irData8 );
 			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
-			_irData = new boost::uint16_t[mode.nXRes*mode.nYRes];
-			_irData8 = new boost::uint8_t[mode.nXRes*mode.nYRes];
+			_irData = new uint16_t[mode.nXRes*mode.nYRes];
+			_irData8 = new uint8_t[mode.nXRes*mode.nYRes];
 			break;
 		case NODE_TYPE_DEPTH:
 			SAFE_DELETE_ARRAY( _depthData );
-			SAFE_DELETE_ARRAY( _depthData8 );
-			_depthData = new boost::uint16_t[mode.nXRes*mode.nYRes];
-			_depthData8 = new boost::uint8_t[mode.nXRes*mode.nYRes];
+			//SAFE_DELETE_ARRAY( _depthData8 );
+			SAFE_DELETE_ARRAY( _depthDataRGB );
+			_depthData = new uint16_t[mode.nXRes*mode.nYRes];
+			//_depthData8 = new boost::uint8_t[mode.nXRes*mode.nYRes];
+			_depthDataRGB = new uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			break;
 		default:
 			OutputDebugStringA( "Can't change bitmap size." );
@@ -812,8 +825,8 @@ namespace V
 
 			// First, clear buffer memory
 			xnOSMemSet( g_pTexMap, 0, w*h*sizeof(XnRGB24Pixel) );
-			//xnOSMemSet( _depthData, 0, w*h );
-			xnOSMemSet( _depthData8, 0, w*h );
+			xnOSMemSet( _depthData, 0, w*h );
+			//xnOSMemSet( _depthData8, 0, w*h );
 
 			const XnDepthPixel* pDepthRow = _depthMetaData->Data();
 			XnRGB24Pixel* pTexRow = g_pTexMap + _depthMetaData->YOffset() * w;
@@ -832,19 +845,25 @@ namespace V
 						int nHistValue = (_isDepthInverted) ? 255-g_pDepthHist[*pDepth] : g_pDepthHist[*pDepth];
 
 						// Fill or cyan RGB depth map
-						pTex->nRed = 0;
+						pTex->nRed = nHistValue;
 						pTex->nGreen = nHistValue;
 						pTex->nBlue = nHistValue;
-						// 16bit depth map
-						_depthData[index] = (nHistValue<<8);	// 16bit version
+
+						//// 16bit depth map
+						//uint32_t v = *pDepth;
+						//if( v < 0 || v > 2047 ) v = 0;
+						//uint32_t d = 65535 - ((v*v) >> 4);	// move to 16bit
+						//_depthData[index] = d;
+						_depthData[index] = (nHistValue<<8);	// shift to 16bit
+
 						// Luminance 8bit depth map
-						_depthData8[index] = nHistValue;
+						//_depthData8[index] = nHistValue;
 					}
-					else
+					/*else
 					{
 						_depthData[index] = 0;
-						_depthData8[index] = 0;
-					}
+						//_depthData8[index] = 0;
+					}*/
 					index++;
 				}
 
@@ -962,10 +981,10 @@ namespace V
 		return _depthData;
 	}
 
-	boost::uint8_t* OpenNIDevice::getDepthMap8i()
-	{
-		return _depthData8;
-	}
+	//boost::uint8_t* OpenNIDevice::getDepthMap8i()
+	//{
+	//	return _depthData8;
+	//}
 
 	boost::uint8_t* OpenNIDevice::getDepthMap24()
 	{
@@ -1003,19 +1022,22 @@ namespace V
 		_isRunning = false;
 		_idCount = 0;
 		mDebugInfo = "No debug information\n";
+
+		_context1 = NULL;
 	}
 
 
 	OpenNIDeviceManager::~OpenNIDeviceManager()
 	{
-		mDebugInfo = "";
+		destroyAll();
 		//_singletonPointer = NULL;
 	}
 
 
-	/*uint32_t OpenNIDeviceManager::enumDevices( void )
+	uint32_t OpenNIDeviceManager::enumDevices( void )
 	{
 		int count = 0;
+
 
 		//
 		// Find about plugged-in devices
@@ -1042,7 +1064,7 @@ namespace V
 
 
 		return count;
-	}*/
+	}
 
 
 	OpenNIDevice* OpenNIDeviceManager::createDevice( const std::string& xmlFile, bool allocUserIfNoNode )
@@ -1056,56 +1078,88 @@ namespace V
 		}
 		else
 		{
-			DeviceInfo devinfo;
+			/*DeviceInfo devinfo;
 			devinfo.dev = new OpenNIDevice( &_context );
 			devinfo.dev->initFromXmlFile( xmlFile, allocUserIfNoNode );	
 			devinfo.id = mDeviceList.size();
 			mDeviceList.push_back( devinfo );
-			return devinfo.dev;
+			return devinfo.dev;*/
 
-			/*DeviceInfo* devinfo = new DeviceInfo;
+			DeviceInfo* devinfo = new DeviceInfo;
 			devinfo->dev = new OpenNIDevice( &_context );
 			devinfo->dev->initFromXmlFile( xmlFile, allocUserIfNoNode );	
 			devinfo->id = mDeviceList.size();
 			mDeviceList.push_back( devinfo );
-			return devinfo->dev;*/
+			return devinfo->dev;
 }
 		return NULL;
 	}
+
+	OpenNIDevice* OpenNIDeviceManager::createDevice2( const std::string& xmlFile, bool allocUserIfNoNode )
+	{
+		if( mDeviceList.size() >= MAX_DEVICES ) return NULL;
+
+		_context1 = new xn::Context();
+
+		if( xmlFile == "" )
+		{
+			OutputDebugStringA( "not implemented" );
+			return NULL;
+		}
+		else
+		{
+			/*DeviceInfo devinfo;
+			devinfo.dev = new OpenNIDevice( _context1 );
+			devinfo.dev->initFromXmlFile( xmlFile, allocUserIfNoNode );	
+			devinfo.id = mDeviceList.size();
+			mDeviceList.push_back( devinfo );
+			return devinfo.dev;*/
+
+			DeviceInfo* devinfo = new DeviceInfo;
+			devinfo->dev = new OpenNIDevice( &_context );
+			devinfo->dev->initFromXmlFile( xmlFile, allocUserIfNoNode );	
+			devinfo->id = mDeviceList.size();
+			mDeviceList.push_back( devinfo );
+			return devinfo->dev;
+}
+		return NULL;
+	}
+
 
 	OpenNIDevice* OpenNIDeviceManager::createDevice( int nodeTypeFlags )
 	{
 		if( mDeviceList.size() >= MAX_DEVICES ) return NULL;
 
-		DeviceInfo devinfo;
+		/*DeviceInfo devinfo;
 		devinfo.dev = new OpenNIDevice( &_context );
 		devinfo.dev->init( nodeTypeFlags );
 		devinfo.id = mDeviceList.size();
 		mDeviceList.push_back( devinfo );
-		return devinfo.dev;
+		return devinfo.dev;*/
 
-		/*DeviceInfo* devinfo = new DeviceInfo;
+		DeviceInfo* devinfo = new DeviceInfo;
 		devinfo->dev = new OpenNIDevice( &_context );
 		devinfo->dev->init( nodeTypeFlags );
 		devinfo->id = mDeviceList.size();
 		mDeviceList.push_back( devinfo );
-		return devinfo->dev;*/
+		return devinfo->dev;
 	}
 
 
 	void OpenNIDeviceManager::destroyDevice( OpenNIDevice* device )
 	{
-		for ( std::list<OpenNIDeviceManager::DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		//for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 		{		
-			if ( device == (*it).dev )
+			if ( device == (*it)->dev )
 			{
 				//mDeviceList.remove( *it );
-				DeviceInfo devinfo = *it;
+				DeviceInfo* devinfo = *it;
 				//destroy_device( devinfo->id );
 				//devinfo->dev->release();
-				SAFE_DELETE( devinfo.dev );
+				SAFE_DELETE( devinfo->dev );
 				//SAFE_DELETE( devinfo );
-				mDeviceList.erase( it );
+				//mDeviceList.erase( it );
 
 				return;
 			}
@@ -1113,15 +1167,63 @@ namespace V
 	}
 
 
+	void OpenNIDeviceManager::destroyAll( void )
+	{
+		_isRunning = false;
+
+		// Stop thread
+		if( USE_THREAD )
+		{
+			OutputDebugStringA( "Stop running thread on device manager\n" );
+			assert( _thread );
+			_thread->join();
+		}
+
+
+		// Delete device list
+		for( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		//for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		{		
+			//destroy_device( (*it).id );
+			//(*it).dev->release();
+			SAFE_DELETE( (*it)->dev );
+			SAFE_DELETE( *it );
+			//mDeviceList.remove( *it );
+			//mDeviceList.erase( it );
+		}
+		mDeviceList.clear();
+
+
+		// Now delete users
+		/*for( std::list<OpenNIUser>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		{
+			//SAFE_DELETE( *it );
+			//mUserList.remove( *it );
+			//mUserList.erase( it );
+		}*/
+		mUserList.clear();
+
+
+
+		if( _context1 ) _context1->Shutdown();
+		SAFE_DELETE( _context1 );
+
+		//
+		// Shutdown openNI context
+		//
+		_context.Shutdown();
+	}
+
 
 
 	OpenNIUser* OpenNIDeviceManager::addUser( xn::UserGenerator* userGen, uint32_t id )
 	{
 		// TODO! associate user generator to its current device
 		// for the moment we always pick first device available
-		std::list<DeviceInfo>::iterator it = mDeviceList.begin();
+		std::list<DeviceInfo*>::iterator it = mDeviceList.begin();
+		//std::list<DeviceInfo>::iterator it = mDeviceList.begin();
 
-		OpenNIUser* newUser = new OpenNIUser( id, (*it).dev );
+		OpenNIUser* newUser = new OpenNIUser( id, (*it)->dev );
 		mUserList.push_back( *newUser );
 		return newUser;
 
@@ -1153,43 +1255,6 @@ namespace V
 	}
 
 
-	void OpenNIDeviceManager::destroyAll( void )
-	{
-		// Stop thread
-		if( _isRunning && USE_THREAD )
-		{
-			_isRunning = false;		
-			OutputDebugStringA( "Stop running thread on device manager\n" );
-			assert( _thread );
-			_thread->join();
-		}
-
-		// Delete device list
-		for ( std::list<OpenNIDeviceManager::DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-		{		
-			//destroy_device( (*it).id );
-			SAFE_DELETE( (*it).dev );
-			//SAFE_DELETE( *it );
-			//mDeviceList.remove( *it );
-			//mDeviceList.erase( it );
-		}
-		mDeviceList.clear();
-
-
-		// Now delete users
-		/*for ( std::list<OpenNIUser>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
-		{
-			//SAFE_DELETE( *it );
-			//mUserList.remove( *it );
-			//mUserList.erase( it );
-		}*/
-		mUserList.clear();
-
-
-		_context.Shutdown();
-	}
-
-
 
 	void OpenNIDeviceManager::run()
 	{
@@ -1212,10 +1277,11 @@ namespace V
 		}
 
 		// Start all devices
-		for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		//for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 		{
-			if( (*it).dev ) 
-				(*it).dev->start();
+			if( (*it)->dev ) 
+				(*it)->dev->start();
 		}
 
 		// Start generation
@@ -1228,25 +1294,29 @@ namespace V
 	{
 		boost::lock_guard<boost::recursive_mutex> lock( _mutex );
 
-		if( !OpenNIDevice::USE_THREAD )
+		if( !_isRunning ) return;
+
+		// Handle device update
+		for( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		//for( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 		{
-			// Handle device update
-			for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-			{
-				(*it).dev->update();
-			}
+			if( (*it)->dev )
+				(*it)->dev->readFrame();
 		}
 		// Handle user update
-		for ( std::list<OpenNIUser>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		if( mUserList.size() > 0 )
 		{
-			(*it).update();
+			for( std::list<OpenNIUser>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+			{
+				(*it).update();
+			}
 		}
 	}
 
 
 	void OpenNIDeviceManager::renderJoints( float pointSize )
 	{
-		for ( std::list<OpenNIUser>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		for( std::list<OpenNIUser>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
 			(*it).renderJoints( pointSize );
 		}
@@ -1257,7 +1327,7 @@ namespace V
 	OpenNIUser* OpenNIDeviceManager::getUser( int id )
 	{
 		if( mUserList.size() == 0 ) return NULL;
-		for ( std::list<OpenNIUser>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		for( std::list<OpenNIUser>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
 			if( id == (*it).getId() )
 				return &(*it);
@@ -1267,7 +1337,7 @@ namespace V
 
 	/*void OpenNIDeviceManager::DeviceJoin( int deviceId )
 	{
-		for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		for( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 		{
 			if( deviceId == (*it)->id )
 				( *it )->dev->OnJoin();
@@ -1277,7 +1347,7 @@ namespace V
 
 	void OpenNIDeviceManager::DeviceLeave( int deviceId )
 	{
-		for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		for( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 		{
 			if( deviceId == (*it)->id )
 				( *it )->dev->OnLeave();
