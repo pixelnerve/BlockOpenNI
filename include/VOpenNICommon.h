@@ -30,6 +30,7 @@
 #include <XnCppWrapper.h>
 #include <XnFPSCalculator.h>
 
+
 namespace V
 {
 
@@ -51,6 +52,9 @@ namespace V
 	#endif
 	#ifndef SAFE_DELETE_ARRAY
 	#define SAFE_DELETE_ARRAY( x )	if( x ) { delete[] x; x = NULL; }
+	#endif
+	#ifndef SAFE_RELEASE
+	#define SAFE_RELEASE( x )		if( x ) { x->release(); }
 	#endif
 
 

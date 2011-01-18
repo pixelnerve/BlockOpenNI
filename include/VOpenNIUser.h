@@ -23,17 +23,16 @@ namespace V
 
 	class OpenNIUser
 	{
-		friend class OpenNIDeviceManager;
-
 	public:
 		OpenNIUser( boost::int32_t id, OpenNIDevice* device );
 		~OpenNIUser();
-		void OpenNIUser::init();
-		void OpenNIUser::update();
-		void OpenNIUser::updatePixels();
-		void OpenNIUser::updateBody();
-		void OpenNIUser::renderJoints( float pointSize );
-		void OpenNIUser::renderBone( int joint1, int joint2 );
+		void init();
+		void update();
+		void updatePixels();
+		void updateBody();
+		void renderJoints( float pointSize );
+		void renderBone( int joint1, int joint2 );
+
 
 		UserBoneList	getBoneList();
 		OpenNIBone*		getBone( int id );
@@ -46,6 +45,10 @@ namespace V
 		uint32_t		getId()				{ return mId; }
 		float*			getCenterOfMass()	{ return mCenter; }
 
+		uint32_t		getWidth()			{ return mWidth;	}
+		uint32_t		getHeight()			{ return mHeight;	}
+
+		void			setSkeletonSmoothing( float t );
 
 	protected:
 		OpenNIDevice*	_device;
@@ -56,7 +59,8 @@ namespace V
 		float			mCenter[3];	// Center point
 		float			mColor[3];
 
-		uint32_t		mWidth, mHeight;	// Current dimensions of depthmap
+		uint32_t		mWidth;		//
+		uint32_t		mHeight;	// Current dimensions of depthmap
 
 		UserBoneList	mBoneList;
 	};

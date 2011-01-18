@@ -1,3 +1,4 @@
+//#include "mmgr.h"
 #include "VOpenNIBone.h"
 #include "VOpenNIDevice.h"
 #include "VOpenNIUser.h"
@@ -338,4 +339,10 @@ namespace V
 		return mBoneList; 
 	}
 
+
+	void OpenNIUser::setSkeletonSmoothing( float t )
+	{
+		//if( _device->getUserGenerator()->GetSkeletonCap().IsTracking( mId ) )
+			_device->getUserGenerator()->GetSkeletonCap().SetSmoothing( t );
+	}
 }

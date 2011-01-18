@@ -27,6 +27,7 @@ namespace V
 			mType = type;
 			mWidth = width;
 			mHeight = height;
+			mData = NULL;
 			mData = new T[mWidth*mHeight*mBPP];
 		}
 
@@ -57,7 +58,7 @@ namespace V
 	};
 
 
-	typedef OpenNISurfaceT<uint8_t> OpenNISurfaceColorLuminance;
+	//typedef OpenNISurfaceT<uint8_t> OpenNISurfaceColorLuminance;
 	typedef OpenNISurfaceT<uint8_t> OpenNISurfaceColorRGB;
 	typedef OpenNISurfaceT<uint16_t> OpenNISurfaceIR;
 	typedef OpenNISurfaceT<uint16_t> OpenNISurfaceDepth;
