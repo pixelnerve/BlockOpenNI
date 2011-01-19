@@ -38,10 +38,13 @@ namespace V
 
 		void remap( uint32_t width, uint32_t height )
 		{
-			mWidth = width;
-			mHeight = height;
-			SAFE_DELETE_ARRAY( mData );
-			mData = new T[width*height*mBPP];
+			if( mData ) 
+			{
+				mWidth = width;
+				mHeight = height;
+				SAFE_DELETE_ARRAY( mData );
+				mData = new T[width*height*mBPP];
+			}
 		}
 		void update( T* data )			{ memcpy( mData, data, mWidth*mHeight*mBPP );		}
 

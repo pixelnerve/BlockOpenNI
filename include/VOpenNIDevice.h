@@ -31,13 +31,15 @@ namespace V
 		void start();
 		void update();
 
-		void allocate( int flags, int width, int height );
+		void allocate( uint64_t flags, uint32_t width, uint32_t height );
 
 		bool requestUserCalibration();
 		void setResolution( ProductionNodeType nodeType, int res, int fps );
 		void setFPS( ProductionNodeType nodeType, int fps );
 		void setMapOutputMode( ProductionNodeType nodeType, int width, int height, int fps );
 		void readFrame();
+		void calculateHistogram();
+		
 		void setPrimaryBuffer( int type );
 
 		void setDepthInvert( bool flag );
@@ -144,7 +146,7 @@ namespace V
 	*/
 	/************************************************************************/
 	//typedef std::shared_ptr<std::vector<OpenNIDevice>> OpenNIDeviceList;
-	typedef std::list<OpenNIUser> OpenNIUserList;
+	typedef std::list<OpenNIUser*> OpenNIUserList;
 	//std::vector<std::shared_ptr<OpenNIUser>> mUserList;
 
 	// A singleton
@@ -167,7 +169,6 @@ namespace V
 		bool hasUsers()								{ return (mUserList.size()>0)?true:false; }
 
 		void start();
-		void update();
 
 		void renderJoints( float pointSize );
 
@@ -211,7 +212,9 @@ namespace V
 		OpenNIDeviceManager( const OpenNIDeviceManager& ) {};
 		// Operators
 		OpenNIDeviceManager& operator = ( const OpenNIDeviceManager& ) {};
+
 		void run();
+		void update();
 	public:
 		static const bool				USE_THREAD;
 
