@@ -6,12 +6,6 @@
 
 namespace V
 {
-
-
-
-
-
-
 	/************************************************************************/
 	/*                                                                      */
 	/************************************************************************/
@@ -21,7 +15,7 @@ namespace V
 	class OpenNIDevice
 	{
 	public:
-		typedef std::shared_ptr<OpenNIDevice> Ref;
+		typedef boost::shared_ptr<OpenNIDevice> Ref;
 
 	public:
 		OpenNIDevice( xn::Context* context );
@@ -137,9 +131,9 @@ namespace V
 		xn::AudioMetaData*		_audioMetaData;
 
 		// Users
-		//std::vector<std::shared_ptr<OpenNIUser>> mUserList;
+		//std::vector<boost::shared_ptr<OpenNIUser>> mUserList;
 	};
-	typedef std::shared_ptr<OpenNIDevice> OpenNIDeviceRef;
+	typedef boost::shared_ptr<OpenNIDevice> OpenNIDeviceRef;
 
 
 
@@ -149,9 +143,9 @@ namespace V
 	/* Device Manager
 	*/
 	/************************************************************************/
-	//typedef std::shared_ptr<std::vector<OpenNIDevice>> OpenNIDeviceList;
+	//typedef boost::shared_ptr<std::vector<OpenNIDevice>> OpenNIDeviceList;
 	typedef std::list<OpenNIUser*> OpenNIUserList;
-	//std::vector<std::shared_ptr<OpenNIUser>> mUserList;
+	//std::vector<boost::shared_ptr<OpenNIUser>> mUserList;
 
 	// A singleton
 	class OpenNIDeviceManager : private boost::noncopyable
@@ -188,7 +182,7 @@ namespace V
 		static OpenNIDeviceManager& Instance() 
 		{
 			//if( !_singletonPointerRef )
-				//_singletonPointerRef = std::shared_ptr<OpenNIDeviceManager>( new OpenNIDeviceManager() );
+				//_singletonPointerRef = boost::shared_ptr<OpenNIDeviceManager>( new OpenNIDeviceManager() );
 			//return *_singletonPointerRef.get();
 			//if( !_singletonPointer ) 
 			//	_singletonPointer = new OpenNIDeviceManager();
@@ -197,16 +191,16 @@ namespace V
 		static OpenNIDeviceManager* InstancePtr() 
 		{
 			//if( !_singletonPointerRef )
-			//	_singletonPointerRef = std::shared_ptr<OpenNIDeviceManager>( new OpenNIDeviceManager() );
+			//	_singletonPointerRef = boost::shared_ptr<OpenNIDeviceManager>( new OpenNIDeviceManager() );
 			//return _singletonPointerRef.get();
 			//if( !_singletonPointer ) 
 			//	_singletonPointer = new OpenNIDeviceManager();
 			return &_singletonPointer;
 		}
-		/*static std::shared_ptr<OpenNIDeviceManager> InstanceRef() 
+		/*static boost::shared_ptr<OpenNIDeviceManager> InstanceRef() 
 		{
 			//if( !_singletonPointerRef )
-			//	_singletonPointerRef = std::shared_ptr<OpenNIDeviceManager>( new OpenNIDeviceManager() );
+			//	_singletonPointerRef = boost::shared_ptr<OpenNIDeviceManager>( new OpenNIDeviceManager() );
 			//return _singletonPointerRef;
 			if( !_singletonPointer ) 
 				_singletonPointer = new OpenNIDeviceManager();
@@ -237,7 +231,7 @@ namespace V
 
 	protected:
 
-		//static std::shared_ptr<OpenNIDeviceManager>		_singletonPointerRef;
+		//static boost::shared_ptr<OpenNIDeviceManager>		_singletonPointerRef;
 		static OpenNIDeviceManager		_singletonPointer;
 		//static OpenNIDeviceManager*		_singletonPointer;
 
@@ -253,12 +247,12 @@ namespace V
 
 		// Device list
 		//std::list<DeviceInfo*>			mDeviceList;
-		std::list<std::shared_ptr<OpenNIDevice>> mDevices;
+		std::list< boost::shared_ptr<OpenNIDevice> > mDevices;
 
 		// Generic user list. These users have no knowledge of which device they come from
 		OpenNIUserList					mUserList;
 	};
 
 
-	//typedef std::shared_ptr<OpenNIDeviceManager> OpenNIDeviceManagerRef;
+	//typedef boost::shared_ptr<OpenNIDeviceManager> OpenNIDeviceManagerRef;
 }

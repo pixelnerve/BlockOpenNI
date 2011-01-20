@@ -14,19 +14,28 @@
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
-#define DEBUG_MESSAGE( x ) console() << x << "\n";
+#define DEBUG_MESSAGE( x ) printf( x )
 #else
 #error "Unknown platform"
 #endif
 
-#include <string>
-#include <vector>
 #include <boost/cstdint.hpp>
+
+#if defined( _MSC_VER ) && ( _MSC_VER >= 1600 )
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+namespace std 
+{
+	using boost::shared_ptr; // future-proof shared_ptr by putting it into std::
+}
+#endif
 #include <boost/noncopyable.hpp>
-#include <boost/cstdint.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/thread.hpp>
+#include <string>
+#include <vector>
 
 #include <XnOpenNI.h>
 #include <XnLog.h>
@@ -35,6 +44,8 @@
 #include <XnUSB.h>
 #include <XnVersion.h>
 #include <XnUtils.h>
+
+
 
 
 namespace V

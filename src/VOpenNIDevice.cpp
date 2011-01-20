@@ -1041,7 +1041,7 @@ namespace V
 
 	const bool OpenNIDeviceManager::USE_THREAD = true;
 
-	//std::shared_ptr<OpenNIDeviceManager> OpenNIDeviceManager::_singletonPointerRef;
+	//boost::shared_ptr<OpenNIDeviceManager> OpenNIDeviceManager::_singletonPointerRef;
 	OpenNIDeviceManager OpenNIDeviceManager::_singletonPointer;
 	//OpenNIDeviceManager* OpenNIDeviceManager::_singletonPointer = NULL;
 	//std::list<OpenNIDeviceManager::DeviceInfo*> OpenNIDeviceManager::mDeviceList;
@@ -1104,7 +1104,7 @@ namespace V
 		}
 		else
 		{
-			std::shared_ptr<OpenNIDevice> dev = std::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
+			boost::shared_ptr<OpenNIDevice> dev = boost::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
 			if( !dev->initFromXmlFile( xmlFile, allocUserIfNoNode ) ) 
 				return NULL;
 			mDevices.push_back( dev );
@@ -1139,7 +1139,7 @@ namespace V
 		if( mDevices.size() >= MAX_DEVICES ) return NULL;
 		//if( mDeviceList.size() >= MAX_DEVICES ) return NULL;
 
-		std::shared_ptr<OpenNIDevice> dev = std::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
+		boost::shared_ptr<OpenNIDevice> dev = boost::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
 		if( !dev->init( nodeTypeFlags ) ) 
 			return NULL;
 		mDevices.push_back( dev );
@@ -1167,16 +1167,16 @@ namespace V
 
 	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( const std::string& xmlFile/*=""*/, bool allocUserIfNoNode/*=false */ )
 	{
-		if( mDevices.size() >= MAX_DEVICES ) return NULL;
+		if( mDevices.size() >= MAX_DEVICES ) return boost::shared_ptr<OpenNIDevice>();
 
 		if( xmlFile == "" )
 		{
 			DEBUG_MESSAGE( "not implemented" );
-			return NULL;
+			return boost::shared_ptr<OpenNIDevice>();
 		}
-		std::shared_ptr<OpenNIDevice> dev = std::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
+		boost::shared_ptr<OpenNIDevice> dev = boost::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
 		if( !dev->initFromXmlFile( xmlFile, allocUserIfNoNode ) ) 
-			return NULL;
+			return boost::shared_ptr<OpenNIDevice>();
 		// By default set depth as primary generator
 		dev->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
 		mDevices.push_back( dev );
@@ -1185,11 +1185,11 @@ namespace V
 
 	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( int nodeTypeFlags )
 	{
-		if( mDevices.size() >= MAX_DEVICES ) return NULL;
+		if( mDevices.size() >= MAX_DEVICES ) return boost::shared_ptr<OpenNIDevice>();
 
-		std::shared_ptr<OpenNIDevice> dev = std::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
+		boost::shared_ptr<OpenNIDevice> dev = boost::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
 		if( !dev->init( nodeTypeFlags ) ) 
-			return NULL;
+			return boost::shared_ptr<OpenNIDevice>();
 		// By default set depth as primary generator
 		dev->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
 		mDevices.push_back( dev );
@@ -1198,7 +1198,7 @@ namespace V
 
 	//void OpenNIDeviceManager::destroyDevice( OpenNIDevice* device )
 	//{
-	//	for ( std::list<std::shared_ptr<OpenNIDevice>>::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
+	//	for ( std::list<boost::shared_ptr<OpenNIDevice>>::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
 	//	{
 	//		mDevices.remove( *it );
 	//	}
@@ -1261,7 +1261,7 @@ namespace V
 
 	OpenNIUser* OpenNIDeviceManager::addUser( xn::UserGenerator* userGen, uint32_t id )
 	{
-		std::list<std::shared_ptr<OpenNIDevice>>::iterator it = mDevices.begin();
+		std::list< boost::shared_ptr<OpenNIDevice> >::iterator it = mDevices.begin();
 		OpenNIUser* newUser = new OpenNIUser( id, (*it).get() );
 		mUserList.push_back( newUser );
 		return newUser;
@@ -1331,7 +1331,7 @@ namespace V
 		}
 
 		// Start all devices
-		for ( std::list<std::shared_ptr<OpenNIDevice>>::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
+		for ( std::list< boost::shared_ptr<OpenNIDevice> >::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
 		{
 			(*it)->start();
 		}
@@ -1356,7 +1356,7 @@ namespace V
 		if( !_isRunning ) return;
 
 		// Handle device update
-		for ( std::list<std::shared_ptr<OpenNIDevice>>::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
+		for ( std::list< boost::shared_ptr<OpenNIDevice> >::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
 		{
 			(*it)->readFrame();
 		}

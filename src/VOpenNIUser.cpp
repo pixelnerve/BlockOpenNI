@@ -32,7 +32,7 @@ namespace V
 
 	OpenNIUser::OpenNIUser( int32_t id, OpenNIDevice* device )
 	{
-		//_userGen = std::shared_ptr<xn::UserGenerator>( new xn::UserGenerator );
+		//_userGen = boost::shared_ptr<xn::UserGenerator>( new xn::UserGenerator );
 		_device = device;
 		mId = id;
 

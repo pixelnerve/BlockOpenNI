@@ -80,6 +80,6 @@ namespace V
 	protected:
 		OpenNI*		_openni;
 
-		std::shared_ptr<std::vector<OpenNIPlayer*>> mPlayerList;
+		boost::shared_ptr<std::vector<OpenNIPlayer*>> mPlayerList;
 	};***/
 }
