@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(VITAMIN_PATH)\addons\openni\include&quot;;d:\Development\OpenNI\Include;..\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\boost"
+				AdditionalIncludeDirectories="&quot;$(VITAMIN_PATH)\addons\openni\include&quot;;d:\Development\OpenNI\Include;..\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2008\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2008\boost"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -62,9 +62,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="openni.lib;cinder_d.lib"
+				AdditionalDependencies="openni.lib cinder_d.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="d:\Development\OpenNI\lib;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\lib;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\lib\msw"
+				AdditionalLibraryDirectories="d:\Development\OpenNI\lib;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2008\lib;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2008\lib\msw"
+				IgnoreDefaultLibraryNames="LIBCMT"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				RandomizedBaseAddress="1"

@@ -97,7 +97,7 @@ public:
 	void mouseDown( MouseEvent event );	
 	void update();
 	void draw();
-
+	void keyDown( KeyEvent event );
 
 	ImageSourceRef getColorImage()
 	{
@@ -129,7 +129,7 @@ public:
 
 public:	// Members
 	V::OpenNIDeviceManager*	_manager;
-	V::OpenNIDevice*		_device0;
+	V::OpenNIDevice::Ref	_device0;
 
 	gl::Texture				mColorTex;
 	gl::Texture				mDepthTex;
@@ -139,12 +139,12 @@ public:	// Members
 void BlockOpenNISampleAppApp::setup()
 {
 	_manager = V::OpenNIDeviceManager::InstancePtr();
-	//_device0 = _manager->createDevice( "data/configIR.xml" );
-	_device0 = _manager->createDevice( V::NODE_TYPE_IR | V::NODE_TYPE_DEPTH );	// Create manually.
+	_device0 = _manager->createDevice( "data/configIR.xml" );
+	//_device0 = _manager->createDevice( V::NODE_TYPE_IR | V::NODE_TYPE_DEPTH );	// Create manually.
 	if( !_device0 ) 
 	{
-		OutputDebugStringA( "(App)  Couldn't init device0\n" );
-		exit(0);
+		DEBUG_MESSAGE( "(App)  Couldn't init device0\n" );
+		exit( 0 );
 	}
 	_device0->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
 	_manager->start();
@@ -182,6 +182,15 @@ void BlockOpenNISampleAppApp::draw()
 	gl::color( cinder::ColorA(1, 1, 1, 1) );
 	gl::draw( mDepthTex, Rectf( xoff, yoff, xoff+sx, yoff+sy) );
 	gl::draw( mColorTex, Rectf( xoff+sx*1, yoff, xoff+sx*2, yoff+sy) );
+}
+
+void BlockOpenNISampleAppApp::keyDown( KeyEvent event )
+{
+	if( event.getCode() == KeyEvent::KEY_ESCAPE )
+	{
+		this->quit();
+		this->shutdown();
+	}
 }
 
 CINDER_APP_BASIC( BlockOpenNISampleAppApp, RendererGl )

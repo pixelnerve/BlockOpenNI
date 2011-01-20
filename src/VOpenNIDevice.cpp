@@ -120,6 +120,7 @@ namespace V
 
 
 
+
 	/************************************************************************/
 	/* OpenNI Device Class
 	*/
@@ -307,7 +308,9 @@ namespace V
 		if( _status != XN_STATUS_OK )
 		{
 			std::stringstream ss;
-			ss << "(Device)  Couldn't create from XML file: " << xmlFile << std::endl;
+
+			ss << "(Device)  Error!  " << xnGetStatusName(_status) << std::endl;
+			//ss << "(Device)  Couldn't create from XML file: " << xmlFile << std::endl;
 			DEBUG_MESSAGE( ss.str().c_str() );
 			return false;
 		}
@@ -830,7 +833,7 @@ namespace V
 					if( *pDepth != 0 )
 					{
 						// Inverted or not ?
-						int nHistValue = (_isDepthInverted) ? 255-g_pDepthHist[*pDepth] : g_pDepthHist[*pDepth];
+						uint32_t nHistValue = (_isDepthInverted) ? static_cast<uint32_t>(-g_pDepthHist[*pDepth]) : static_cast<uint32_t>(g_pDepthHist[*pDepth]);
 
 						// Fill or cyan RGB depth map
 						pTex->nRed = nHistValue;
@@ -838,13 +841,10 @@ namespace V
 						pTex->nBlue = nHistValue;
 
 						//// 16bit depth map
-						//uint32_t v = *pDepth;
-						//if( v < 0 || v > 2047 ) v = 0;
-						//uint32_t d = 65535 - ((v*v) >> 4);	// move to 16bit
-						//_depthData[index] = d;
 						_depthData[index] = (*pDepth>0 && *pDepth<4095)?*pDepth:0;
 						_depthData[index] <<= 4;
-						//_depthData[index] = (nHistValue<<8);	// shift to 16bit
+						//_depthData[index] = (nHistValue*nHistValue);	// shift to 16bit
+						//_depthData[index] = nHistValue << 8;
 
 						// Luminance 8bit depth map
 						//_depthData8[index] = nHistValue;
@@ -1047,6 +1047,19 @@ namespace V
 	//std::list<OpenNIDeviceManager::DeviceInfo*> OpenNIDeviceManager::mDeviceList;
 
 
+
+	/*OpenNIDeviceManager::DeviceInfo::DeviceInfo()
+	{
+		dev = NULL;
+	}
+
+	OpenNIDeviceManager::DeviceInfo::~DeviceInfo()
+	{
+		SAFE_DELETE( dev );
+	}*/
+
+
+
 	OpenNIDeviceManager::OpenNIDeviceManager()
 	{
 		//assert( !_singletonPointer && "Tried to create multiple instances of a singleton class!" );
@@ -1079,9 +1092,10 @@ namespace V
 	}
 
 
-	OpenNIDevice* OpenNIDeviceManager::createDevice( const std::string& xmlFile, bool allocUserIfNoNode )
+	OpenNIDevice* OpenNIDeviceManager::createDevice__( const std::string& xmlFile, bool allocUserIfNoNode )
 	{
-		if( mDeviceList.size() >= MAX_DEVICES ) return NULL;
+		if( mDevices.size() >= MAX_DEVICES ) return NULL;
+		//if( mDeviceList.size() >= MAX_DEVICES ) return NULL;
 
 		if( xmlFile == "" )
 		{
@@ -1090,31 +1104,58 @@ namespace V
 		}
 		else
 		{
+			std::shared_ptr<OpenNIDevice> dev = std::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
+			if( !dev->initFromXmlFile( xmlFile, allocUserIfNoNode ) ) 
+				return NULL;
+			mDevices.push_back( dev );
+			return dev.get();
+
+			/*DeviceInfo* devinfo = new DeviceInfo;
+			devinfo->dev = new OpenNIDevice( &_context );
+			if( !devinfo->dev->initFromXmlFile( xmlFile, allocUserIfNoNode ) ) 
+			{
+				SAFE_DELETE( devinfo );
+				return NULL;
+			}
+			devinfo->id = mDeviceList.size();
+			mDeviceList.push_back( devinfo );
+			return devinfo->dev;*/
+
+
 			/*DeviceInfo devinfo;
 			devinfo.dev = new OpenNIDevice( &_context );
 			devinfo.dev->initFromXmlFile( xmlFile, allocUserIfNoNode );	
 			devinfo.id = mDeviceList.size();
 			mDeviceList.push_back( devinfo );
 			return devinfo.dev;*/
+		}
 
-			DeviceInfo* devinfo = new DeviceInfo;
-			devinfo->dev = new OpenNIDevice( &_context );
-			if( !devinfo->dev->initFromXmlFile( xmlFile, allocUserIfNoNode ) ) {
-				SAFE_DELETE( devinfo->dev );
-				SAFE_DELETE( devinfo );
-				return NULL;
-			}
-			devinfo->id = mDeviceList.size();
-			mDeviceList.push_back( devinfo );
-			return devinfo->dev;
-}
 		return NULL;
 	}
 
 
-	OpenNIDevice* OpenNIDeviceManager::createDevice( int nodeTypeFlags )
+	OpenNIDevice* OpenNIDeviceManager::createDevice__( int nodeTypeFlags )
 	{
-		if( mDeviceList.size() >= MAX_DEVICES ) return NULL;
+		if( mDevices.size() >= MAX_DEVICES ) return NULL;
+		//if( mDeviceList.size() >= MAX_DEVICES ) return NULL;
+
+		std::shared_ptr<OpenNIDevice> dev = std::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
+		if( !dev->init( nodeTypeFlags ) ) 
+			return NULL;
+		mDevices.push_back( dev );
+		return dev.get();
+
+
+		/*DeviceInfo* devinfo = new DeviceInfo;
+		devinfo->dev = new OpenNIDevice( &_context );
+		if( !devinfo->dev->init( nodeTypeFlags ) ) 
+		{
+			SAFE_DELETE( devinfo );
+			return NULL;
+		}
+		devinfo->id = mDeviceList.size();
+		mDeviceList.push_back( devinfo );
+		return devinfo->dev;*/
 
 		/*DeviceInfo devinfo;
 		devinfo.dev = new OpenNIDevice( &_context );
@@ -1122,36 +1163,59 @@ namespace V
 		devinfo.id = mDeviceList.size();
 		mDeviceList.push_back( devinfo );
 		return devinfo.dev;*/
+	}
 
-		DeviceInfo* devinfo = new DeviceInfo;
-		devinfo->dev = new OpenNIDevice( &_context );
-		if( !devinfo->dev->init( nodeTypeFlags ) ) 
+	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( const std::string& xmlFile/*=""*/, bool allocUserIfNoNode/*=false */ )
+	{
+		if( mDevices.size() >= MAX_DEVICES ) return NULL;
+
+		if( xmlFile == "" )
 		{
-			SAFE_DELETE( devinfo->dev );
-			SAFE_DELETE( devinfo );
+			DEBUG_MESSAGE( "not implemented" );
 			return NULL;
 		}
-		devinfo->id = mDeviceList.size();
-		mDeviceList.push_back( devinfo );
-		return devinfo->dev;
+		std::shared_ptr<OpenNIDevice> dev = std::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
+		if( !dev->initFromXmlFile( xmlFile, allocUserIfNoNode ) ) 
+			return NULL;
+		// By default set depth as primary generator
+		dev->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
+		mDevices.push_back( dev );
+		return dev;
 	}
 
-
-	void OpenNIDeviceManager::destroyDevice( OpenNIDevice* device )
+	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( int nodeTypeFlags )
 	{
-		for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-		//for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-		{		
-			if ( device == (*it)->dev )
-			{
-				mDeviceList.remove( *it );
-				//destroy_device( devinfo->id );
-				SAFE_DELETE( (*it)->dev );
-				SAFE_DELETE( (*it) );
-				return;
-			}
-		}
+		if( mDevices.size() >= MAX_DEVICES ) return NULL;
+
+		std::shared_ptr<OpenNIDevice> dev = std::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
+		if( !dev->init( nodeTypeFlags ) ) 
+			return NULL;
+		// By default set depth as primary generator
+		dev->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
+		mDevices.push_back( dev );
+		return dev;
 	}
+
+	//void OpenNIDeviceManager::destroyDevice( OpenNIDevice* device )
+	//{
+	//	for ( std::list<std::shared_ptr<OpenNIDevice>>::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
+	//	{
+	//		mDevices.remove( *it );
+	//	}
+	//	mDevices.erase( device );
+
+	//	/*for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+	//	//for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+	//	{		
+	//		if ( device == (*it)->dev )
+	//		{
+	//			mDeviceList.remove( *it );
+	//			//destroy_device( devinfo->id );
+	//			SAFE_DELETE( (*it) );
+	//			return;
+	//		}
+	//	}*/
+	//}
 
 
 	void OpenNIDeviceManager::destroyAll( void )
@@ -1167,14 +1231,15 @@ namespace V
 
 
 		// Delete device list
-		for( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		mDevices.clear();
+
+		/*for( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 		//for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 		{		
 			//destroy_device( (*it).id );
-			SAFE_DELETE( (*it)->dev );
 			SAFE_DELETE( *it );
 		}
-		mDeviceList.clear();
+		mDeviceList.clear();*/
 
 
 		// Now delete user list
@@ -1196,14 +1261,19 @@ namespace V
 
 	OpenNIUser* OpenNIDeviceManager::addUser( xn::UserGenerator* userGen, uint32_t id )
 	{
-		// TODO! associate user generator to its current device
+		std::list<std::shared_ptr<OpenNIDevice>>::iterator it = mDevices.begin();
+		OpenNIUser* newUser = new OpenNIUser( id, (*it).get() );
+		mUserList.push_back( newUser );
+		return newUser;
+
+/*		// TODO! associate user generator to its current device
 		// for the moment we always pick first device available
 		std::list<DeviceInfo*>::iterator it = mDeviceList.begin();
 		//std::list<DeviceInfo>::iterator it = mDeviceList.begin();
 
 		OpenNIUser* newUser = new OpenNIUser( id, (*it)->dev );
 		mUserList.push_back( newUser );
-		return newUser;
+		return newUser;*/
 	}
 
 	void OpenNIDeviceManager::removeUser( OpenNIUser* user )
@@ -1261,12 +1331,17 @@ namespace V
 		}
 
 		// Start all devices
-		for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		for ( std::list<std::shared_ptr<OpenNIDevice>>::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
+		{
+			(*it)->start();
+		}
+
+		/*for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 		//for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 		{
 			if( (*it)->dev ) 
 				(*it)->dev->start();
-		}
+		}*/
 
 		// Start generation
 		_context.StartGeneratingAll();
@@ -1281,12 +1356,17 @@ namespace V
 		if( !_isRunning ) return;
 
 		// Handle device update
-		for( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
+		for ( std::list<std::shared_ptr<OpenNIDevice>>::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
+		{
+			(*it)->readFrame();
+		}
+
+		/*for( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 		//for( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
 		{
 			if( (*it)->dev )
 				(*it)->dev->readFrame();
-		}
+		}*/
 		// Handle user update
 		if( mUserList.size() > 0 )
 		{

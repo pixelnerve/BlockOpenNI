@@ -14,7 +14,7 @@
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
-#define DEBUG_MESSAGE( x ) printf( x )
+#define DEBUG_MESSAGE( x ) console() << x << "\n";
 #else
 #error "Unknown platform"
 #endif
@@ -39,7 +39,7 @@
 
 namespace V
 {
-
+	using namespace boost;
 	//---------------------------------------------------------------------------
 	// Macros
 	//---------------------------------------------------------------------------

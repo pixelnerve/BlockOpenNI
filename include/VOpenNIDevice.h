@@ -21,6 +21,9 @@ namespace V
 	class OpenNIDevice
 	{
 	public:
+		typedef std::shared_ptr<OpenNIDevice> Ref;
+
+	public:
 		OpenNIDevice( xn::Context* context );
 		~OpenNIDevice();
 		bool init( boost::uint64_t nodeTypeFlags );
@@ -136,6 +139,7 @@ namespace V
 		// Users
 		//std::vector<std::shared_ptr<OpenNIUser>> mUserList;
 	};
+	typedef std::shared_ptr<OpenNIDevice> OpenNIDeviceRef;
 
 
 
@@ -157,9 +161,11 @@ namespace V
 		~OpenNIDeviceManager();
 
 		uint32_t enumDevices();
-		OpenNIDevice* createDevice( const std::string& xmlFile="", bool allocUserIfNoNode=false );
-		OpenNIDevice* createDevice( int nodeTypeFlags );
-		void destroyDevice( OpenNIDevice* device );
+		OpenNIDeviceRef createDevice( const std::string& xmlFile="", bool allocUserIfNoNode=false );
+		OpenNIDeviceRef createDevice( int nodeTypeFlags );
+		OpenNIDevice* createDevice__( const std::string& xmlFile="", bool allocUserIfNoNode=false );
+		OpenNIDevice* createDevice__( int nodeTypeFlags );
+		//void destroyDevice( OpenNIDevice* device );
 		void destroyAll( void );
 
 		OpenNIUser* addUser( xn::UserGenerator* userGen, uint32_t id );
@@ -218,12 +224,18 @@ namespace V
 	public:
 		static const bool				USE_THREAD;
 
-	protected:
+
+	/*private:
 		struct DeviceInfo
 		{
+			DeviceInfo();
+			~DeviceInfo();
+
 			int				id;
 			OpenNIDevice*	dev;
-		};
+		};*/
+
+	protected:
 
 		//static std::shared_ptr<OpenNIDeviceManager>		_singletonPointerRef;
 		static OpenNIDeviceManager		_singletonPointer;
@@ -240,8 +252,8 @@ namespace V
 		int								_idCount;
 
 		// Device list
-		std::list<DeviceInfo*>			mDeviceList;
-		//static std::list<DeviceInfo*>	mDeviceList;
+		//std::list<DeviceInfo*>			mDeviceList;
+		std::list<std::shared_ptr<OpenNIDevice>> mDevices;
 
 		// Generic user list. These users have no knowledge of which device they come from
 		OpenNIUserList					mUserList;
