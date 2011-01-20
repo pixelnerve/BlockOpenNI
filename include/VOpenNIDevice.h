@@ -253,7 +253,7 @@ namespace V
 
 		// Device list
 		//std::list<DeviceInfo*>			mDeviceList;
-		std::list<std::shared_ptr<OpenNIDevice>> mDevices;
+		std::list<std::shared_ptr<OpenNIDevice> > mDevices;
 
 		// Generic user list. These users have no knowledge of which device they come from
 		OpenNIUserList					mUserList;
