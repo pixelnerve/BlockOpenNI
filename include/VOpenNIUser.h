@@ -53,10 +53,20 @@ namespace V
 
 		void			setSkeletonSmoothing( float t );
 
+		void			setEnablePixels( bool flag )	{ _enablePixels = flag;	}
+
+	protected:
+		void			allocate( int width, int height );
+
 	protected:
 		OpenNIDevice*	_device;
 		std::string		_debugInfo;
+
+		bool			_enablePixels;
+
+		// User pixels for convenience
 		uint8_t*		_userPixels;
+		uint8_t*		_backUserPixels;
 
 		uint32_t		mId;
 		float			mCenter[3];	// Center point

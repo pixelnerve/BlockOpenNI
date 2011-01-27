@@ -35,8 +35,8 @@ namespace V
 
 
 		// Add new user
-		if( !device->getUser(nId) )
-			device->addUser( new OpenNIUser(nId, device) );
+		//if( !device->getUser(nId) )
+			//device->addUser( new OpenNIUser(nId, device) );
 
 		OpenNIDeviceManager::Instance().setText( ss.str() );
 		if( !OpenNIDeviceManager::Instance().getUser(nId) )
@@ -53,8 +53,8 @@ namespace V
 		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
 
 		// Remove user
-		if( device->getUser(nId) )
-			device->addUser( new OpenNIUser(nId, device) );
+		//if( device->getUser(nId) )
+			//device->removeUser( nId );
 
 		OpenNIDeviceManager::Instance().setText( ss.str() );
 		if( OpenNIDeviceManager::Instance().getUser(nId) )
@@ -1261,10 +1261,10 @@ namespace V
 		mDevices.clear();
 
 		// Now delete user list
-		for( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
-		{
-			SAFE_DELETE( *it );
-		}
+		//for( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		//{
+		//	SAFE_DELETE( *it );
+		//}
 		mUserList.clear();
 
 
@@ -1277,45 +1277,53 @@ namespace V
 
 
 
-	OpenNIUser* OpenNIDeviceManager::addUser( xn::UserGenerator* userGen, uint32_t id )
+	OpenNIUserRef OpenNIDeviceManager::addUser( xn::UserGenerator* userGen, uint32_t id )
 	{
 		std::list< boost::shared_ptr<OpenNIDevice> >::iterator it = mDevices.begin();
-		OpenNIUser* newUser = new OpenNIUser( id, (*it).get() );
-		mUserList.push_back( newUser );
-		return newUser;
-	}
 
-	void OpenNIDeviceManager::removeUser( OpenNIUser* user )
-	{
-		if( mUserList.size() == 0 ) return;
-		//mUserList.remove( user );
-		//SAFE_DELETE( user );
+		OpenNIUserRef newUser = OpenNIUserRef( new OpenNIUser(id, (*it).get()) );
+		mUserList.push_back( OpenNIUserRef(newUser) );
+		return newUser;
 	}
 
 	void OpenNIDeviceManager::removeUser( uint32_t id )
 	{
 		if( mUserList.size() == 0 ) return;
-		for ( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		for ( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		//for ( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
 			if( id == (*it)->getId() )
 			{
 				mUserList.remove( *it );
-				SAFE_DELETE( *it );
 				return;
 			}
 		}
 	}
 
 
-	OpenNIUser* OpenNIDeviceManager::getUser( int id )
+	OpenNIUserRef OpenNIDeviceManager::getUser( int id )
 	{
-		if( mUserList.size() == 0 ) return NULL;
-		for( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		if( mUserList.size() == 0 ) return OpenNIUserRef();
+		for ( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		//for( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
 			if( id == (*it)->getId() )
 				return (*it);
 		}
-		return NULL;
+		return OpenNIUserRef();
+	}
+
+
+
+	bool OpenNIDeviceManager::hasUser( int32_t id )
+	{
+		if( mUserList.size() == 0 ) return false;
+		for ( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		{
+			if( id == (*it)->getId() )
+				return true;
+		}
+		return false;
 	}
 
 
@@ -1366,7 +1374,8 @@ namespace V
 		// Handle user update
 		if( mUserList.size() > 0 )
 		{
-			for( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+			for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+			//for( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 			{
 				(*it)->update();
 			}
@@ -1376,32 +1385,11 @@ namespace V
 
 	void OpenNIDeviceManager::renderJoints( float pointSize )
 	{
-		for( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		glDisable( GL_TEXTURE_2D );
+		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		//for( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
 			(*it)->renderJoints( pointSize );
 		}
 	}
-
-
-
-
-	/*void OpenNIDeviceManager::DeviceJoin( int deviceId )
-	{
-		for( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-		{
-			if( deviceId == (*it)->id )
-				( *it )->dev->OnJoin();
-		}
-
-	}
-
-	void OpenNIDeviceManager::DeviceLeave( int deviceId )
-	{
-		for( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-		{
-			if( deviceId == (*it)->id )
-				( *it )->dev->OnLeave();
-		}
-	}*/
-
 }

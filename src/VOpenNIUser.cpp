@@ -37,6 +37,9 @@ namespace V
 		mId = id;
 
 		_userPixels = NULL;
+		_backUserPixels = NULL;
+
+		_enablePixels = true;
 
 		init();
 	}
@@ -44,9 +47,8 @@ namespace V
 
 	OpenNIUser::~OpenNIUser()
 	{
-		_device = NULL;
-
 		SAFE_DELETE_ARRAY( _userPixels );
+		SAFE_DELETE_ARRAY( _backUserPixels );
 
 		for ( std::vector<OpenNIBone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); it++ )
 		{
@@ -69,6 +71,10 @@ namespace V
 
 			mBoneList.push_back( new OpenNIBone() );
 		}
+
+		mWidth = 640;
+		mHeight = 480;
+		allocate( mWidth, mHeight );
 	}
 
 	void OpenNIUser::update()
@@ -100,64 +106,68 @@ namespace V
 		mCenter[1] = com.Y;
 		mCenter[2] = com.Z;
 
-		// Get user pixels
-		user->GetUserPixels( mId, *sceneMetaData );
-		//xn::SceneMetaData sceneMetaData;
-		//user->GetUserPixels( mId, sceneMetaData );
 
-		// Get labels
-		const XnLabel* labels = sceneMetaData->Data();
-		if( labels )
+		if( _enablePixels )
 		{
-			//
-			// Generate a bitmap with the user pixels colored
-			//
-			uint16_t* pDepth = _device->getDepthMap();
-			int depthWidth = depthMetaData->XRes();
-			int depthHeight = depthMetaData->YRes();
-			if( !_userPixels || (mWidth != depthWidth) || (mHeight != depthHeight) )
+			// Get user pixels
+			user->GetUserPixels( mId, *sceneMetaData );
+			//xn::SceneMetaData sceneMetaData;
+			//user->GetUserPixels( mId, sceneMetaData );
+
+			// Get labels
+			const XnLabel* labels = sceneMetaData->Data();
+			if( labels )
 			{
-				mWidth = depthWidth;
-				mHeight = depthHeight;
-				SAFE_DELETE_ARRAY( _userPixels );
-				_userPixels = new uint8_t[depthWidth*depthHeight*3];
-			}
-			//memcpy( _userPixels, _device->getDepthMap24(), depthWidth*depthHeight*3 );
-			xnOSMemSet( _userPixels, 0, depthWidth*depthHeight*3 );
-			int index = 0;
-			for( int j=0; j<depthHeight; j++ )
-			{
-				for( int x=0; x<depthWidth; x++ )
+				//
+				// Generate a bitmap with the user pixels colored
+				//
+				uint16_t* pDepth = _device->getDepthMap();
+				int depthWidth = depthMetaData->XRes();
+				int depthHeight = depthMetaData->YRes();
+				if( !_userPixels || (mWidth != depthWidth) || (mHeight != depthHeight) )
 				{
-					if( *labels != 0 )
-					{
-						int nValue = *pDepth;
-						XnLabel label = *labels;
-						XnUInt32 nColorID = label % nColors;
-						if( label == 0 )
-						{
-							nColorID = nColors;
-						}
-						mColor[0] = g_Colors[nColorID][0];
-						mColor[1] = g_Colors[nColorID][1];
-						mColor[2] = g_Colors[nColorID][2];
-
-						if( nValue != 0 )
-						{
-							int nHistValue = _device->getDepthMap24()[nValue];
-							//_userPixels[0] = 0xff & static_cast<uint8_t>(nHistValue * Colors[nColorID][0]); 
-							//_userPixels[1] = 0xff & static_cast<uint8_t>(nHistValue * Colors[nColorID][1]);
-							//_userPixels[2] = 0xff & static_cast<uint8_t>(nHistValue * Colors[nColorID][2]);
-							_userPixels[index+0] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][0]); 
-							_userPixels[index+1] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][1]);
-							_userPixels[index+2] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][2]);
-						}
-					}
-
-					pDepth++;
-					labels++;
-					index += 3;
+					mWidth = depthWidth;
+					mHeight = depthHeight;
+					allocate( depthWidth, depthHeight );
 				}
+
+				xnOSMemSet( _backUserPixels, 0, depthWidth*depthHeight*3 );
+
+				uint8_t* pixels = _backUserPixels;
+				int index = 0;
+				for( int j=0; j<depthHeight; j++ )
+				{
+					for( int x=0; x<depthWidth; x++ )
+					{
+						if( *labels != 0 )
+						{
+							int nValue = *pDepth;
+							XnLabel label = *labels;
+							XnUInt32 nColorID = label % nColors;
+							if( label == 0 )
+							{
+								nColorID = nColors;
+							}
+							mColor[0] = g_Colors[nColorID][0];
+							mColor[1] = g_Colors[nColorID][1];
+							mColor[2] = g_Colors[nColorID][2];
+
+							if( nValue != 0 )
+							{
+								int nHistValue = _device->getDepthMap24()[nValue];
+								pixels[index+0] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][0]); 
+								pixels[index+1] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][1]);
+								pixels[index+2] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][2]);
+							}
+						}
+
+						pDepth++;
+						labels++;
+						index += 3;
+					}
+				}
+
+				memcpy( _userPixels, _backUserPixels, mWidth*mHeight*3 );
 			}
 		}
 	}
@@ -344,5 +354,15 @@ namespace V
 	{
 		//if( _device->getUserGenerator()->GetSkeletonCap().IsTracking( mId ) )
 			_device->getUserGenerator()->GetSkeletonCap().SetSmoothing( t );
+	}
+
+
+
+	void OpenNIUser::allocate( int width, int height )
+	{
+		if( _backUserPixels ) SAFE_DELETE_ARRAY( _backUserPixels );
+		if( _userPixels ) SAFE_DELETE_ARRAY( _userPixels );
+		_userPixels = new uint8_t[width*height*3];
+		_backUserPixels = new uint8_t[width*height*3];
 	}
 }

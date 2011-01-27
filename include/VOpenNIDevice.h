@@ -168,7 +168,8 @@ namespace V
 	*/
 	/************************************************************************/
 	typedef std::list< boost::shared_ptr<OpenNIDevice> > OpenNIDeviceList;
-	typedef std::list<OpenNIUser*> OpenNIUserList;
+	typedef std::list< boost::shared_ptr<OpenNIUser> > OpenNIUserList;
+	//typedef std::list<OpenNIUser*> OpenNIUserList;
 
 	// A singleton
 	class OpenNIDeviceManager : private boost::noncopyable
@@ -185,10 +186,10 @@ namespace V
 		//void destroyDevice( OpenNIDevice* device );
 		void destroyAll( void );
 
-		OpenNIUser* addUser( xn::UserGenerator* userGen, uint32_t id );
-		void removeUser( OpenNIUser* user );
+		OpenNIUserRef addUser( xn::UserGenerator* userGen, uint32_t id );
 		void removeUser( uint32_t id );
-		OpenNIUser* getUser( int id );
+		OpenNIUserRef getUser( int id );
+		bool hasUser( int32_t id );
 		bool hasUsers()								{ return (mUserList.size()>0)?true:false; }
 
 		void start();
