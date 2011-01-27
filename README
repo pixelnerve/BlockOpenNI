@@ -5,4 +5,4 @@ A wrapper for OpenNI framework for C++
 
 First version:
 Support for several generators as Image, IR, Depth, User and Audio.
-Skeleton tracking support is also available but lacking stability and usability
+Skeleton tracking support is also available.
