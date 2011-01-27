@@ -1,5 +1,7 @@
-//#include "VOpenNICommon.h"
-#include <XnPropNames.h>
+#include "VOpenNICommon.h"
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+#include <direct.h>
+#endif
 #include "VOpenNIUser.h"
 #include "VOpenNIDevice.h"
 
@@ -18,42 +20,55 @@ namespace V
 	
 	static char g_strPose[1023];
 	static bool g_bNeedPose;
-	static xn::UserGenerator g_UserGenObj;
 
 
 	// Callback: New user was detected
-	void XN_CALLBACK_TYPE Callback_NewUser( xn::UserGenerator& generator, XnUserID nId, void* pCookie )
+	void XN_CALLBACK_TYPE OpenNIDevice::Callback_NewUser( xn::UserGenerator& generator, XnUserID nId, void* pCookie )
 	{
 		std::stringstream ss;
 		ss << "New User: '" << nId << "'" << std::endl;
 		DEBUG_MESSAGE( ss.str().c_str() );
 
-		g_UserGenObj = generator;
-		g_UserGenObj.GetPoseDetectionCap().StartPoseDetection( g_strPose, nId );
+		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
+
+		generator.GetPoseDetectionCap().StartPoseDetection( g_strPose, nId );
+
 
 		// Add new user
+		if( !device->getUser(nId) )
+			device->addUser( new OpenNIUser(nId, device) );
+
 		OpenNIDeviceManager::Instance().setText( ss.str() );
 		if( !OpenNIDeviceManager::Instance().getUser(nId) )
 			OpenNIDeviceManager::Instance().addUser( &generator, nId );
 	}
 
 	// Callback: An existing user was lost
-	void XN_CALLBACK_TYPE Callback_LostUser( xn::UserGenerator& generator, XnUserID nId, void* pCookie )
+	void XN_CALLBACK_TYPE OpenNIDevice::Callback_LostUser( xn::UserGenerator& generator, XnUserID nId, void* pCookie )
 	{
 		std::stringstream ss;
 		ss << "Lost User: '" << nId << "'" << std::endl;
 		DEBUG_MESSAGE( ss.str().c_str() );
 
+		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
+
 		// Remove user
+		if( device->getUser(nId) )
+			device->addUser( new OpenNIUser(nId, device) );
+
 		OpenNIDeviceManager::Instance().setText( ss.str() );
-		OpenNIDeviceManager::Instance().removeUser( nId );
+		if( OpenNIDeviceManager::Instance().getUser(nId) )
+			OpenNIDeviceManager::Instance().removeUser( nId );
 	}
+
 	// Callback: Detected a pose
-	void XN_CALLBACK_TYPE Callback_PoseDetected( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie )
+	void XN_CALLBACK_TYPE OpenNIDevice::Callback_PoseDetected( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie )
 	{
 		std::stringstream ss;
-		ss << "Pose detected: '" << strPose << "' on User: " << nId << std::endl;
+		ss << "Pose detection start: '" << strPose << "' on User: " << nId << std::endl;
 		DEBUG_MESSAGE( ss.str().c_str() );
+
+		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
 
 		if( OpenNIDeviceManager::Instance().getUser(nId) ) 
 		{
@@ -61,12 +76,12 @@ namespace V
 
 			// Pose found! Now we need skeleton calibration.
 			//capability.StopPoseDetection( nId );
-			g_UserGenObj.GetPoseDetectionCap().StopPoseDetection( nId );
-			g_UserGenObj.GetSkeletonCap().RequestCalibration( nId, TRUE );
+			device->getUserGenerator()->GetPoseDetectionCap().StopPoseDetection( nId );
+			device->getUserGenerator()->GetSkeletonCap().RequestCalibration( nId, TRUE );
 		}
 	}
 	// Callback: When the user is out of pose
-	void XN_CALLBACK_TYPE Callback_PoseDetectionEnd( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie )
+	void XN_CALLBACK_TYPE OpenNIDevice::Callback_PoseDetectionEnd( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie )
 	{
 		std::stringstream ss;
 		ss << "Pose detection end. User: '" << strPose << "'. Id: " << nId << std::endl;
@@ -76,7 +91,7 @@ namespace V
 	}
 
 	// Callback: Started calibration
-	void XN_CALLBACK_TYPE Callback_CalibrationStart( xn::SkeletonCapability& capability, XnUserID nId, void* pCookie )
+	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationStart( xn::SkeletonCapability& capability, XnUserID nId, void* pCookie )
 	{
 		std::stringstream ss;
 		ss << "Calibration started for user " << nId << std::endl;
@@ -85,7 +100,7 @@ namespace V
 		OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 	// Callback: Finished calibration
-	void XN_CALLBACK_TYPE Callback_CalibrationEnd( xn::SkeletonCapability& capability, XnUserID nId, XnBool bSuccess, void* pCookie )
+	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationEnd( xn::SkeletonCapability& capability, XnUserID nId, XnBool bSuccess, void* pCookie )
 	{
 		if( bSuccess )
 		{
@@ -94,7 +109,10 @@ namespace V
 			ss << "Calibration complete, start tracking user " << nId << std::endl;
 			DEBUG_MESSAGE( ss.str().c_str() );
 			OpenNIDeviceManager::Instance().setText( ss.str() );
-			g_UserGenObj.GetSkeletonCap().StartTracking( nId );
+
+			OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
+
+			device->getUserGenerator()->GetSkeletonCap().StartTracking( nId );
 		}
 		else
 		{
@@ -105,13 +123,15 @@ namespace V
 
 			OpenNIDeviceManager::Instance().setText( ss.str() );
 
+			OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
+			
 			if( g_bNeedPose )
 			{
-				g_UserGenObj.GetPoseDetectionCap().StartPoseDetection( g_strPose, nId );
+				device->getUserGenerator()->GetPoseDetectionCap().StartPoseDetection( g_strPose, nId );
 			}
 			else
 			{
-				g_UserGenObj.GetSkeletonCap().RequestCalibration( nId, TRUE );
+				device->getUserGenerator()->GetSkeletonCap().RequestCalibration( nId, TRUE );
 			}
 		}
 	}
@@ -173,6 +193,9 @@ namespace V
 		_isUserOn = false;
 		_isAudioOn = false;
 
+		mNearClipPlane = 0;
+		mFarClipPlane = 10000;
+
 		//_callback = NULL;
 		//_callback = new OpenNIDeviceCallback( this, &OpenNIDevice::CallbackFunc );
 	}
@@ -226,7 +249,7 @@ namespace V
 		{
 			_imageGen = new xn::ImageGenerator();
 			_imageMetaData = new xn::ImageMetaData();
-			_status = _imageGen->Create( *_context, NULL, &_errors );
+			_status = _imageGen->Create( *_context );	//, NULL, &_errors );
 			CHECK_RC( _status, "Create image generator" );
 			_isImageOn = true;
 		}
@@ -234,7 +257,7 @@ namespace V
 		{
 			_irGen = new xn::IRGenerator();
 			_irMetaData = new xn::IRMetaData();
-			_status = _irGen->Create( *_context, NULL, &_errors );
+			_status = _irGen->Create( *_context );	//, NULL, &_errors );
 			CHECK_RC( _status, "Create ir generator" );
 			_isIROn = true;
 		}
@@ -243,7 +266,7 @@ namespace V
 			// Depth map
 			_depthGen = new xn::DepthGenerator();
 			_depthMetaData = new xn::DepthMetaData();
-			_status = _depthGen->Create( *_context, NULL, &_errors );
+			_status = _depthGen->Create( *_context );	//, NULL, &_errors );
 			CHECK_RC( _status, "Create depth generator" );
 			_isDepthOn = true;
 		}
@@ -252,8 +275,11 @@ namespace V
 			// User
 			_userGen = new xn::UserGenerator();
 			_sceneMetaData = new xn::SceneMetaData();
-			_status = _userGen->Create( *_context, NULL, &_errors );
-			CHECK_RC( _status, "Create user generator" );
+			_status = _context->FindExistingNode( XN_NODE_TYPE_USER, *_userGen );
+			if( _status != XN_STATUS_OK ) {
+				_status = _userGen->Create( *_context );	//, NULL, &_errors );
+				CHECK_RC( _status, "Create user generator" );
+			}
 			_isUserOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_AUDIO )
@@ -261,7 +287,7 @@ namespace V
 			// Audio
 			_audioGen = new xn::AudioGenerator();
 			_audioMetaData = new AudioMetaData();
-			_status = _audioGen->Create( *_context, NULL, &_errors );
+			_status = _audioGen->Create( *_context );	//, NULL, &_errors );
 			CHECK_RC( _status, "Create audio generator" );
 			_isAudioOn = true;
 		}
@@ -279,8 +305,12 @@ namespace V
 			setResolution( NODE_TYPE_DEPTH, XN_RES_VGA, 30 );
 			_depthGen->GetMetaData( *_depthMetaData );
 		}
-		if( _userGen ) _userGen->GetUserPixels( 0, *_sceneMetaData );
-		if( _audioGen ) _audioGen->GetMetaData( *_audioMetaData );
+		//if( _userGen ) {
+		//	_userGen->GetUserPixels( 0, *_sceneMetaData );
+		//}
+		if( _audioGen ) {
+			_audioGen->GetMetaData( *_audioMetaData );
+		}
 
 
 		if( _isUserOn )
@@ -444,7 +474,7 @@ namespace V
 		if( _imageGen ) _imageGen->GetMetaData( *_imageMetaData );
 		if( _irGen )	_irGen->GetMetaData( *_irMetaData );
 		if( _depthGen ) _depthGen->GetMetaData( *_depthMetaData );
-		if( _userGen ) _userGen->GetUserPixels( 0, *_sceneMetaData );
+		//if( _userGen ) _userGen->GetUserPixels( 0, *_sceneMetaData );
 		if( _audioGen ) _audioGen->GetMetaData( *_audioMetaData );
 
 
@@ -515,14 +545,8 @@ namespace V
 	{
 		while( _isRunning )
 		{
-			update();
+			readFrame();	//update();
 		}
-	}
-
-
-	void OpenNIDevice::update()
-	{
-		readFrame();
 	}
 
 
@@ -567,9 +591,10 @@ namespace V
 			DEBUG_MESSAGE( "Supplied user generator doesn't support skeleton\n" );
 			return false;
 		}
-		_userGen->RegisterUserCallbacks( Callback_NewUser, Callback_LostUser, NULL, hUserCallbacks );
+		_userGen->RegisterUserCallbacks( &V::OpenNIDevice::Callback_NewUser, &V::OpenNIDevice::Callback_LostUser, this, hUserCallbacks );
+		
 
-		_userGen->GetSkeletonCap().RegisterCalibrationCallbacks( Callback_CalibrationStart, Callback_CalibrationEnd, NULL, hCalibrationCallbacks );
+		_userGen->GetSkeletonCap().RegisterCalibrationCallbacks( &V::OpenNIDevice::Callback_CalibrationStart, &V::OpenNIDevice::Callback_CalibrationEnd, this, hCalibrationCallbacks );
 		if( _userGen->GetSkeletonCap().NeedPoseForCalibration() )
 		{
 			g_bNeedPose = TRUE;
@@ -578,8 +603,8 @@ namespace V
 				DEBUG_MESSAGE( "Pose required, but not supported\n" );
 				return false;
 			}
-			_userGen->GetPoseDetectionCap().RegisterToPoseCallbacks( Callback_PoseDetected, NULL, NULL, hPoseCallbacks );
-			//_userGen->GetPoseDetectionCap().RegisterToPoseCallbacks( Callback_PoseDetected, Callback_PoseDetectionEnd, NULL, hPoseCallbacks );
+			//_userGen->GetPoseDetectionCap().RegisterToPoseCallbacks( &V::OpenNIDevice::Callback_PoseDetected, NULL, this, hPoseCallbacks );
+			_userGen->GetPoseDetectionCap().RegisterToPoseCallbacks( &V::OpenNIDevice::Callback_PoseDetected, &V::OpenNIDevice::Callback_PoseDetectionEnd, this, hPoseCallbacks );
 			_userGen->GetSkeletonCap().GetCalibrationPose( g_strPose );
 			std::stringstream ss;
 			ss << "--> User pose name: '" << g_strPose << "'" << std::endl;
@@ -830,7 +855,8 @@ namespace V
 
 				for( XnUInt x = 0; x < _depthMetaData->XRes(); ++x, ++pDepth, ++pTex )
 				{
-					if( *pDepth != 0 )
+					XnDepthPixel pixel = *pDepth;
+					if( pixel > mNearClipPlane && pixel < mFarClipPlane )	//pixel != 0 )
 					{
 						// Inverted or not ?
 						uint32_t nHistValue = (_isDepthInverted) ? static_cast<uint32_t>(-g_pDepthHist[*pDepth]) : static_cast<uint32_t>(g_pDepthHist[*pDepth]);
@@ -841,8 +867,10 @@ namespace V
 						pTex->nBlue = nHistValue;
 
 						//// 16bit depth map
-						_depthData[index] = (*pDepth>0 && *pDepth<4095)?*pDepth:0;
-						_depthData[index] <<= 4;
+						//_depthData[index] = *pDepth;
+						//_depthData[index] <<= 5;
+						_depthData[index] = (*pDepth>0 && *pDepth<MAX_DEPTH)?*pDepth:0;
+						_depthData[index] <<= 5;
 						//_depthData[index] = (nHistValue*nHistValue);	// shift to 16bit
 						//_depthData[index] = nHistValue << 8;
 
@@ -851,6 +879,9 @@ namespace V
 					}
 					else
 					{
+						pTex->nRed = 0;
+						pTex->nGreen = 0;
+						pTex->nBlue = 0;
 						_depthData[index] = 0;
 						//_depthData8[index] = 0;
 					}
@@ -951,7 +982,7 @@ namespace V
 			pDepth++;
 		}
 
-		float invNOP = 1.0f / (float)nNumberOfPoints;
+		float invNOP = 1.0f / static_cast<float>(nNumberOfPoints);
 		XnUInt32 nIndex;
 		for( nIndex=1; nIndex<MAX_DEPTH; nIndex++ )
 		{
@@ -966,6 +997,13 @@ namespace V
 				g_pDepthHist[nIndex] = (nNumberOfPoints-g_pDepthHist[nIndex]) * invNOP * 256;	// / nNumberOfPoints;
 			}
 		}
+	}
+
+
+	void OpenNIDevice::setLimits( int nearClip, int farClip )
+	{
+		mNearClipPlane = nearClip;
+		mFarClipPlane = farClip;
 	}
 
 
@@ -1029,6 +1067,38 @@ namespace V
 	}
 
 
+	void OpenNIDevice::addUser( OpenNIUser* user )
+	{
+		mUserList.push_back( boost::shared_ptr<OpenNIUser>(user) );
+	}
+
+	OpenNIUser::Ref OpenNIDevice::getUser( uint32_t id )
+	{
+		if( mUserList.size() == 0 ) return OpenNIUser::Ref();
+		for( std::list< boost::shared_ptr<OpenNIUser> >::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		{
+			if( id == (*it)->getId() )
+				return (*it);
+		}
+		return OpenNIUser::Ref();
+	}
+
+	void OpenNIDevice::removeUser( uint32_t id )
+	{
+		for( std::list< boost::shared_ptr<OpenNIUser> >::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		{
+			if( id == (*it)->getId() )
+			{
+				mUserList.remove( *it );
+				(*it).reset();
+				return;
+			}
+		}
+
+	}
+
+
+
 
 
 
@@ -1040,39 +1110,11 @@ namespace V
 	/************************************************************************/
 
 	const bool OpenNIDeviceManager::USE_THREAD = true;
-
-	//boost::shared_ptr<OpenNIDeviceManager> OpenNIDeviceManager::_singletonPointerRef;
 	OpenNIDeviceManager OpenNIDeviceManager::_singletonPointer;
-	//OpenNIDeviceManager* OpenNIDeviceManager::_singletonPointer = NULL;
-	//std::list<OpenNIDeviceManager::DeviceInfo*> OpenNIDeviceManager::mDeviceList;
-
-
-
-	/*OpenNIDeviceManager::DeviceInfo::DeviceInfo()
-	{
-		dev = NULL;
-	}
-
-	OpenNIDeviceManager::DeviceInfo::~DeviceInfo()
-	{
-		SAFE_DELETE( dev );
-	}*/
-
 
 
 	OpenNIDeviceManager::OpenNIDeviceManager()
 	{
-		//assert( !_singletonPointer && "Tried to create multiple instances of a singleton class!" );
-		//_singletonPointer = (OpenNIDeviceManager*)this;
-
-		/*XnStatus status = _context.Init();
-		if( status != XN_STATUS_OK )
-		{
-			std::stringstream ss;
-			ss << "Couldn't create context" << std::endl;
-			DEBUG_MESSAGE( ss.str().c_str() );
-		}*/
-
 		_isRunning = false;
 		_idCount = 0;
 		mDebugInfo = "No debug information\n";
@@ -1082,7 +1124,6 @@ namespace V
 	OpenNIDeviceManager::~OpenNIDeviceManager()
 	{
 		destroyAll();
-		//_singletonPointer = NULL;
 	}
 
 
@@ -1095,7 +1136,6 @@ namespace V
 	OpenNIDevice* OpenNIDeviceManager::createDevice__( const std::string& xmlFile, bool allocUserIfNoNode )
 	{
 		if( mDevices.size() >= MAX_DEVICES ) return NULL;
-		//if( mDeviceList.size() >= MAX_DEVICES ) return NULL;
 
 		if( xmlFile == "" )
 		{
@@ -1109,25 +1149,6 @@ namespace V
 				return NULL;
 			mDevices.push_back( dev );
 			return dev.get();
-
-			/*DeviceInfo* devinfo = new DeviceInfo;
-			devinfo->dev = new OpenNIDevice( &_context );
-			if( !devinfo->dev->initFromXmlFile( xmlFile, allocUserIfNoNode ) ) 
-			{
-				SAFE_DELETE( devinfo );
-				return NULL;
-			}
-			devinfo->id = mDeviceList.size();
-			mDeviceList.push_back( devinfo );
-			return devinfo->dev;*/
-
-
-			/*DeviceInfo devinfo;
-			devinfo.dev = new OpenNIDevice( &_context );
-			devinfo.dev->initFromXmlFile( xmlFile, allocUserIfNoNode );	
-			devinfo.id = mDeviceList.size();
-			mDeviceList.push_back( devinfo );
-			return devinfo.dev;*/
 		}
 
 		return NULL;
@@ -1137,59 +1158,66 @@ namespace V
 	OpenNIDevice* OpenNIDeviceManager::createDevice__( int nodeTypeFlags )
 	{
 		if( mDevices.size() >= MAX_DEVICES ) return NULL;
-		//if( mDeviceList.size() >= MAX_DEVICES ) return NULL;
 
 		boost::shared_ptr<OpenNIDevice> dev = boost::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
 		if( !dev->init( nodeTypeFlags ) ) 
 			return NULL;
 		mDevices.push_back( dev );
 		return dev.get();
-
-
-		/*DeviceInfo* devinfo = new DeviceInfo;
-		devinfo->dev = new OpenNIDevice( &_context );
-		if( !devinfo->dev->init( nodeTypeFlags ) ) 
-		{
-			SAFE_DELETE( devinfo );
-			return NULL;
-		}
-		devinfo->id = mDeviceList.size();
-		mDeviceList.push_back( devinfo );
-		return devinfo->dev;*/
-
-		/*DeviceInfo devinfo;
-		devinfo.dev = new OpenNIDevice( &_context );
-		devinfo.dev->init( nodeTypeFlags );
-		devinfo.id = mDeviceList.size();
-		mDeviceList.push_back( devinfo );
-		return devinfo.dev;*/
 	}
 
 	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( const std::string& xmlFile/*=""*/, bool allocUserIfNoNode/*=false */ )
 	{
 		if( mDevices.size() >= MAX_DEVICES ) return boost::shared_ptr<OpenNIDevice>();
 
+		// Bail out if its an empty filename
 		if( xmlFile == "" )
 		{
 			DEBUG_MESSAGE( "not implemented" );
 			return boost::shared_ptr<OpenNIDevice>();
 		}
+
+		// Local copy of the filename
+		std::string path = xmlFile;
+
+		#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+		char AppAbsPath[1024];
+		path = "/" + path;
+		path = _getcwd( AppAbsPath, 1024 ) + path;
+		//DEBUG_MESSAGE( path.c_str() );
+		#else
+		char AppAbsPath[1024];
+		path = "/" + path;
+		path = getcwd( AppAbsPath, 1024 ) + path;
+		//DEBUG_MESSAGE( path.c_str() );
+		#endif
+
+		// Initialize device
 		boost::shared_ptr<OpenNIDevice> dev = boost::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
-		if( !dev->initFromXmlFile( xmlFile, allocUserIfNoNode ) ) 
+		if( !dev->initFromXmlFile( path, allocUserIfNoNode ) ) 
+		{
+			DEBUG_MESSAGE( "[OpenNIDeviceManager]  Couldn't create device from xml\n" );
 			return boost::shared_ptr<OpenNIDevice>();
+		}
 		// By default set depth as primary generator
 		dev->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
+
+		// Save device to our list
 		mDevices.push_back( dev );
 		return dev;
 	}
 
 	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( int nodeTypeFlags )
 	{
-		if( mDevices.size() >= MAX_DEVICES ) return boost::shared_ptr<OpenNIDevice>();
+		if( mDevices.size() >= MAX_DEVICES ) 
+			return boost::shared_ptr<OpenNIDevice>();
 
 		boost::shared_ptr<OpenNIDevice> dev = boost::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
 		if( !dev->init( nodeTypeFlags ) ) 
+		{
+			DEBUG_MESSAGE( "[OpenNIDeviceManager]  Couldn't create device manually\n" );
 			return boost::shared_ptr<OpenNIDevice>();
+		}
 		// By default set depth as primary generator
 		dev->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
 		mDevices.push_back( dev );
@@ -1229,18 +1257,8 @@ namespace V
 			_thread->join();
 		}
 
-
 		// Delete device list
 		mDevices.clear();
-
-		/*for( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-		//for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-		{		
-			//destroy_device( (*it).id );
-			SAFE_DELETE( *it );
-		}
-		mDeviceList.clear();*/
-
 
 		// Now delete user list
 		for( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
@@ -1265,27 +1283,18 @@ namespace V
 		OpenNIUser* newUser = new OpenNIUser( id, (*it).get() );
 		mUserList.push_back( newUser );
 		return newUser;
-
-/*		// TODO! associate user generator to its current device
-		// for the moment we always pick first device available
-		std::list<DeviceInfo*>::iterator it = mDeviceList.begin();
-		//std::list<DeviceInfo>::iterator it = mDeviceList.begin();
-
-		OpenNIUser* newUser = new OpenNIUser( id, (*it)->dev );
-		mUserList.push_back( newUser );
-		return newUser;*/
 	}
 
 	void OpenNIDeviceManager::removeUser( OpenNIUser* user )
 	{
-		if( mUserList.size() <= 0 ) return;
+		if( mUserList.size() == 0 ) return;
 		//mUserList.remove( user );
 		//SAFE_DELETE( user );
 	}
 
 	void OpenNIDeviceManager::removeUser( uint32_t id )
 	{
-		if( mUserList.size() <= 0 ) return;
+		if( mUserList.size() == 0 ) return;
 		for ( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
 			if( id == (*it)->getId() )
@@ -1336,14 +1345,7 @@ namespace V
 			(*it)->start();
 		}
 
-		/*for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-		//for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-		{
-			if( (*it)->dev ) 
-				(*it)->dev->start();
-		}*/
-
-		// Start generation
+		// Start generators
 		_context.StartGeneratingAll();
 	}
 
@@ -1361,12 +1363,6 @@ namespace V
 			(*it)->readFrame();
 		}
 
-		/*for( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-		//for( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-		{
-			if( (*it)->dev )
-				(*it)->dev->readFrame();
-		}*/
 		// Handle user update
 		if( mUserList.size() > 0 )
 		{

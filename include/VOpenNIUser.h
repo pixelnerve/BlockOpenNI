@@ -24,6 +24,9 @@ namespace V
 	class OpenNIUser
 	{
 	public:
+		typedef boost::shared_ptr<OpenNIUser> Ref;
+
+	public:
 		OpenNIUser( boost::int32_t id, OpenNIDevice* device );
 		~OpenNIUser();
 		void init();

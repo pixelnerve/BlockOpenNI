@@ -6,11 +6,20 @@
 
 namespace V
 {
+
+	// Forward declarations
+	class OpenNIUser;
+	class OpenNIDevice;
+
+	// Typedefs
+	typedef boost::shared_ptr<OpenNIUser> OpenNIUserRef;
+	typedef boost::shared_ptr<OpenNIDevice> OpenNIDeviceRef;
+
+
+
 	/************************************************************************/
 	/*                                                                      */
 	/************************************************************************/
-
-	class OpenNIUser;
 
 	class OpenNIDevice
 	{
@@ -26,7 +35,6 @@ namespace V
 		void release();
 
 		void start();
-		void update();
 
 		void allocate( uint64_t flags, uint32_t width, uint32_t height );
 
@@ -36,7 +44,9 @@ namespace V
 		void setMapOutputMode( ProductionNodeType nodeType, int width, int height, int fps );
 		void readFrame();
 		void calculateHistogram();
-		
+
+		void setLimits( int nearClip, int farClip );
+
 		void setPrimaryBuffer( int type );
 
 		void setDepthInvert( bool flag );
@@ -59,6 +69,17 @@ namespace V
 		xn::Context*	getContext()				{ return _context;	}
 
 		//const std::string& getDebugInfo()			{ return mDebugInfo;}
+
+		void addUser( OpenNIUser* user );
+		OpenNIUserRef getUser( uint32_t id );
+		void removeUser( uint32_t id );
+
+		static void XN_CALLBACK_TYPE Callback_NewUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie );
+		static void XN_CALLBACK_TYPE Callback_LostUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie );
+		static void XN_CALLBACK_TYPE Callback_PoseDetected( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie );
+		static void XN_CALLBACK_TYPE Callback_PoseDetectionEnd( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie );
+		static void XN_CALLBACK_TYPE Callback_CalibrationStart( xn::SkeletonCapability& capability, XnUserID nId, void* pCookie );
+		static void XN_CALLBACK_TYPE Callback_CalibrationEnd( xn::SkeletonCapability& capability, XnUserID nId, XnBool bSuccess, void* pCookie );
 
 
 	private:
@@ -130,8 +151,11 @@ namespace V
 		xn::SceneMetaData*		_sceneMetaData;
 		xn::AudioMetaData*		_audioMetaData;
 
+
+		int						mNearClipPlane, mFarClipPlane;
+
 		// Users
-		//std::vector<boost::shared_ptr<OpenNIUser>> mUserList;
+		std::list< boost::shared_ptr<OpenNIUser> > mUserList;
 	};
 	typedef boost::shared_ptr<OpenNIDevice> OpenNIDeviceRef;
 
@@ -143,9 +167,8 @@ namespace V
 	/* Device Manager
 	*/
 	/************************************************************************/
-	//typedef boost::shared_ptr<std::vector<OpenNIDevice>> OpenNIDeviceList;
+	typedef std::list< boost::shared_ptr<OpenNIDevice> > OpenNIDeviceList;
 	typedef std::list<OpenNIUser*> OpenNIUserList;
-	//std::vector<boost::shared_ptr<OpenNIUser>> mUserList;
 
 	// A singleton
 	class OpenNIDeviceManager : private boost::noncopyable
@@ -181,31 +204,12 @@ namespace V
 		//
 		static OpenNIDeviceManager& Instance() 
 		{
-			//if( !_singletonPointerRef )
-				//_singletonPointerRef = boost::shared_ptr<OpenNIDeviceManager>( new OpenNIDeviceManager() );
-			//return *_singletonPointerRef.get();
-			//if( !_singletonPointer ) 
-			//	_singletonPointer = new OpenNIDeviceManager();
 			return _singletonPointer;
 		}
 		static OpenNIDeviceManager* InstancePtr() 
 		{
-			//if( !_singletonPointerRef )
-			//	_singletonPointerRef = boost::shared_ptr<OpenNIDeviceManager>( new OpenNIDeviceManager() );
-			//return _singletonPointerRef.get();
-			//if( !_singletonPointer ) 
-			//	_singletonPointer = new OpenNIDeviceManager();
 			return &_singletonPointer;
 		}
-		/*static boost::shared_ptr<OpenNIDeviceManager> InstanceRef() 
-		{
-			//if( !_singletonPointerRef )
-			//	_singletonPointerRef = boost::shared_ptr<OpenNIDeviceManager>( new OpenNIDeviceManager() );
-			//return _singletonPointerRef;
-			if( !_singletonPointer ) 
-				_singletonPointer = new OpenNIDeviceManager();
-			return &_singletonPointer;
-		}*/
 
 	private:
 		// Copy constructor
@@ -218,16 +222,6 @@ namespace V
 	public:
 		static const bool				USE_THREAD;
 
-
-	/*private:
-		struct DeviceInfo
-		{
-			DeviceInfo();
-			~DeviceInfo();
-
-			int				id;
-			OpenNIDevice*	dev;
-		};*/
 
 	protected:
 
@@ -246,13 +240,10 @@ namespace V
 		int								_idCount;
 
 		// Device list
-		//std::list<DeviceInfo*>			mDeviceList;
-		std::list< boost::shared_ptr<OpenNIDevice> > mDevices;
+		OpenNIDeviceList				mDevices;
 
 		// Generic user list. These users have no knowledge of which device they come from
 		OpenNIUserList					mUserList;
 	};
 
-
-	//typedef boost::shared_ptr<OpenNIDeviceManager> OpenNIDeviceManagerRef;
-}
+}	// V

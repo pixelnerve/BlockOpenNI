@@ -20,16 +20,7 @@
 #endif
 
 #include <boost/cstdint.hpp>
-
-#if defined( _MSC_VER ) && ( _MSC_VER >= 1600 )
-#include <memory>
-#else
 #include <boost/shared_ptr.hpp>
-namespace std 
-{
-	using boost::shared_ptr; // future-proof shared_ptr by putting it into std::
-}
-#endif
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
@@ -41,7 +32,7 @@ namespace std
 #include <XnLog.h>
 #include <XnCppWrapper.h>
 #include <XnFPSCalculator.h>
-#include <XnUSB.h>
+#include <XnPropNames.h>
 #include <XnVersion.h>
 #include <XnUtils.h>
 
@@ -84,6 +75,7 @@ namespace V
 	// Enumeration of production nodes
 	enum ProductionNodeType
 	{
+		NODE_TYPE_NONE	= 0x00000000,
 		NODE_TYPE_IMAGE	= 0x00000001,
 		NODE_TYPE_IR	= 0x00000010,
 		NODE_TYPE_DEPTH	= 0x00000100,
