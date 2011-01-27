@@ -1,6 +1,6 @@
 Block OpenNI
 ------------
-A wrapper for OpenNI framework for C++
+A C++ wrapper for OpenNI
 
 
 First version:
