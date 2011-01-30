@@ -28,13 +28,13 @@
 #include <string>
 #include <vector>
 
-#include <XnOpenNI.h>
-#include <XnLog.h>
-#include <XnCppWrapper.h>
-#include <XnFPSCalculator.h>
-#include <XnPropNames.h>
-#include <XnVersion.h>
-#include <XnUtils.h>
+#include "XnOpenNI.h"
+#include "XnLog.h"
+#include "XnCppWrapper.h"
+#include "XnFPSCalculator.h"
+#include "XnPropNames.h"
+#include "XnVersion.h"
+#include "XnUtils.h"
 
 
 

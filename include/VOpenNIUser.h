@@ -19,8 +19,12 @@ namespace V
 	};
 
 
+	// Typedefs
 	typedef std::vector<OpenNIBone*> UserBoneList;
 
+
+
+	// Class
 	class OpenNIUser
 	{
 	public:
@@ -77,22 +81,4 @@ namespace V
 
 		UserBoneList	mBoneList;
 	};
-
-
-	//
-	// Manager
-	//
-	/***class OpenNIPlayerManager
-	{
-	public:
-		OpenNIPlayerManager( OpenNI* openni );
-		~OpenNIPlayerManager();
-		boost::int32_t OpenNIPlayerManager::registerPlayer( uint32_t id, void* newUserFunc, void* lostUserFunc );
-
-
-	protected:
-		OpenNI*		_openni;
-
-		boost::shared_ptr<std::vector<OpenNIPlayer*>> mPlayerList;
-	};***/
 }

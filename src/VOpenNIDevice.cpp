@@ -6,6 +6,9 @@
 #include "VOpenNIDevice.h"
 
 
+// Include library
+#pragma comment( lib, "openni.lib" )
+
 
 namespace V
 {
@@ -36,8 +39,7 @@ namespace V
 
 		// Add new user
 		//if( !device->getUser(nId) )
-			//device->addUser( new OpenNIUser(nId, device) );
-
+			//device->addUser( nId );
 		OpenNIDeviceManager::Instance().setText( ss.str() );
 		if( !OpenNIDeviceManager::Instance().getUser(nId) )
 			OpenNIDeviceManager::Instance().addUser( &generator, nId );
@@ -55,7 +57,6 @@ namespace V
 		// Remove user
 		//if( device->getUser(nId) )
 			//device->removeUser( nId );
-
 		OpenNIDeviceManager::Instance().setText( ss.str() );
 		if( OpenNIDeviceManager::Instance().getUser(nId) )
 			OpenNIDeviceManager::Instance().removeUser( nId );
@@ -1067,12 +1068,13 @@ namespace V
 	}
 
 
-	void OpenNIDevice::addUser( OpenNIUser* user )
+	void OpenNIDevice::addUser( uint32_t id )
 	{
-		mUserList.push_back( boost::shared_ptr<OpenNIUser>(user) );
+		OpenNIUserRef user = boost::shared_ptr<OpenNIUser>( new OpenNIUser(id, this) );
+		mUserList.push_back( user );
 	}
 
-	OpenNIUser::Ref OpenNIDevice::getUser( uint32_t id )
+	OpenNIUserRef OpenNIDevice::getUser( uint32_t id )
 	{
 		if( mUserList.size() == 0 ) return OpenNIUser::Ref();
 		for( std::list< boost::shared_ptr<OpenNIUser> >::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
@@ -1098,6 +1100,16 @@ namespace V
 	}
 
 
+	bool OpenNIDevice::hasUser( int32_t id )
+	{
+		if( mUserList.size() == 0 ) return false;
+		for ( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		{
+			if( id == (*it)->getId() )
+				return true;
+		}
+		return false;
+	}
 
 
 
@@ -1279,7 +1291,8 @@ namespace V
 
 	OpenNIUserRef OpenNIDeviceManager::addUser( xn::UserGenerator* userGen, uint32_t id )
 	{
-		std::list< boost::shared_ptr<OpenNIDevice> >::iterator it = mDevices.begin();
+		// Currently works with first device only.
+		OpenNIDeviceList::iterator it = mDevices.begin();
 
 		OpenNIUserRef newUser = OpenNIUserRef( new OpenNIUser(id, (*it).get()) );
 		mUserList.push_back( OpenNIUserRef(newUser) );
@@ -1312,7 +1325,6 @@ namespace V
 		}
 		return OpenNIUserRef();
 	}
-
 
 
 	bool OpenNIDeviceManager::hasUser( int32_t id )

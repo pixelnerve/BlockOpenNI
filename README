@@ -6,3 +6,16 @@ A C++ wrapper for OpenNI
 First version:
 Support for several generators as Image, IR, Depth, User and Audio.
 Skeleton tracking support is also available.
+
+
+
+You need to install the sensor drivers, OpenNI and NITE.
+PrimeSense drivers do not run with kinect. 
+To use a kinect get SensorKinect from avin2 or ros.
+
+
+More information and downloads:
+
+http://www.openni.org
+https://github.com/avin2/SensorKinect
+https://github.com/ros-pkg-git/Sensor

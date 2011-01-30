@@ -61,7 +61,12 @@ namespace V
 	void OpenNIUser::init()
 	{
 		// Set default color
-		mColor[0] = mColor[1] = mColor[2] = 1;
+		std::stringstream ss;
+		ss << "USER ID: " << mId << std::endl;
+		DEBUG_MESSAGE( ss.str().c_str() );
+		mColor[0] = g_Colors[(mId-1)%nColors][0];
+		mColor[1] = g_Colors[(mId-1)%nColors][1];
+		mColor[2] = g_Colors[(mId-1)%nColors][2];
 
 		// Allocate memory for every bone/joint
 		for( int i=0; i<BONE_COUNT; i++ )
@@ -139,18 +144,42 @@ namespace V
 				{
 					for( int x=0; x<depthWidth; x++ )
 					{
+						// Only fill bitmap with current user's data
+						/*if( *labels != 0 && *labels == mId )
+						{
+							// Pixel is not empty, deal with it.
+							uint32_t nValue = *pDepth;
+
+							mColor[0] = g_Colors[mId][0];
+							mColor[1] = g_Colors[mId][1];
+							mColor[2] = g_Colors[mId][2];
+
+							if( nValue != 0 )
+							{
+								int nHistValue = _device->getDepthMap24()[nValue];
+								pixels[index+0] = 0xff & static_cast<uint8_t>(nHistValue * mColor[0]);//g_Colors[nColorID][0]); 
+								pixels[index+1] = 0xff & static_cast<uint8_t>(nHistValue * mColor[1]);//g_Colors[nColorID][1]);
+								pixels[index+2] = 0xff & static_cast<uint8_t>(nHistValue * mColor[2]);//g_Colors[nColorID][2]);
+							}
+						}****/
+
+
+						// Check out for every user visible and fill bitmap with correct coloring
+						// NOTE! This should be removed in the future. User should only know about its own data and not all
 						if( *labels != 0 )
 						{
-							int nValue = *pDepth;
+							// Pixel is not empty, deal with it.
+							uint32_t nValue = *pDepth;
 							XnLabel label = *labels;
 							XnUInt32 nColorID = label % nColors;
 							if( label == 0 )
 							{
 								nColorID = nColors;
 							}
-							mColor[0] = g_Colors[nColorID][0];
-							mColor[1] = g_Colors[nColorID][1];
-							mColor[2] = g_Colors[nColorID][2];
+
+							mColor[0] = g_Colors[mId][0];
+							mColor[1] = g_Colors[mId][1];
+							mColor[2] = g_Colors[mId][2];
 
 							if( nValue != 0 )
 							{
@@ -248,7 +277,7 @@ namespace V
 			DepthGenerator* depth = _device->getDepthGenerator();
 			if( !depth ) return;
 
-			// Old OpenGL rendering method. it works for what we want here.
+			// Old OpenGL rendering method. it's fine for now.
 			//glDisable( GL_TEXTURE_2D );
 			glBegin( GL_QUADS );
 			int index = 1;

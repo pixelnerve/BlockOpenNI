@@ -14,6 +14,8 @@ namespace V
 	// Typedefs
 	typedef boost::shared_ptr<OpenNIUser> OpenNIUserRef;
 	typedef boost::shared_ptr<OpenNIDevice> OpenNIDeviceRef;
+	typedef std::list< boost::shared_ptr<OpenNIDevice> > OpenNIDeviceList;
+	typedef std::list< boost::shared_ptr<OpenNIUser> > OpenNIUserList;
 
 
 
@@ -70,9 +72,11 @@ namespace V
 
 		//const std::string& getDebugInfo()			{ return mDebugInfo;}
 
-		void addUser( OpenNIUser* user );
+		void addUser( uint32_t id );
 		OpenNIUserRef getUser( uint32_t id );
 		void removeUser( uint32_t id );
+		bool hasUser( int32_t id );
+		bool hasUsers()								{ return (mUserList.size()>0)?true:false; }
 
 		static void XN_CALLBACK_TYPE Callback_NewUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie );
 		static void XN_CALLBACK_TYPE Callback_LostUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie );
@@ -152,12 +156,12 @@ namespace V
 		xn::AudioMetaData*		_audioMetaData;
 
 
+		// Internal clip planes
 		int						mNearClipPlane, mFarClipPlane;
 
 		// Users
-		std::list< boost::shared_ptr<OpenNIUser> > mUserList;
+		OpenNIUserList			mUserList;
 	};
-	typedef boost::shared_ptr<OpenNIDevice> OpenNIDeviceRef;
 
 
 
@@ -167,9 +171,6 @@ namespace V
 	/* Device Manager
 	*/
 	/************************************************************************/
-	typedef std::list< boost::shared_ptr<OpenNIDevice> > OpenNIDeviceList;
-	typedef std::list< boost::shared_ptr<OpenNIUser> > OpenNIUserList;
-	//typedef std::list<OpenNIUser*> OpenNIUserList;
 
 	// A singleton
 	class OpenNIDeviceManager : private boost::noncopyable
@@ -225,10 +226,7 @@ namespace V
 
 
 	protected:
-
-		//static boost::shared_ptr<OpenNIDeviceManager>		_singletonPointerRef;
 		static OpenNIDeviceManager		_singletonPointer;
-		//static OpenNIDeviceManager*		_singletonPointer;
 
 		boost::shared_ptr<boost::thread> _thread;
 		boost::recursive_mutex			 _mutex;
