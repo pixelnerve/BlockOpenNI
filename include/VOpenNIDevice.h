@@ -191,7 +191,7 @@ namespace V
 		void removeUser( uint32_t id );
 		OpenNIUserRef getUser( int id );
 		bool hasUser( int32_t id );
-		bool hasUsers()								{ return (mUserList.size()>0)?true:false; }
+		bool hasUsers();
 
 		void start();
 
@@ -229,7 +229,8 @@ namespace V
 		static OpenNIDeviceManager		_singletonPointer;
 
 		boost::shared_ptr<boost::thread> _thread;
-		boost::recursive_mutex			 _mutex;
+		boost::mutex					 _mutex;
+		boost::recursive_mutex			 _rmutex;
 		bool							_isRunning;
 
 		xn::Context						_context;

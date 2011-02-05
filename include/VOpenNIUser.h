@@ -20,7 +20,7 @@ namespace V
 
 
 	// Typedefs
-	typedef std::vector<OpenNIBone*> UserBoneList;
+	typedef std::vector<OpenNIBone*> OpenNIBoneList;
 
 
 
@@ -41,7 +41,7 @@ namespace V
 		void renderBone( int joint1, int joint2 );
 
 
-		UserBoneList	getBoneList();
+		OpenNIBoneList	getBoneList();
 		OpenNIBone*		getBone( int id );
 
 		void			setText( const std::string& info )	{ _debugInfo = info; }
@@ -79,6 +79,6 @@ namespace V
 		uint32_t		mWidth;		//
 		uint32_t		mHeight;	// Current dimensions of depthmap
 
-		UserBoneList	mBoneList;
+		OpenNIBoneList	mBoneList;
 	};
 }

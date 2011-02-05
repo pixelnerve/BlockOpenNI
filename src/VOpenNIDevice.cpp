@@ -479,6 +479,14 @@ namespace V
 		if( _audioGen ) _audioGen->GetMetaData( *_audioMetaData );
 
 
+		// Align depth and image generators
+		/*if( _depthGen->IsCapabilitySupported(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT) )
+		{
+			_depthGen->GetAlternativeViewPointCap().ResetViewPoint();
+			if( _imageGen ) _depthGen->GetAlternativeViewPointCap().SetViewPoint( *_imageGen );
+			if( _irGen ) _depthGen->GetAlternativeViewPointCap().SetViewPoint( *_irGen );
+		}*/
+
 		return true;
 	}
 
@@ -542,13 +550,13 @@ namespace V
 	}
 
 
-	void OpenNIDevice::run()
-	{
-		while( _isRunning )
-		{
-			readFrame();	//update();
-		}
-	}
+	//void OpenNIDevice::run()
+	//{
+	//	while( _isRunning )
+	//	{
+	//		readFrame();	//update();
+	//	}
+	//}
 
 
 
@@ -1236,27 +1244,6 @@ namespace V
 		return dev;
 	}
 
-	//void OpenNIDeviceManager::destroyDevice( OpenNIDevice* device )
-	//{
-	//	for ( std::list<boost::shared_ptr<OpenNIDevice>>::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
-	//	{
-	//		mDevices.remove( *it );
-	//	}
-	//	mDevices.erase( device );
-
-	//	/*for ( std::list<DeviceInfo*>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-	//	//for ( std::list<DeviceInfo>::iterator it = mDeviceList.begin(); it != mDeviceList.end(); it++ )
-	//	{		
-	//		if ( device == (*it)->dev )
-	//		{
-	//			mDeviceList.remove( *it );
-	//			//destroy_device( devinfo->id );
-	//			SAFE_DELETE( (*it) );
-	//			return;
-	//		}
-	//	}*/
-	//}
-
 
 	void OpenNIDeviceManager::destroyAll( void )
 	{
@@ -1267,16 +1254,13 @@ namespace V
 			DEBUG_MESSAGE( "Stop running thread on device manager\n" );
 			assert( _thread );
 			_thread->join();
+			_thread.reset();
 		}
 
 		// Delete device list
 		mDevices.clear();
 
-		// Now delete user list
-		//for( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
-		//{
-		//	SAFE_DELETE( *it );
-		//}
+		// Delete user list
 		mUserList.clear();
 
 
@@ -1302,8 +1286,7 @@ namespace V
 	void OpenNIDeviceManager::removeUser( uint32_t id )
 	{
 		if( mUserList.size() == 0 ) return;
-		for ( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
-		//for ( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
 			if( id == (*it)->getId() )
 			{
@@ -1316,26 +1299,42 @@ namespace V
 
 	OpenNIUserRef OpenNIDeviceManager::getUser( int id )
 	{
+		boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		//boost::lock_guard<boost::mutex> lock( _mutex );
+		//boost::mutex::scoped_lock lock( _mutex );
+
 		if( mUserList.size() == 0 ) return OpenNIUserRef();
-		for ( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
-		//for( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
 			if( id == (*it)->getId() )
 				return (*it);
 		}
+
 		return OpenNIUserRef();
 	}
 
 
 	bool OpenNIDeviceManager::hasUser( int32_t id )
 	{
+		boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		//boost::mutex::scoped_lock lock( _mutex );
+
 		if( mUserList.size() == 0 ) return false;
-		for ( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
+		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
 			if( id == (*it)->getId() )
 				return true;
 		}
+
 		return false;
+	}
+
+	bool OpenNIDeviceManager::hasUsers()
+	{ 
+		boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		//boost::mutex::scoped_lock lock( _mutex );
+
+		return (mUserList.size()>0)?true:false; 
 	}
 
 
@@ -1360,7 +1359,7 @@ namespace V
 		}
 
 		// Start all devices
-		for ( std::list< boost::shared_ptr<OpenNIDevice> >::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
+		for( OpenNIDeviceList::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
 		{
 			(*it)->start();
 		}
@@ -1373,21 +1372,21 @@ namespace V
 
 	void OpenNIDeviceManager::update()
 	{
-		boost::lock_guard<boost::recursive_mutex> lock( _mutex );
-
-		if( !_isRunning ) return;
+		//if( !_isRunning ) return;
 
 		// Handle device update
-		for ( std::list< boost::shared_ptr<OpenNIDevice> >::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
+		for( std::list< boost::shared_ptr<OpenNIDevice> >::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
 		{
 			(*it)->readFrame();
 		}
+
+		//boost::mutex::scoped_lock lock( _mutex );
+		boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
 
 		// Handle user update
 		if( mUserList.size() > 0 )
 		{
 			for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
-			//for( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 			{
 				(*it)->update();
 			}
@@ -1399,7 +1398,6 @@ namespace V
 	{
 		glDisable( GL_TEXTURE_2D );
 		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
-		//for( std::list<OpenNIUser*>::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
 		{
 			(*it)->renderJoints( pointSize );
 		}

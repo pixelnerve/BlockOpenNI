@@ -233,7 +233,7 @@ namespace V
 			int index = 0;
 			for( std::vector<OpenNIBone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); it++, index++ )
 			{
-				user->GetSkeletonCap().GetSkeletonJointPosition( mId, (XnSkeletonJoint)g_BoneIndexArray[index], jointPos );
+				user->GetSkeletonCap().GetSkeletonJointPosition( mId, static_cast<XnSkeletonJoint>(g_BoneIndexArray[index]), jointPos );
 				user->GetSkeletonCap().GetSkeletonJointOrientation( mId, (XnSkeletonJoint)g_BoneIndexArray[index], jointOri );
 
 				//if( jointOri.fConfidence >= 0.25f && jointPos.fConfidence >= 0.25f )
@@ -244,9 +244,10 @@ namespace V
 					bone->active = true;
 
 					// Position (actual position in world coordinates)
-					bone->position[0] = jointPos.position.X;
-					bone->position[1] = jointPos.position.Y;
-					bone->position[2] = jointPos.position.Z;
+					memcpy( bone->position, (float*)&jointPos.position, 3*sizeof(float) );
+					//bone->position[0] = jointPos.position.X;
+					//bone->position[1] = jointPos.position.Y;
+					//bone->position[2] = jointPos.position.Z;
 					// Confidence
 					bone->positionConfidence = jointPos.fConfidence;
 
@@ -373,7 +374,7 @@ namespace V
 		return mBoneList[id-1];
 	}
 
-	UserBoneList OpenNIUser::getBoneList()
+	OpenNIBoneList OpenNIUser::getBoneList()
 	{ 
 		return mBoneList; 
 	}
