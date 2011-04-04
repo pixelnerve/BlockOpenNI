@@ -27,7 +27,7 @@ Support for Mac OS X.
 
 Installation instructions for OS X:
 
-First, get libusb and the kinect patch on <a href="http://openkinect.org/wiki/Getting_Started#Manual_Build_under_OSX">this link</a>. Patch libusb.
+First, get libusb and the kinect patch on http://openkinect.org/wiki/Getting_Started#Manual_Build_under_OSX. Patch libusb.
 
 From http://discussions.info.apple.com/thread.jspa?threadID=2614064&amp;tstart=0, do the following:
 
