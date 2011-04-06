@@ -5,8 +5,6 @@
 #include "VOpenNIUser.h"
 #include "VOpenNIDevice.h"
 
-#include "Vitamin/base/LogManager.h"
-
 
 // Include library
 #pragma comment( lib, "openni.lib" )

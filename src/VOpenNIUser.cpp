@@ -3,8 +3,7 @@
 #include "VOpenNIDevice.h"
 #include "VOpenNIUser.h"
 
-
-#include "Vitamin/base/LogManager.h"
+//#include "Vitamin/base/LogManager.h"
 
 
 
@@ -338,13 +337,13 @@ namespace V
 					// Confidence
 					bone->orientationConfidence = jointOri.fConfidence;
 
-					// Log first time this runs
-					if( mUserState != USER_TRACKING )
-					{
-						std::stringstream ss;
-						ss << bone->id << " - " << bone->position[0] << ", " << bone->position[1] << ", " << bone->position[2] << ", " << std::endl;
-						Vitamin::LogManager::getSingleton().logMessage( ss.str() );
-					}
+					//// Log first time this runs
+					//if( mUserState != USER_TRACKING )
+					//{
+					//	std::stringstream ss;
+					//	ss << bone->id << " - " << bone->position[0] << ", " << bone->position[1] << ", " << bone->position[2] << ", " << std::endl;
+					//	Vitamin::LogManager::getSingleton().logMessage( ss.str() );
+					//}
 				}
 
 				index++;
