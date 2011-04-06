@@ -40,9 +40,6 @@ namespace V
 		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
 
 		// Add new user
-		//if( !device->getUser(nId) )
-			//device->addUser( nId );
-		//OpenNIDeviceManager::Instance().setText( ss.str() );
 		if( !OpenNIDeviceManager::Instance().hasUser(nId) )
 		{
 			OpenNIDeviceManager::Instance().addUser( &generator, nId );
@@ -51,16 +48,21 @@ namespace V
 			DEBUG_MESSAGE( ss.str().c_str() );
 
 
-			// Load Data For Each User
+			// TODO! Enable slot change. For now only slot 0 is used
 			int slot = 0;
-			if( device->getUserGenerator()->GetSkeletonCap().IsCalibrationData(slot) )
-			{
-				device->getUserGenerator()->GetSkeletonCap().LoadCalibrationData( nId, slot );
-				device->getUserGenerator()->GetSkeletonCap().StartTracking( nId );
 
-				std::stringstream ss2;
-				ss2 << "Loaded Calibration Data For User: '" << nId << "'  Slot: " << slot << std::endl;
-				DEBUG_MESSAGE( ss2.str().c_str() );
+			if( device->isOneTimeCalibration() )
+			{
+				// Load Data For Each User
+				if( device->getUserGenerator()->GetSkeletonCap().IsCalibrationData(slot) )
+				{
+					device->getUserGenerator()->GetSkeletonCap().LoadCalibrationData( nId, slot );
+					device->getUserGenerator()->GetSkeletonCap().StartTracking( nId );
+
+					std::stringstream ss2;
+					ss2 << "Loaded Calibration Data For User: '" << nId << "'  Slot: " << slot << std::endl;
+					DEBUG_MESSAGE( ss2.str().c_str() );
+				}
 			}
 			else
 			{
@@ -72,11 +74,12 @@ namespace V
 
 
 			// Send events to all listeners
+			UserListenerList listeners = device->getListeners();
 			for( uint32_t i=0; i<device->getListeners().size(); i++ )
 				//for( UserListenerList::iterator it=device->getListeners().begin(); it!=device->getListeners().end(); it++ )
 			{
-				UserListener* listener = device->getListeners()[i];
-				if( listener )
+				UserListener* listener = listeners[i];
+				//if( listener )
 				{
 					UserEvent event;
 					event.mId = nId;
@@ -102,7 +105,7 @@ namespace V
 		//if( device->getUser(nId) )
 			//device->removeUser( nId );
 		//OpenNIDeviceManager::Instance().setText( ss.str() );
-		if( OpenNIDeviceManager::Instance().getUser(nId) )
+		if( OpenNIDeviceManager::Instance().hasUser(nId) )
 		{
 			std::stringstream ss;
 			ss << "Lost User: '" << nId << "'    Total: " << OpenNIDeviceManager::Instance().getNumOfUsers() << std::endl;
@@ -110,11 +113,12 @@ namespace V
 
 			OpenNIDeviceManager::Instance().removeUser( nId );
 
+			UserListenerList listeners = device->getListeners();
 			for( uint32_t i=0; i<device->getListeners().size(); i++ )
 				//for( UserListenerList::iterator it=device->getListeners().begin(); it!=device->getListeners().end(); it++ )
 			{
-				UserListener* listener = device->getListeners()[i];
-				if( listener )
+				UserListener* listener = listeners[i];
+				//if( listener )
 				{
 					UserEvent event;
 					event.mId = nId;
@@ -138,13 +142,13 @@ namespace V
 		ss << "Pose detection start: '" << strPose << "' on User: " << nId << std::endl;
 		DEBUG_MESSAGE( ss.str().c_str() );
 
-		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
+		OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
 		
 		// If calibration done, skip this
 		//if( device->_isFirstCalibrationComplete )
 		//	return;
 
-		if( OpenNIUserRef user = OpenNIDeviceManager::Instance().getUser(nId) ) 
+		//if( OpenNIDeviceManager::Instance().hasUser(nId) ) 
 		{
 			OpenNIDeviceManager::Instance().setText( ss.str() );
 
@@ -172,10 +176,11 @@ namespace V
 
 		OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
+
 	// Callback: Finished calibration
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationEnd( xn::SkeletonCapability& capability, XnUserID nId, XnBool bSuccess, void* pCookie )
 	{
-		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
+		OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
 
 		// If calibration done, skip this
 		//if( device->_isFirstCalibrationComplete )
@@ -198,9 +203,12 @@ namespace V
 			DEBUG_MESSAGE( ss.str().c_str() );
 			OpenNIDeviceManager::Instance().setText( ss.str() );
 
-			// Save Data For Each User
+			// Save calibration data on slot 0
+			// TODO! We should be able to choose a slot
 			int slot = 0;
-			if( !device->getUserGenerator()->GetSkeletonCap().IsCalibrationData(slot) )
+
+			if( !device->getUserGenerator()->GetSkeletonCap().IsCalibrationData(slot) &&
+				device->isOneTimeCalibration() )
 			{
 				device->getUserGenerator()->GetSkeletonCap().SaveCalibrationData( nId, slot );
 				std::stringstream ss2;
@@ -220,8 +228,6 @@ namespace V
 			DEBUG_MESSAGE( ss.str().c_str() );
 
 			OpenNIDeviceManager::Instance().setText( ss.str() );
-
-			device->_isFirstCalibrationComplete = false;
 
 			if( g_bNeedPose )
 			{
@@ -292,10 +298,11 @@ namespace V
 		_isAudioOn = false;
 		_isHandsOn = false;
 
+		_isOneTimeCalibration = false;
 		_isFirstCalibrationComplete = false;
 
 		mNearClipPlane = 0;
-		mFarClipPlane = 10000;
+		mFarClipPlane = 6000;
 
 		mDepthShiftValue = 4;
 
@@ -308,7 +315,6 @@ namespace V
 
 	OpenNIDevice::~OpenNIDevice()
 	{
-		_context = NULL;
 		release();
 	}
 
@@ -645,6 +651,8 @@ namespace V
 		_primaryGen = NULL;	// just null the pointer 
 		SAFE_DELETE( _device );
 		
+		_context = NULL;	// just null the pointer 
+
 		SAFE_DELETE( _imageMetaData ); 
 		SAFE_DELETE( _irMetaData );
 		SAFE_DELETE( _depthMetaData );

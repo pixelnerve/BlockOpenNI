@@ -104,7 +104,10 @@ namespace V
 		xn::HandsGenerator* getHandsGenerator()		{ return &_handsGen;	}
 		xn::Context*	getContext()				{ return _context;	}
 
-		// Set calibration state, done or not done. true or false
+		bool isOneTimeCalibration()					{ return _isOneTimeCalibration;	}
+		void enableOneTimeCalibration( bool value )	{ _isOneTimeCalibration = value;	}
+
+		// Set calibration state. true/false
 		void setCalibrationState( bool value )		{ _isFirstCalibrationComplete = value;	}
 
 		float getMinDistance()						{ return mMinDistance; }
@@ -119,6 +122,7 @@ namespace V
 		void removeUser( uint32_t id );
 		bool hasUser( int32_t id );
 		bool hasUsers()								{ return (mUserList.size()>0)?true:false; }
+
 
 		XnSkeletonProfile getSkeletonProfile()	{ return mSkeletonProfile;	}
 		void setSkeletonProfile( XnSkeletonProfile profile ) 
@@ -205,7 +209,6 @@ namespace V
 		const XnDepthPixel*		pDepth;
 		const XnIRPixel*		pIR;
 
-
 		// Flags for nodes
 		bool					_isImageOn;
 		bool					_isIROn;
@@ -215,6 +218,7 @@ namespace V
 		bool					_isHandsOn;
 
 		// User Calibrations
+		bool					_isOneTimeCalibration;
 		bool					_isFirstCalibrationComplete;
 
 		xn::Generator*			_primaryGen;
