@@ -2,6 +2,7 @@
 
 #include "VOpenNICommon.h"
 #include "VOpenNISurface.h"
+#include "VOpenNIUser.h"
 
 
 namespace V
@@ -10,13 +11,39 @@ namespace V
 	// Forward declarations
 	class OpenNIUser;
 	class OpenNIDevice;
+	class UserListener;
 
 	// Typedefs
 	typedef boost::shared_ptr<OpenNIUser> OpenNIUserRef;
 	typedef boost::shared_ptr<OpenNIDevice> OpenNIDeviceRef;
 	typedef std::list< boost::shared_ptr<OpenNIDevice> > OpenNIDeviceList;
-	typedef std::list< boost::shared_ptr<OpenNIUser> > OpenNIUserList;
+	typedef std::list< OpenNIUserRef > OpenNIUserList;
+	typedef std::vector<UserListener*> UserListenerList;
 
+
+
+
+
+
+	struct UserEvent
+	{
+		UserEvent()
+		{
+			mId = 0;
+			mDevice = OpenNIDeviceRef();
+			mUser = OpenNIUserRef();
+		}
+		uint32_t mId;
+		OpenNIDeviceRef mDevice;
+		OpenNIUserRef	mUser;
+	};
+
+	class UserListener
+	{
+	public:
+		virtual void onNewUser( UserEvent event ) {};
+		virtual void onLostUser( UserEvent event ) {};
+	};
 
 
 	/************************************************************************/
@@ -51,6 +78,12 @@ namespace V
 
 		void setPrimaryBuffer( int type );
 
+		// Shifts depth pixel (bit operator) NOTE!this fucks with the correct distance values
+		// To get correct distances, set this value to 0 (zero)
+		int getDepthShiftMul()						{ return mDepthShiftValue; }
+		void setDepthShiftMul( int value )			{ mDepthShiftValue = value; }
+		void resetDepthShiftMul()					{ mDepthShiftValue = 0; }
+
 		void setDepthInvert( bool flag );
 		bool getDepthInvert()						{ return _isDepthInverted; }
 
@@ -64,11 +97,20 @@ namespace V
 
 		xn::DepthMetaData* getDepthMetaData()		{ return _depthMetaData; }
 		xn::SceneMetaData* getUserMetaData()		{ return _sceneMetaData; }
-		xn::ImageGenerator*	getImageGenerator()		{ return _imageGen;	}
-		xn::IRGenerator* getIRGenerator()			{ return _irGen;	}
-		xn::DepthGenerator*	getDepthGenerator()		{ return _depthGen;	}
-		xn::UserGenerator* getUserGenerator()		{ return _userGen;	}
+		xn::ImageGenerator*	getImageGenerator()		{ return &_imageGen;	}
+		xn::IRGenerator* getIRGenerator()			{ return &_irGen;	}
+		xn::DepthGenerator*	getDepthGenerator()		{ return &_depthGen;	}
+		xn::UserGenerator* getUserGenerator()		{ return &_userGen;	}
+		xn::HandsGenerator* getHandsGenerator()		{ return &_handsGen;	}
 		xn::Context*	getContext()				{ return _context;	}
+
+		// Set calibration state, done or not done. true or false
+		void setCalibrationState( bool value )		{ _isFirstCalibrationComplete = value;	}
+
+		float getMinDistance()						{ return mMinDistance; }
+		float getMaxDistance()						{ return mMaxDistance; }
+
+		void setAlignWithDepthGenerator();
 
 		//const std::string& getDebugInfo()			{ return mDebugInfo;}
 
@@ -77,6 +119,28 @@ namespace V
 		void removeUser( uint32_t id );
 		bool hasUser( int32_t id );
 		bool hasUsers()								{ return (mUserList.size()>0)?true:false; }
+
+		XnSkeletonProfile getSkeletonProfile()	{ return mSkeletonProfile;	}
+		void setSkeletonProfile( XnSkeletonProfile profile ) 
+		{ 
+			mSkeletonProfile = profile; 
+			if( _isUserOn && _userGen.IsCapabilitySupported(XN_CAPABILITY_SKELETON) )
+			{
+				_userGen.GetSkeletonCap().SetSkeletonProfile( mSkeletonProfile );
+			}
+		}
+
+
+		uint32_t addListener( UserListener* listener )
+		{
+			mListeners.push_back( listener );
+			return mListeners.size()-1;
+		}
+		void removeListener( uint32_t id )
+		{
+			//mListeners.erase( id );
+		}
+		UserListenerList getListeners()			{ return mListeners;	}
 
 		static void XN_CALLBACK_TYPE Callback_NewUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie );
 		static void XN_CALLBACK_TYPE Callback_LostUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie );
@@ -111,6 +175,8 @@ namespace V
 		XnMapOutputMode			_mapMode; 
 
 
+		UserListenerList		mListeners;
+
 		// Buffers
 		OpenNISurface8*			mColorSurface;
 		OpenNISurface8*			mIRSurface;
@@ -129,6 +195,11 @@ namespace V
 		int						g_MaxDepth;
 		float*					g_pDepthHist;
 
+		int						mDepthShiftValue;	// pixel shift left value (intensifies the distance map)
+		float					mMinDistance, mMaxDistance;
+
+		XnSkeletonProfile		mSkeletonProfile;
+
 		// Temp buffers
 		const XnUInt8*			pImage;
 		const XnDepthPixel*		pDepth;
@@ -141,13 +212,18 @@ namespace V
 		bool					_isDepthOn;
 		bool					_isUserOn;
 		bool					_isAudioOn;
+		bool					_isHandsOn;
+
+		// User Calibrations
+		bool					_isFirstCalibrationComplete;
 
 		xn::Generator*			_primaryGen;
-		xn::DepthGenerator*		_depthGen;
-		xn::ImageGenerator*		_imageGen;
-		xn::IRGenerator*		_irGen;
-		xn::UserGenerator*		_userGen;
-		xn::AudioGenerator*		_audioGen;
+		xn::DepthGenerator		_depthGen;
+		xn::ImageGenerator		_imageGen;
+		xn::IRGenerator			_irGen;
+		xn::UserGenerator		_userGen;
+		xn::AudioGenerator		_audioGen;
+		xn::HandsGenerator		_handsGen;
 
 		xn::ImageMetaData*		_imageMetaData;
 		xn::IRMetaData*			_irMetaData;
@@ -180,26 +256,33 @@ namespace V
 		~OpenNIDeviceManager();
 
 		uint32_t enumDevices();
-		OpenNIDeviceRef createDevice( const std::string& xmlFile="", bool allocUserIfNoNode=false );
+		OpenNIDeviceRef createDevice( const std::string& xmlFile, bool allocUserIfNoNode=false );
 		OpenNIDeviceRef createDevice( int nodeTypeFlags );
-		OpenNIDevice* createDevice__( const std::string& xmlFile="", bool allocUserIfNoNode=false );
-		OpenNIDevice* createDevice__( int nodeTypeFlags );
+		//OpenNIDevice* createDevice__( const std::string& xmlFile, bool allocUserIfNoNode=false );
+		//OpenNIDevice* createDevice__( int nodeTypeFlags );
 		//void destroyDevice( OpenNIDevice* device );
 		void destroyAll( void );
 
 		OpenNIUserRef addUser( xn::UserGenerator* userGen, uint32_t id );
 		void removeUser( uint32_t id );
+		OpenNIUserRef getFirstUser();
+		OpenNIUserRef getSecondUser();
+		OpenNIUserRef getLastUser();
 		OpenNIUserRef getUser( int id );
 		bool hasUser( int32_t id );
 		bool hasUsers();
+		const uint32_t getNumOfUsers()		{ return mUserList.size();	}
+		OpenNIUserList getUserList()	{ return mUserList;	}
 
 		void start();
 
-		void renderJoints( float pointSize );
+		void renderJoints( float width, float height, float depth, float pointSize, bool renderDepth=false );
 
 		const std::string& getDebugInfo()			{ return mDebugInfo;}
 		void setText( const std::string& info )		{ mDebugInfo = info; }
 
+		const uint32_t getMaxNumOfUsers()			{ return mMaxNumOfUsers; }
+		void setMaxNumOfUsers( uint32_t count )		{ mMaxNumOfUsers = count; }
 
 		//
 		// Instance
@@ -213,6 +296,8 @@ namespace V
 			return &_singletonPointer;
 		}
 
+		void update();
+
 	private:
 		// Copy constructor
 		OpenNIDeviceManager( const OpenNIDeviceManager& ) {};
@@ -220,7 +305,6 @@ namespace V
 		OpenNIDeviceManager& operator = ( const OpenNIDeviceManager& ) {};
 
 		void run();
-		void update();
 	public:
 		static const bool				USE_THREAD;
 
@@ -236,6 +320,8 @@ namespace V
 		xn::Context						_context;
 
 		std::string						mDebugInfo;
+
+		uint32_t						mMaxNumOfUsers;
 
 		int								_idCount;
 

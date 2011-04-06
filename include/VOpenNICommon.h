@@ -110,7 +110,7 @@ namespace V
 		SKEL_RIGHT_HIP = 21, 
 		SKEL_RIGHT_KNEE = 22, 
 		SKEL_RIGHT_ANKLE = 23, 
-		SKEL_RIGHT_FOOT = 24 
+		SKEL_RIGHT_FOOT = 24,
 	};
 	// Mac count of bones
 	static const int BONE_COUNT = 24;
