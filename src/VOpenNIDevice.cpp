@@ -51,7 +51,7 @@ namespace V
 			// TODO! Enable slot change. For now only slot 0 is used
 			int slot = 0;
 
-			if( device->isOneTimeCalibration() )
+			if( device->isOneTimeCalibration() && device->_isFirstCalibrationComplete )
 			{
 				// Load Data For Each User
 				if( device->getUserGenerator()->GetSkeletonCap().IsCalibrationData(slot) )
