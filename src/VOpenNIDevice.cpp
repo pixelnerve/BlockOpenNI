@@ -39,7 +39,7 @@ namespace V
 
 		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
 
-		// Add new user
+		// Add new user if not available already
 		if( !OpenNIDeviceManager::Instance().hasUser(nId) )
 		{
 			OpenNIDeviceManager::Instance().addUser( &generator, nId );
@@ -1284,7 +1284,7 @@ namespace V
 	{
 		_isRunning = false;
 		_idCount = 0;
-		mMaxNumOfUsers = 4;
+		mMaxNumOfUsers = 2;
 		mDebugInfo = "No debug information\n";
 	}
 
@@ -1449,8 +1449,8 @@ namespace V
 
 	V::OpenNIUserRef OpenNIDeviceManager::getFirstUser()
 	{
-		boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
-		//boost::mutex::scoped_lock lock( _mutex );
+		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		boost::mutex::scoped_lock lock( _mutex );
 
 		if( mUserList.empty() ) return OpenNIUserRef();
 		return (*mUserList.begin());
@@ -1458,8 +1458,8 @@ namespace V
 
 	V::OpenNIUserRef OpenNIDeviceManager::getSecondUser()
 	{
-		boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
-		//boost::mutex::scoped_lock lock( _mutex );
+		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		boost::mutex::scoped_lock lock( _mutex );
 
 		if( mUserList.size() < 2 ) return OpenNIUserRef();
 
@@ -1477,17 +1477,17 @@ namespace V
 
 	V::OpenNIUserRef OpenNIDeviceManager::getLastUser()
 	{
-		boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
-		//boost::mutex::scoped_lock lock( _mutex );
+		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		boost::mutex::scoped_lock lock( _mutex );
 
 		return ( mUserList.empty() ) ? OpenNIUserRef() : (*mUserList.end());
 	}
 
 	OpenNIUserRef OpenNIDeviceManager::getUser( int id )
 	{
-		boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
 		//boost::lock_guard<boost::mutex> lock( _mutex );
-		//boost::mutex::scoped_lock lock( _mutex );
+		boost::mutex::scoped_lock lock( _mutex );
 
 		if( mUserList.empty() ) return OpenNIUserRef();
 		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
@@ -1502,8 +1502,8 @@ namespace V
 
 	bool OpenNIDeviceManager::hasUser( int32_t id )
 	{
-		boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
-		//boost::mutex::scoped_lock lock( _mutex );
+		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		boost::mutex::scoped_lock lock( _mutex );
 
 		if( mUserList.empty() ) return false;
 		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); it++ )
@@ -1517,12 +1517,28 @@ namespace V
 
 	bool OpenNIDeviceManager::hasUsers()
 	{ 
-		boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
-		//boost::mutex::scoped_lock lock( _mutex );
+		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		boost::mutex::scoped_lock lock( _mutex );
 
 		return !mUserList.empty(); 
 	}
 
+
+	const uint32_t OpenNIDeviceManager::getNumOfUsers()
+	{ 
+		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		boost::mutex::scoped_lock lock( _mutex );
+
+		return mUserList.size();	
+	}
+	
+	OpenNIUserList OpenNIDeviceManager::getUserList()
+	{ 
+		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		boost::mutex::scoped_lock lock( _mutex );
+
+		return mUserList;	
+	}
 
 	void OpenNIDeviceManager::run()
 	{
@@ -1544,6 +1560,8 @@ namespace V
 			_isRunning = true;
 		}
 
+		boost::mutex::scoped_lock lock( _mutex );
+
 		// Start all devices
 		for( OpenNIDeviceList::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
 		{
@@ -1560,8 +1578,11 @@ namespace V
 	{
 		//if( !_isRunning ) return;
 
-		//boost::mutex::scoped_lock lock( _mutex );
-		if( USE_THREAD ) boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		if( USE_THREAD ) 
+		{
+			//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+			boost::mutex::scoped_lock lock( _mutex );
+		}
 
 		// Handle device update
 		for( OpenNIDeviceList::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
@@ -1582,9 +1603,8 @@ namespace V
 
 	void OpenNIDeviceManager::renderJoints( float width, float height, float depth, float pointSize, bool renderDepth )
 	{
-		boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
-		//boost::mutex::scoped_lock lock( _mutex );
-		//if( mUserList.size() == 0 ) return;
+		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		boost::mutex::scoped_lock lock( _mutex );
 
 		if( mUserList.empty() ) return;
 

@@ -162,7 +162,6 @@ namespace V
 				//
 				// Generate a bitmap with the user pixels colored
 				//
-				uint16_t* pDepth = _device->getDepthMap();
 				int depthWidth = depthMetaData->XRes();
 				int depthHeight = depthMetaData->YRes();
 				if( !_userPixels || (mWidth != depthWidth) || (mHeight != depthHeight) )
@@ -172,16 +171,24 @@ namespace V
 					allocate( depthWidth, depthHeight );
 				}
 
+				// Clear memory
 				//xnOSMemSet( _userDepthPixels, 0, depthWidth*depthHeight*sizeof(uint16_t) );	// 16bit
-				//xnOSMemSet( _backUserPixels, 0, depthWidth*depthHeight*3 );
+				xnOSMemSet( _backUserPixels, 0, depthWidth*depthHeight*3 );
 				xnOSMemSet( _backUserDepthPixels, 0, depthWidth*depthHeight*sizeof(uint16_t) );	// 16bit
 
-				//uint8_t* pixels = _backUserPixels;
+				uint16_t* pDepth = _device->getDepthMap();
+				uint8_t* pixels = _backUserPixels;
 				uint16_t* depthPixels = _backUserDepthPixels;
+
+
+				mUserMinZDistance = 65535;
+				mUserMaxZDistance = 0;
+
+
 				int index = 0;
 				for( int j=0; j<depthHeight; j++ )
 				{
-					for( int x=0; x<depthWidth; x++ )
+					for( int i=0; i<depthWidth; i++ )
 					{
 						// Only fill bitmap with current user's data
 						/*if( *labels != 0 && *labels == mId )
@@ -210,35 +217,50 @@ namespace V
 							// Pixel is not empty, deal with it.
 							uint32_t nValue = *pDepth;
 							XnLabel label = *labels;
-							//XnUInt32 nColorID = label % nColors;
-							//if( label == 0 )
-							//{
-							//	nColorID = nColors;
-							//}
+							XnUInt32 nColorID = label % nColors;
+							if( label == 0 )
+							{
+								nColorID = nColors;
+							}
+							mColor[0] = g_Colors[mId][0];
+							mColor[1] = g_Colors[mId][1];
+							mColor[2] = g_Colors[mId][2];
+							if( nValue != 0 )
+							{
+								uint32_t nHistValue = _device->getDepthMap24()[nValue];
+								pixels[index+0] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][0]); 
+								pixels[index+1] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][1]);
+								pixels[index+2] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][2]);
+							}
 
-							//mColor[0] = g_Colors[mId][0];
-							//mColor[1] = g_Colors[mId][1];
-							//mColor[2] = g_Colors[mId][2];
-
-							//if( nValue != 0 )
-							//{
-							//	uint32_t nHistValue = _device->getDepthMap24()[nValue];
-							//	pixels[index+0] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][0]); 
-							//	pixels[index+1] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][1]);
-							//	pixels[index+2] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][2]);
-							//}
-
+							// Keep depth value
 							*depthPixels = nValue;
+
+							// Get max and min z values for current user
+							//mUserMinZDistance = (nValue < mUserMinZDistance) ? nValue : mUserMinZDistance;
+							//mUserMaxZDistance = (nValue > mUserMaxZDistance) ? nValue : mUserMaxZDistance;
+							if( nValue < mUserMinZDistance ) 
+							{
+								mUserMinZDistance = nValue;
+								mUserMinPixelIdx = i + j * depthWidth;
+							}
+							if( nValue > mUserMaxZDistance )
+							{
+								mUserMaxZDistance = nValue;
+								mUserMaxPixelIdx = i + j * depthWidth;
+							}
 						}
 
-						*depthPixels++;
+
+						depthPixels++;
+
 						pDepth++;
 						labels++;
 						index += 3;
 					}
 				}
 
-				//memcpy( _userPixels, _backUserPixels, mWidth*mHeight*3 );
+				memcpy( _userPixels, _backUserPixels, mWidth*mHeight*3 );
 				memcpy( _userDepthPixels, _backUserDepthPixels, mWidth*mHeight*sizeof(uint16_t) );  // 16bit
 			}
 		}

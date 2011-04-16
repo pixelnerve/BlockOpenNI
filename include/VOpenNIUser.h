@@ -69,6 +69,11 @@ namespace V
 
 		void			setEnablePixels( bool flag )	{ _enablePixels = flag;	}
 
+		// Get closest and farest z distance for current user
+		// This can be used to find a center point for local transformations
+		uint16_t		getMinZDistance()				{ return mUserMinZDistance;	}
+		uint16_t		getMaxZDistance()				{ return mUserMaxZDistance;	}
+
 	protected:
 		void			allocate( int width, int height );
 
@@ -84,6 +89,9 @@ namespace V
 		uint8_t*		_userPixels;
 		uint8_t*		_backUserPixels;
 		uint16_t*		_userDepthPixels, *_backUserDepthPixels;
+
+		uint16_t		mUserMinZDistance, mUserMaxZDistance;
+		uint16_t		mUserMinPixelIdx, mUserMaxPixelIdx;
 
 		float			mSkeletonSmoothing;
 

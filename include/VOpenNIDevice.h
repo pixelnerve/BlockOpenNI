@@ -275,8 +275,8 @@ namespace V
 		OpenNIUserRef getUser( int id );
 		bool hasUser( int32_t id );
 		bool hasUsers();
-		const uint32_t getNumOfUsers()		{ return mUserList.size();	}
-		OpenNIUserList getUserList()	{ return mUserList;	}
+		const uint32_t getNumOfUsers();
+		OpenNIUserList getUserList();
 
 		void start();
 
