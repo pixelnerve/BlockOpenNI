@@ -386,11 +386,8 @@ namespace V
 			// User
 			//_userGen = new xn::UserGenerator();
 			_sceneMetaData = new xn::SceneMetaData();
-			_status = _context->FindExistingNode( XN_NODE_TYPE_USER, _userGen );
-			if( _status != XN_STATUS_OK ) {
-				_status = _userGen.Create( *_context );	//, NULL, &_errors );
-				CHECK_RC( _status, "Create user generator" );
-			}
+			_status = _userGen.Create( *_context );	//, NULL, &_errors );
+			CHECK_RC( _status, "Create user generator" );
 			_isUserOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_AUDIO )
@@ -401,6 +398,14 @@ namespace V
 			_status = _audioGen.Create( *_context );	//, NULL, &_errors );
 			CHECK_RC( _status, "Create audio generator" );
 			_isAudioOn = true;
+		}
+		if( nodeTypeFlags & NODE_TYPE_HANDS )
+		{
+			// Hand Gestures
+			//_handsGen = new HandsGenerator();
+			_status = _handsGen.Create( *_context );	//, NULL, &_errors );
+			CHECK_RC( _status, "Create hands generator" );
+			_isHandsOn = true;
 		}
 
 
@@ -425,13 +430,15 @@ namespace V
 		}
 
 
+
+		// Request calibration if user generator is enabled
 		if( _isUserOn )
 		{
 			requestUserCalibration();
 		}
 
 
-		// Allocate mem for bitmaps
+		// Allocate memory for bitmaps
 		allocate( static_cast<int>(nodeTypeFlags), 640, 480 );
 
 
@@ -557,6 +564,7 @@ namespace V
 		if( _isDepthOn ) flags |= NODE_TYPE_DEPTH;
 		if( _isUserOn ) flags |= NODE_TYPE_USER;
 		if( _isAudioOn ) flags |= NODE_TYPE_AUDIO;
+		if( _isHandsOn ) flags |= NODE_TYPE_HANDS;
 
 
 		XnMapOutputMode mode;

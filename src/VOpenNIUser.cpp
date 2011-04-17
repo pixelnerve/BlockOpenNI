@@ -674,4 +674,37 @@ namespace V
 		_userDepthPixels = new uint16_t[width*height];
 		_backUserDepthPixels = new uint16_t[width*height];
 	}
+
+
+	//
+	// Load a calibration data file and apply to current user
+	//
+	void OpenNIUser::loadCalibrationDataToFile( const std::string& filename )
+	{
+		if( _device->getUserGenerator() && _device->getUserGenerator()->GetSkeletonCap().IsCalibrated( mId ) )
+		{
+			// Save user's calibration to file
+			XnStatus rc = _device->getUserGenerator()->GetSkeletonCap().LoadCalibrationDataFromFile( mId, filename.c_str() );
+			CHECK_RC( rc, "OpenNIUser::loadCalibrationDataToFile()" );
+			if( rc == XN_STATUS_OK )
+			{
+				// Make sure state is coherent
+				_device->getUserGenerator()->GetPoseDetectionCap().StopPoseDetection( mId );
+				_device->getUserGenerator()->GetSkeletonCap().StartTracking( mId );
+			}
+		}
+	}
+
+	//
+	// Save current user's calibration data to a file
+	//
+	void OpenNIUser::saveCalibrationDataToFile( const std::string& filename )
+	{
+		if( _device->getUserGenerator() && _device->getUserGenerator()->GetSkeletonCap().IsCalibrated( mId ) )
+		{
+			// Save user's calibration to file
+			XnStatus rc = _device->getUserGenerator()->GetSkeletonCap().SaveCalibrationDataToFile( mId, filename.c_str() );
+			CHECK_RC( rc, "OpenNIUser::saveCalibrationDataToFile()" );
+		}
+	}
 }

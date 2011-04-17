@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VOpenNICommon.h"
-
+//#include "SkeletonPoseDetector.h"
 
 
 namespace V
@@ -49,6 +49,9 @@ namespace V
 
 		OpenNIBoneList	getBoneList();
 		OpenNIBone*		getBone( int id );
+
+		void			loadCalibrationDataToFile( const std::string& filename );
+		void			saveCalibrationDataToFile( const std::string& filename );
 
 		void			setText( const std::string& info )	{ _debugInfo = info; }
 		const std::string& getText()		{ return _debugInfo; }
@@ -105,5 +108,8 @@ namespace V
 		OpenNIBoneList	mBoneList;
 
 		UserStateEnum	mUserState;
+
+		//StartPoseDetector*	mStartPoseDetector;
+		//EndPoseDetector*		mEndPoseDetector;
 	};
 }

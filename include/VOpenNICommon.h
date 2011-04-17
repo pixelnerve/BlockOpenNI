@@ -19,15 +19,19 @@
 #error "Unknown platform"
 #endif
 
+// Boost
 #include <boost/cstdint.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/thread.hpp>
+
+// Std
 #include <string>
 #include <vector>
 
+// OpenNI
 #include "XnOpenNI.h"
 #include "XnLog.h"
 #include "XnCppWrapper.h"
@@ -54,6 +58,16 @@ namespace V
 			DEBUG_MESSAGE( "'\n" ); \
 		}
 
+#define VALIDATE_GENERATOR( type, desc, generator, context) \
+	{ \
+		rc = context.EnumerateExistingNodes(nodes, type); \
+		if (nodes.IsEmpty()) \
+		{ \
+			printf("No %s generator!\n", desc); \
+			return 1; \
+		} \
+		(*(nodes.Begin())).GetInstance(generator); \
+	}
 
 	#ifndef SAFE_DELETE
 	#define SAFE_DELETE( x )		if( x ) { delete x; x = NULL; }
@@ -62,7 +76,7 @@ namespace V
 	#define SAFE_DELETE_ARRAY( x )	if( x ) { delete[] x; x = NULL; }
 	#endif
 	#ifndef SAFE_RELEASE
-	#define SAFE_RELEASE( x )		if( x ) { x->release(); }
+	#define SAFE_RELEASE( x )		if( x ) { x->Release(); }
 	#endif
 
 
@@ -80,7 +94,8 @@ namespace V
 		NODE_TYPE_IR	= 0x00000010,
 		NODE_TYPE_DEPTH	= 0x00000100,
 		NODE_TYPE_USER	= 0x00001000,
-		NODE_TYPE_AUDIO	= 0x00010000
+		NODE_TYPE_AUDIO	= 0x00010000,
+		NODE_TYPE_HANDS = 0x00100000
 	};
 
 
