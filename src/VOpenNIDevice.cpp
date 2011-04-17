@@ -513,7 +513,7 @@ namespace V
 					(*it).GetInstance( _audioGen );
 					ss << "Audio: " << _audioGen.GetName() << std::endl;
 					DEBUG_MESSAGE( ss.str().c_str() );
-					_isUserOn = true;
+					_isAudioOn = true;
 					break;
 				case XN_NODE_TYPE_HANDS:
 					//_handsGen = new HandsGenerator();
@@ -530,7 +530,7 @@ namespace V
 		//
 		// In case the config file has no user node, we create one if so we want to
 		//
-		if( _isUserOn && allocUserIfNoNode )
+		if( !_isUserOn && allocUserIfNoNode )
 		{
 			//_userGen = new UserGenerator();
 			_sceneMetaData = new xn::SceneMetaData();
