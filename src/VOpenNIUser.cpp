@@ -688,7 +688,8 @@ namespace V
 			CHECK_RC( rc, "OpenNIUser::loadCalibrationDataToFile()" );
 			if( rc == XN_STATUS_OK )
 			{
-				// Make sure state is coherent
+				// Make sure state 
+				mUserState = USER_TRACKING;
 				_device->getUserGenerator()->GetPoseDetectionCap().StopPoseDetection( mId );
 				_device->getUserGenerator()->GetSkeletonCap().StartTracking( mId );
 			}
