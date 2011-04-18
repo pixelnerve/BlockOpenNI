@@ -43,9 +43,9 @@ namespace V
 		if( !OpenNIDeviceManager::Instance().hasUser(nId) )
 		{
 			OpenNIDeviceManager::Instance().addUser( &generator, nId );
-			std::stringstream ss;
-			ss << "New User: '" << nId << "'     Total: " << OpenNIDeviceManager::Instance().getNumOfUsers() << std::endl;
-			DEBUG_MESSAGE( ss.str().c_str() );
+			//std::stringstream ss;
+			//ss << "New User: '" << nId << "'     Total: " << OpenNIDeviceManager::Instance().getNumOfUsers() << std::endl;
+			//DEBUG_MESSAGE( ss.str().c_str() );
 
 
 			// TODO! Enable slot change. For now only slot 0 is used
@@ -107,9 +107,9 @@ namespace V
 		//OpenNIDeviceManager::Instance().setText( ss.str() );
 		if( OpenNIDeviceManager::Instance().hasUser(nId) )
 		{
-			std::stringstream ss;
-			ss << "Lost User: '" << nId << "'    Total: " << OpenNIDeviceManager::Instance().getNumOfUsers() << std::endl;
-			DEBUG_MESSAGE( ss.str().c_str() );
+			//std::stringstream ss;
+			//ss << "Lost User: '" << nId << "'    Total: " << OpenNIDeviceManager::Instance().getNumOfUsers() << std::endl;
+			//DEBUG_MESSAGE( ss.str().c_str() );
 
 			OpenNIDeviceManager::Instance().removeUser( nId );
 

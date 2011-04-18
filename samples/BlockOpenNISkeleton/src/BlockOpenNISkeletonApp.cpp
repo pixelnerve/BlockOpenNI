@@ -90,11 +90,11 @@ protected:
 };
 
 
-class BlockOpenNISampleAppApp : public AppBasic 
+class BlockOpenNISampleAppApp : public AppBasic, V::UserListener
 {
 public:
-	static const int WIDTH = 1280;
-	static const int HEIGHT = 720;
+	static const int WIDTH = 800;
+	static const int HEIGHT = 600;
 
 	static const int KINECT_COLOR_WIDTH = 640;	//1280;
 	static const int KINECT_COLOR_HEIGHT = 480;	//1024;
@@ -110,6 +110,10 @@ public:
 	void draw();
 	void keyDown( KeyEvent event );
 
+	void onNewUser( V::UserEvent event );
+	void onLostUser( V::UserEvent event );
+
+
 	ImageSourceRef getColorImage()
 	{
 		// register a reference to the active buffer
@@ -120,6 +124,7 @@ public:
 	ImageSourceRef getUserColorImage( int id )
 	{
 		V::OpenNIUserRef user = _manager->getUser(id);
+		if( !user ) return ImageSourceRef();
 
 		// register a reference to the active buffer
 		uint8_t *activeColor = user->getPixels();
@@ -139,6 +144,7 @@ public:
 		uint8_t *activeDepth = _device0->getDepthMap24();
 		return ImageSourceRef( new ImageSourceKinectColor( activeDepth, KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT ) );
 	}
+	void prepareSettings( Settings *settings );
 
 public:	// Members
 	V::OpenNIDeviceManager*	_manager;
@@ -149,10 +155,23 @@ public:	// Members
 	gl::Texture				mOneUserTex;	 
 };
 
+
+void BlockOpenNISampleAppApp::prepareSettings( Settings *settings )
+{
+	settings->setFrameRate( 120 );
+	settings->setWindowSize( WIDTH, HEIGHT );
+	settings->setFullScreenSize( WIDTH, HEIGHT );
+	settings->setTitle( "Heineken Streaks" );
+	//settings->setShouldQuit( true );
+	//settings->setFullScreen( true );
+}
+
+
 void BlockOpenNISampleAppApp::setup()
 {
 	_manager = V::OpenNIDeviceManager::InstancePtr();
-	_device0 = _manager->createDevice( "data/configIR.xml", true );
+	//_device0 = _manager->createDevice( "data/configIR.xml", true );
+	_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_USER );
 	if( !_device0 ) 
 	{
 		DEBUG_MESSAGE( "(App)  Couldn't init device0\n" );
@@ -180,7 +199,8 @@ void BlockOpenNISampleAppApp::update()
 	mDepthTex.update( getDepthImage24() );	// Histogram
 
 	// Uses manager to handle users.
-	if( _manager->hasUsers() && _manager->hasUser(1) ) mOneUserTex.update( getUserColorImage(1) );
+	if( _manager->hasUsers() && _manager->hasUser(1) ) 
+		mOneUserTex.update( getUserColorImage(1) );
 }
 
 void BlockOpenNISampleAppApp::draw()
@@ -189,7 +209,10 @@ void BlockOpenNISampleAppApp::draw()
 	gl::clear( Color( 0, 0, 0 ), true ); 
 
 
-	gl::setMatricesWindow( 640, 480 );
+	gl::setMatricesWindow( WIDTH, HEIGHT );
+
+	gl::disableDepthWrite();
+	gl::disableDepthRead();
 
 	float sx = 320/2;
 	float sy = 240/2;
@@ -197,15 +220,16 @@ void BlockOpenNISampleAppApp::draw()
 	float yoff = 10;
 	glEnable( GL_TEXTURE_2D );
 	gl::color( cinder::ColorA(1, 1, 1, 1) );
-	if( _manager->hasUsers() && _manager->hasUser(1) ) gl::draw( mOneUserTex, Rectf( 0, 0, 640, 480) );
+	if( _manager->hasUsers() && _manager->hasUser(1) ) gl::draw( mOneUserTex, Rectf( 0, 0, WIDTH, HEIGHT) );
 	gl::draw( mDepthTex, Rectf( xoff, yoff, xoff+sx, yoff+sy) );
 	gl::draw( mColorTex, Rectf( xoff+sx*1, yoff, xoff+sx*2, yoff+sy) );
 
 
 	if( _manager->hasUsers() && _manager->hasUser(1) )
 	{
+		gl::disable( GL_TEXTURE_2D );
 		// Render skeleton if available
-		_manager->renderJoints( 3 );
+		_manager->renderJoints( WIDTH, HEIGHT, 0, 3, false );
 
 		// Get list of available bones/joints
 		// Do whatever with it
@@ -223,6 +247,16 @@ void BlockOpenNISampleAppApp::keyDown( KeyEvent event )
 		this->quit();
 		this->shutdown();
 	}
+}
+
+void BlockOpenNISampleAppApp::onNewUser( V::UserEvent event )
+{
+	app::console() << "New User Added With ID: " << event.mId << std::endl;
+}
+
+void BlockOpenNISampleAppApp::onLostUser( V::UserEvent event )
+{
+	app::console() << "User Lost With ID: " << event.mId << std::endl;
 }
 
 CINDER_APP_BASIC( BlockOpenNISampleAppApp, RendererGl )
