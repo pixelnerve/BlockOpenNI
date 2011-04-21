@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="Addons">
+      <UniqueIdentifier>{7c419d5c-dd69-4e48-84fa-add46fd037df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Addons\OpenNI">
+      <UniqueIdentifier>{13e0290c-8a68-43c2-9427-8e97ca9e339e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\MultipleKinectsApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\OpenNIRecorder.cpp">
+      <Filter>Addons\OpenNI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\VOpenNIDevice.cpp">
+      <Filter>Addons\OpenNI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\VOpenNIDeviceManager.cpp">
+      <Filter>Addons\OpenNI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\VOpenNIUser.cpp">
+      <Filter>Addons\OpenNI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\Resources.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\OpenNIRecorder.h">
+      <Filter>Addons\OpenNI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\SkeletonPoseDetector.h">
+      <Filter>Addons\OpenNI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\VOpenNIBone.h">
+      <Filter>Addons\OpenNI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\VOpenNICallback.h">
+      <Filter>Addons\OpenNI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\VOpenNICommon.h">
+      <Filter>Addons\OpenNI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\VOpenNIDevice.h">
+      <Filter>Addons\OpenNI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\VOpenNIDeviceManager.h">
+      <Filter>Addons\OpenNI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\VOpenNIHeaders.h">
+      <Filter>Addons\OpenNI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\VOpenNISurface.h">
+      <Filter>Addons\OpenNI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\VOpenNIUser.h">
+      <Filter>Addons\OpenNI</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resources.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

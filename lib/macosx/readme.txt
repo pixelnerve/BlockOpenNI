@@ -1,0 +1,1 @@
+Currently macosx library is version   (.39)

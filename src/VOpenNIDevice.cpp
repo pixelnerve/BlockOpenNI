@@ -255,13 +255,31 @@ namespace V
 	{
 		_context = context;
 
+		privateInit();
+	}
+
+	OpenNIDevice::OpenNIDevice( xn::Context* context, xn::Device* device ) : mBitsPerPixel( 3 )
+	{
+		_context = context;
+		_device = *device;
+
+		privateInit();
+	}
+
+
+	OpenNIDevice::~OpenNIDevice()
+	{
+		release();
+	}
+
+
+	void OpenNIDevice::privateInit()
+	{
 		//_configFile = "";
 		//mDebugInfo = "No debug information\n";
 
 		_isRunning = false;
 		_isDepthInverted = false;
-
-		_device = NULL;
 
 		_primaryGen	= NULL;
 		_imageGen	= NULL;
@@ -310,49 +328,27 @@ namespace V
 
 		//_callback = NULL;
 		//_callback = new OpenNIDeviceCallback( this, &OpenNIDevice::CallbackFunc );
+
 	}
 
 
-	OpenNIDevice::~OpenNIDevice()
+
+	uint32_t OpenNIDevice::enumDevices( void )
 	{
-		release();
+		return -1;
 	}
 
 
 	bool OpenNIDevice::init( uint64_t nodeTypeFlags )
 	{
-		_status = _context->Init();
-		if( _status != XN_STATUS_OK )
-		{
-			std::stringstream ss;
-			ss << "Couldn't create context" << std::endl;
-			DEBUG_MESSAGE( ss.str().c_str() );
-			return false;
-		}
-
-/*
-		//
-		// Find about plugged-in devices
-		//
-		xn::NodeInfoList list;
-		_status = _context->EnumerateExistingNodes( list );
-		if( _status == XN_STATUS_OK )
-		{
-			for (NodeInfoList::Iterator it = list.Begin(); it != list.End(); ++it)
-			{
-				std::stringstream ss;
-				switch ((*it).GetDescription().Type)
-				{
-				case XN_NODE_TYPE_DEVICE:
-					(*it).GetInstance( *_device );
-					ss << "Device: " << _device->GetName() << std::endl;
-					DEBUG_MESSAGE( ss.str().c_str() );
-					mDeviceName = _device->GetName();
-					break;
-				}
-			}
-		}*/
-
+		//_status = _context->Init();
+		//if( _status != XN_STATUS_OK )
+		//{
+		//	std::stringstream ss;
+		//	ss << "Couldn't create context" << std::endl;
+		//	DEBUG_MESSAGE( ss.str().c_str() );
+		//	return false;
+		//}
 
 
 		// Pick image or IR map
@@ -360,16 +356,16 @@ namespace V
 		{
 			//_imageGen = new xn::ImageGenerator();
 			_imageMetaData = new xn::ImageMetaData();
-			_status = _imageGen.Create( *_context );	//, NULL, &_errors );
-			CHECK_RC( _status, "Create image generator" );
+			//_status = _imageGen.Create( *_context );	//, NULL, &_errors );
+			//CHECK_RC( _status, "Create image generator" );
 			_isImageOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_IR )
 		{
 			//_irGen = new xn::IRGenerator();
 			_irMetaData = new xn::IRMetaData();
-			_status = _irGen.Create( *_context );	//, NULL, &_errors );
-			CHECK_RC( _status, "Create IR generator" );
+			//_status = _irGen.Create( *_context );	//, NULL, &_errors );
+			//CHECK_RC( _status, "Create IR generator" );
 			_isIROn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_DEPTH )
@@ -377,8 +373,8 @@ namespace V
 			// Depth map
 			//_depthGen = new xn::DepthGenerator();
 			_depthMetaData = new xn::DepthMetaData();
-			_status = _depthGen.Create( *_context );	//, NULL, &_errors );
-			CHECK_RC( _status, "Create depth generator" );
+			//_status = _depthGen.Create( *_context );	//, NULL, &_errors );
+			//CHECK_RC( _status, "Create depth generator" );
 			_isDepthOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_USER )
@@ -386,27 +382,27 @@ namespace V
 			// User
 			//_userGen = new xn::UserGenerator();
 			_sceneMetaData = new xn::SceneMetaData();
-			_status = _userGen.Create( *_context );	//, NULL, &_errors );
-			CHECK_RC( _status, "Create user generator" );
+			//_status = _userGen.Create( *_context );	//, NULL, &_errors );
+			//CHECK_RC( _status, "Create user generator" );
 			_isUserOn = true;
 		}
-		if( nodeTypeFlags & NODE_TYPE_AUDIO )
-		{
-			// Audio
-			//_audioGen = new xn::AudioGenerator();
-			_audioMetaData = new AudioMetaData();
-			_status = _audioGen.Create( *_context );	//, NULL, &_errors );
-			CHECK_RC( _status, "Create audio generator" );
-			_isAudioOn = true;
-		}
-		if( nodeTypeFlags & NODE_TYPE_HANDS )
-		{
-			// Hand Gestures
-			//_handsGen = new HandsGenerator();
-			_status = _handsGen.Create( *_context );	//, NULL, &_errors );
-			CHECK_RC( _status, "Create hands generator" );
-			_isHandsOn = true;
-		}
+		//if( nodeTypeFlags & NODE_TYPE_AUDIO )
+		//{
+		//	// Audio
+		//	//_audioGen = new xn::AudioGenerator();
+		//	_audioMetaData = new AudioMetaData();
+		//	_status = _audioGen.Create( *_context );	//, NULL, &_errors );
+		//	CHECK_RC( _status, "Create audio generator" );
+		//	_isAudioOn = true;
+		//}
+		//if( nodeTypeFlags & NODE_TYPE_HANDS )
+		//{
+		//	// Hand Gestures
+		//	//_handsGen = new HandsGenerator();
+		//	_status = _handsGen.Create( *_context );	//, NULL, &_errors );
+		//	CHECK_RC( _status, "Create hands generator" );
+		//	_isHandsOn = true;
+		//}
 
 
 		if( _isImageOn ) {
@@ -447,11 +443,9 @@ namespace V
 
 
 
-
 	bool OpenNIDevice::initFromXmlFile( const std::string& xmlFile, bool allocUserIfNoNode )
 	{
 		//_configFile = xmlFile;
-
 
 		_status = _context->InitFromXmlFile( xmlFile.c_str(), &_errors );
 		if( _status != XN_STATUS_OK )
@@ -463,7 +457,6 @@ namespace V
 			DEBUG_MESSAGE( ss.str().c_str() );
 			return false;
 		}
-		//XN_IS_STATUS_OK( _status );
 
 
 		xn::NodeInfoList list;
@@ -476,11 +469,10 @@ namespace V
 				switch ((*it).GetDescription().Type)
 				{
 				case XN_NODE_TYPE_DEVICE:
-					_device = new xn::Device();
-					(*it).GetInstance( *_device );
-					ss << "Device: " << _device->GetName() << std::endl;
-					DEBUG_MESSAGE( ss.str().c_str() );
-					mDeviceName = _device->GetName();
+					(*it).GetInstance( _device );
+					//ss << "Device: " << _device->GetName() << std::endl;
+					//DEBUG_MESSAGE( ss.str().c_str() );
+					mDeviceName = _device.GetName();
 					break;
 				case XN_NODE_TYPE_IMAGE:
 					//_imageGen = new ImageGenerator();
@@ -657,8 +649,9 @@ namespace V
 		SAFE_DELETE_ARRAY( g_pDepthHist );
 
 		_primaryGen = NULL;	// just null the pointer 
-		SAFE_DELETE( _device );
 		
+		//_device.Release();
+
 		_context = NULL;	// just null the pointer 
 
 		SAFE_DELETE( _imageMetaData ); 
@@ -1188,6 +1181,18 @@ namespace V
 	}
 
 
+	void OpenNIDevice::setMirrorMode( int type, bool flag )
+	{ 
+		if( _isImageOn && (type & NODE_TYPE_IMAGE) )	
+			_imageGen.GetMirrorCap().SetMirror( flag ); 
+		else if( _irGen && (type & NODE_TYPE_IR) )	
+			_irGen.GetMirrorCap().SetMirror( flag ); 
+		else if( _isDepthOn && (type & NODE_TYPE_DEPTH) )	
+			_depthGen.GetMirrorCap().SetMirror( flag ); 
+	}
+
+
+
 	void OpenNIDevice::setDepthInvert( bool flag )
 	{
 		_isDepthInverted = flag;
@@ -1288,12 +1293,37 @@ namespace V
 	OpenNIDeviceManager OpenNIDeviceManager::_singletonPointer;
 
 
+	void XN_CALLBACK_TYPE onErrorStateChanged( XnStatus errorState, void* pCookie )
+	{
+		if (errorState != XN_STATUS_OK)
+		{
+			//setErrorState(xnGetStatusString(errorState));
+			std::stringstream ss;
+			ss << " + " << xnGetStatusString(errorState) << std::endl;
+			DEBUG_MESSAGE( ss.str().c_str() );
+
+		}
+		else
+		{
+			std::stringstream ss;
+			ss << " - " << "Everything is ok" << std::endl;
+			DEBUG_MESSAGE( ss.str().c_str() );
+		}
+	}
+
+
 	OpenNIDeviceManager::OpenNIDeviceManager()
 	{
 		_isRunning = false;
 		_idCount = 0;
 		mMaxNumOfUsers = 2;
 		mDebugInfo = "No debug information\n";
+
+		_context.Init();
+		enumDevices();
+
+		XnCallbackHandle hDummy;
+		_context.RegisterToErrorStateChange(onErrorStateChanged, NULL, hDummy);
 	}
 
 
@@ -1302,11 +1332,6 @@ namespace V
 		destroyAll();
 	}
 
-
-	uint32_t OpenNIDeviceManager::enumDevices( void )
-	{
-		return -1;
-	}
 
 /*
 	OpenNIDevice* OpenNIDeviceManager::createDevice__( const std::string& xmlFile, bool allocUserIfNoNode )
@@ -1343,6 +1368,209 @@ namespace V
 	}
 */
 
+	uint32_t OpenNIDeviceManager::enumDevices( void )
+	{
+/*		std::vector<DepthGenerator*> _g_depth;
+		std::vector<ImageGenerator*> _g_image;
+		std::vector<DepthMetaData*> _g_depthMD;
+		std::vector<ImageMetaData*> _g_imageMD; 
+
+
+		int _nKinects = 0;
+		XnStatus status; 
+
+		static xn::NodeInfoList node_info_list;
+		static xn::NodeInfoList depth_nodes;
+		static xn::NodeInfoList image_nodes; 
+
+		status = _context.EnumerateProductionTrees (XN_NODE_TYPE_DEVICE, NULL,
+			node_info_list);
+
+		if (status != XN_STATUS_OK && node_info_list.Begin () != node_info_list.End
+			()) {
+				printf ("Enumerating devices failed. Reason: %s", xnGetStatusString
+					(status));
+				return -1;
+		}
+
+		else if (node_info_list.Begin () == node_info_list.End ()) {
+			printf("No devices found.\n");
+			return -1;
+
+		}
+
+		for (xn::NodeInfoList::Iterator nodeIt = node_info_list.Begin (); nodeIt !=
+			node_info_list.End (); ++nodeIt) {
+				_nKinects++;
+
+		}
+
+		status = _context.EnumerateProductionTrees (XN_NODE_TYPE_IMAGE, NULL,
+			image_nodes, NULL);
+
+		if (status != XN_STATUS_OK && image_nodes.Begin () != image_nodes.End ()) {
+			printf ("Enumerating devices failed. Reason: %s", xnGetStatusString
+				(status));
+			return -1;
+		}
+
+		else if (image_nodes.Begin () == image_nodes.End ()) {
+			printf("No devices found.\n");
+			return -1;
+
+		}
+
+		status = _context.EnumerateProductionTrees (XN_NODE_TYPE_DEPTH, NULL,
+			depth_nodes, NULL);
+
+		if (status != XN_STATUS_OK && depth_nodes.Begin () != depth_nodes.End ()) {
+			printf ("Enumerating devices failed. Reason: %s", xnGetStatusString
+				(status));
+			return -1;
+		}
+
+		else if (depth_nodes.Begin () == depth_nodes.End ()) {
+			printf("No devices found.\n");
+			return -1;
+
+		}
+
+		int i = 0;
+		for (xn::NodeInfoList::Iterator nodeIt =image_nodes.Begin(); nodeIt !=
+			image_nodes.End(); ++nodeIt, i++) {
+				xn::NodeInfo info = *nodeIt;
+				const XnProductionNodeDescription& description = info.GetDescription();
+				printf("image: vendor %s name %s, instance %s\n",description.strVendor,
+					description.strName, info.GetInstanceName());
+
+				XnMapOutputMode mode;
+				mode.nXRes = 640;
+				mode.nYRes = 480;
+				mode.nFPS = 30;
+
+				status = _context.CreateProductionTree (info);
+
+				ImageGenerator* g_image = new ImageGenerator();
+				ImageMetaData* g_imageMD = new ImageMetaData();
+
+				status = info.GetInstance (*g_image);
+
+				g_image->SetMapOutputMode(mode);
+				g_image->GetMetaData(*g_imageMD);
+				g_image->StartGenerating();
+
+				_g_image.push_back(g_image);
+				_g_imageMD.push_back(g_imageMD);
+
+		}
+
+		i = 0;
+		for (xn::NodeInfoList::Iterator nodeIt =depth_nodes.Begin(); nodeIt !=
+			depth_nodes.End(); ++nodeIt, i++) {
+				xn::NodeInfo info = *nodeIt;
+				const XnProductionNodeDescription& description = info.GetDescription();
+				printf("image: vendor %s name %s, instance %s\n",description.strVendor,
+					description.strName, info.GetInstanceName());
+
+				XnMapOutputMode mode;
+				mode.nXRes = 640;
+				mode.nYRes = 480;
+				mode.nFPS = 30;
+
+				status = _context.CreateProductionTree (info);
+
+				DepthGenerator* g_depth = new DepthGenerator();
+				DepthMetaData* g_depthMD = new DepthMetaData();
+
+				status = info.GetInstance (*g_depth);
+
+				g_depth->SetMapOutputMode(mode);
+				g_depth->GetMetaData(*g_depthMD);
+				g_depth->StartGenerating();
+
+				_g_depth.push_back(g_depth);
+				_g_depthMD.push_back(g_depthMD);
+
+		}
+
+		for (int i = 0; i < _nKinects; i++) {
+			_g_image[i]->GetMirrorCap().SetMirror(false);
+			_g_depth[i]->GetAlternativeViewPointCap().SetViewPoint(*_g_image[i]);
+			_g_depth[i]->GetMirrorCap().SetMirror(false); 
+		}
+		*/
+
+
+/*
+		XnStatus nRetVal = XN_STATUS_OK;
+		EnumerationErrors errors;
+
+		// find devices
+		NodeInfoList list;
+		nRetVal = _context.EnumerateProductionTrees( XN_NODE_TYPE_DEVICE, NULL, list, &errors );
+		CHECK_RC( nRetVal, "enumDevices()" );
+
+		std::vector<Device> devices;
+
+		DEBUG_MESSAGE("The following devices were found:\n");
+		int i = 0;
+		for (NodeInfoList::Iterator it = list.Begin(); it != list.End(); ++it, ++i)
+		{
+			NodeInfo deviceNodeInfo = *it;
+			devices.push_back( Device() );
+
+			createDevice( V::NODE_TYPE_DEPTH|V::NODE_TYPE_IR, &devices[i] );
+
+/*
+			deviceNodeInfo.GetInstance( devices[i] );
+			XnBool bExists = devices[i].IsValid();
+			if( !bExists )
+			{
+				_context.CreateProductionTree( deviceNodeInfo );
+				deviceNodeInfo.GetInstance( devices[i] );
+				// this might fail.
+			}
+
+			if( devices[i].IsValid() && devices[i].IsCapabilitySupported(XN_CAPABILITY_DEVICE_IDENTIFICATION) )
+			{
+				const XnUInt32 nStringBufferSize = 200;
+				XnChar strDeviceName[nStringBufferSize];
+				XnChar strSerialNumber[nStringBufferSize];
+
+				XnUInt32 nLength = nStringBufferSize;
+				devices[i].GetIdentificationCap().GetDeviceName( strDeviceName, nLength );
+				nLength = nStringBufferSize;
+				devices[i].GetIdentificationCap().GetSerialNumber( strSerialNumber, nLength );
+				//printf("[%d] %s (%s)\n", i, strDeviceName, strSerialNumber);
+				std::stringstream ss;
+				ss << i << " - " << strDeviceName << " - " << strSerialNumber << std::endl;
+				DEBUG_MESSAGE( ss.str().c_str() );
+
+				std::stringstream ssss;
+				ssss << "data/config" << i << ".xml";
+				createDevice( ssss.str(), &devices[i] );
+			}
+			//else
+			{
+				std::stringstream ss;
+				ss << i << " ::  " << deviceNodeInfo.GetCreationInfo() << std::endl;
+				DEBUG_MESSAGE( ss.str().c_str() );
+				//printf("[%d] %s\n", i, deviceNodeInfo.GetCreationInfo());
+			}
+
+			// release the device if we created it
+			//if (!bExists && devices[i].IsValid())
+			//{
+			//	devices[i].Release();
+			//}*/
+//		}
+		//printf("\n");
+		//printf("Choose device to open (1): ");
+
+		return -1;
+	}
+
+
 	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( const std::string& xmlFile, bool allocUserIfNoNode/*=false */ )
 	{
 		if( mDevices.size() >= MAX_DEVICES ) return boost::shared_ptr<OpenNIDevice>();
@@ -1353,6 +1581,7 @@ namespace V
 			DEBUG_MESSAGE( "not implemented" );
 			return OpenNIDeviceRef();
 		}
+
 
 		// Local copy of the filename
 		std::string path = xmlFile;
@@ -1371,6 +1600,7 @@ namespace V
 
 		// Initialize device
 		OpenNIDeviceRef dev = OpenNIDeviceRef( new OpenNIDevice(&_context) );
+
 		if( !dev->initFromXmlFile( path, allocUserIfNoNode ) ) 
 		{
 			DEBUG_MESSAGE( "[OpenNIDeviceManager]  Couldn't create device from xml\n" );
@@ -1383,6 +1613,7 @@ namespace V
 		mDevices.push_back( dev );
 		return dev;
 	}
+
 
 	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( int nodeTypeFlags )
 	{
@@ -1399,6 +1630,172 @@ namespace V
 		//dev->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
 		mDevices.push_back( dev );
 		return dev;
+	}
+
+
+	void OpenNIDeviceManager::createDevices( uint32_t deviceCount, int nodeTypeFlags )
+	{
+		if( mDevices.size() >= MAX_DEVICES ) 
+			return;
+
+		XnStatus _status;
+
+
+		// Count max devices connected to this machine
+		uint32_t devicesCount = 0;
+		xn::NodeInfoList device_nodes; 
+		_status = _context.EnumerateProductionTrees( XN_NODE_TYPE_IMAGE, NULL, device_nodes, NULL );
+		for( xn::NodeInfoList::Iterator nodeIt=device_nodes.Begin(); nodeIt!=device_nodes.End(); nodeIt++ ) 
+		{
+			devicesCount++;
+		}
+
+		// Make sure we do not allocate more than the ones connected
+		if( deviceCount > devicesCount ) deviceCount = devicesCount;
+
+
+		// Allocate devices
+		for( uint32_t i=0; i<deviceCount; i++ )
+		{
+			OpenNIDeviceRef dev = OpenNIDeviceRef( new OpenNIDevice(&_context) );
+			mDevices.push_back( dev );
+		}
+
+
+		// Allocate all generators we ask for
+		int imageCount = 0;
+		int irCount = 0;
+		int depthCount = 0;
+		int userCount = 0;
+		//int audioCount = 0;
+		xn::NodeInfoList image_nodes; 
+		xn::NodeInfoList ir_nodes; 
+		xn::NodeInfoList depth_nodes;
+		xn::NodeInfoList user_nodes; 
+		//xn::NodeInfoList audio_nodes; 
+		_status = _context.EnumerateProductionTrees( XN_NODE_TYPE_IMAGE, NULL, image_nodes, NULL );
+		_status = _context.EnumerateProductionTrees( XN_NODE_TYPE_IR, NULL, ir_nodes, NULL );
+		_status = _context.EnumerateProductionTrees( XN_NODE_TYPE_DEPTH, NULL, depth_nodes, NULL );
+		_status = _context.EnumerateProductionTrees( XN_NODE_TYPE_USER, NULL, user_nodes, NULL );
+		//_status = _context.EnumerateProductionTrees( XN_NODE_TYPE_AUDIO, NULL, audio_nodes, NULL );
+
+		uint32_t count = 0;
+		if( nodeTypeFlags & NODE_TYPE_IMAGE )
+		{
+			OpenNIDeviceList::iterator devIt = mDevices.begin();
+			for( xn::NodeInfoList::Iterator nodeIt=image_nodes.Begin(); nodeIt!=image_nodes.End(); nodeIt++ ) 
+			{
+				if( count >= deviceCount )	
+					break;
+
+				OpenNIDevice::Ref dev = *devIt;
+
+				_status = _context.CreateProductionTree( *nodeIt ); 
+				_status = (*nodeIt).GetInstance( dev->_imageGen );
+
+				devIt++;
+				imageCount++;
+				count++;
+			}
+		}
+
+		count = 0;
+		if( nodeTypeFlags & NODE_TYPE_IR )
+		{
+			OpenNIDeviceList::iterator devIt = mDevices.begin();
+			for( xn::NodeInfoList::Iterator nodeIt=ir_nodes.Begin(); nodeIt!=ir_nodes.End(); nodeIt++ ) 
+			{
+				if( count >= deviceCount )	
+					break;
+
+				OpenNIDevice::Ref dev = *devIt;
+
+				_status = _context.CreateProductionTree( *nodeIt ); 
+				_status = (*nodeIt).GetInstance( dev->_irGen );
+
+				devIt++;
+				imageCount++;
+				count++;
+			}
+		}
+
+		count = 0;
+		if( nodeTypeFlags & NODE_TYPE_DEPTH )
+		{
+			OpenNIDeviceList::iterator devIt = mDevices.begin();
+			for( xn::NodeInfoList::Iterator nodeIt=depth_nodes.Begin(); nodeIt!=depth_nodes.End(); nodeIt++ ) 
+			{
+				if( count >= deviceCount )	
+					break;
+
+				OpenNIDevice::Ref dev = *devIt;
+
+				_status = _context.CreateProductionTree( *nodeIt ); 
+				_status = (*nodeIt).GetInstance( dev->_depthGen );
+
+				devIt++;
+				imageCount++;
+				count++;
+			}
+		}
+
+		count = 0;
+		if( nodeTypeFlags & NODE_TYPE_USER )
+		{
+			OpenNIDeviceList::iterator devIt = mDevices.begin();
+			for( xn::NodeInfoList::Iterator nodeIt=user_nodes.Begin(); nodeIt!=user_nodes.End(); nodeIt++ ) 
+			{
+				if( count >= deviceCount )	
+					break;
+
+				OpenNIDevice::Ref dev = *devIt;
+
+				_status = _context.CreateProductionTree( *nodeIt ); 
+				_status = (*nodeIt).GetInstance( dev->_depthGen );
+
+				devIt++;
+				imageCount++;
+				count++;
+			}
+		}
+
+
+		for( OpenNIDeviceList::iterator nodeIt=mDevices.begin(); nodeIt!=mDevices.end(); nodeIt++ ) 
+		{
+			OpenNIDeviceRef dev = *nodeIt;
+
+			if( !dev->init( nodeTypeFlags ) ) 
+			{
+				DEBUG_MESSAGE( "[OpenNIDeviceManager]  Couldn't create devices\n" );
+				return;
+			}
+		}
+	}
+
+
+	OpenNIDevice::Ref OpenNIDeviceManager::getDevice( uint32_t index )
+	{
+		if( mDevices.empty() || index >= mDevices.size() ) 
+		{
+			std::stringstream ss;
+			ss << "[OpenNIDeviceManager]  Device '" << index << "' is not available" << std::endl;
+			throw std::exception( ss.str().c_str() );
+			return OpenNIDevice::Ref();
+		}
+
+		int count = 0;
+		OpenNIDeviceList::iterator currDevice = mDevices.begin();
+		while( 1 )
+		{
+			if( count == index )
+				return *currDevice;
+			else
+			{
+				*currDevice++;
+				count++;
+			}
+		}
+		return OpenNIDevice::Ref();
 	}
 
 

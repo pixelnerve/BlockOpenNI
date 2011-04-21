@@ -57,6 +57,7 @@ namespace V
 
 	public:
 		OpenNIDevice( xn::Context* context );
+		OpenNIDevice( xn::Context* context, xn::Device* device );
 		~OpenNIDevice();
 		bool init( boost::uint64_t nodeTypeFlags );
 		bool initFromXmlFile( const std::string& xmlFile, bool allocUserIfNoNode=false );
@@ -77,6 +78,7 @@ namespace V
 		void setLimits( int nearClip, int farClip );
 
 		void setPrimaryBuffer( int type );
+		void setMirrorMode( int type, bool flag );
 
 		// Shifts depth pixel (bit operator) NOTE!this fucks with the correct distance values
 		// To get correct distances, set this value to 0 (zero)
@@ -156,6 +158,8 @@ namespace V
 
 	private:
 		void run();
+		uint32_t enumDevices( void );
+		void privateInit();
 	public:
 		static const bool		USE_THREAD;
 		boost::shared_ptr<boost::thread> _thread;
@@ -170,7 +174,7 @@ namespace V
 
 		xn::Context*			_context;	// Pointer to context in device manager
 
-		xn::Device*				_device;	// Device object
+		xn::Device				_device;	// Device object
 
 		xn::EnumerationErrors	_errors;
 		XnStatus				_status;
@@ -260,12 +264,15 @@ namespace V
 		~OpenNIDeviceManager();
 
 		uint32_t enumDevices();
-		OpenNIDeviceRef createDevice( const std::string& xmlFile, bool allocUserIfNoNode=false );
 		OpenNIDeviceRef createDevice( int nodeTypeFlags );
+		OpenNIDeviceRef createDevice( const std::string& xmlFile, bool allocUserIfNoNode=false );
+		void createDevices( uint32_t deviceCount, int nodeTypeFlags );
 		//OpenNIDevice* createDevice__( const std::string& xmlFile, bool allocUserIfNoNode=false );
 		//OpenNIDevice* createDevice__( int nodeTypeFlags );
 		//void destroyDevice( OpenNIDevice* device );
 		void destroyAll( void );
+
+		OpenNIDevice::Ref	getDevice( uint32_t index );
 
 		OpenNIUserRef addUser( xn::UserGenerator* userGen, uint32_t id );
 		void removeUser( uint32_t id );
