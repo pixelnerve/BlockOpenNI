@@ -56,7 +56,7 @@ void MultipleKinectsApp::setup()
 {
 	// Init openni and devices
 	mManager = V::OpenNIDeviceManager::InstancePtr();
-	mManager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );
+	mManager->createDevices( 2, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );
 
 	// Create device 0 is available
 	try 

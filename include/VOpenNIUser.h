@@ -50,6 +50,9 @@ namespace V
 		OpenNIBoneList	getBoneList();
 		OpenNIBone*		getBone( int id );
 
+		bool			getUserPosition();
+		void			calcDepthImageRealWorld( XnPoint3D* points );
+
 		void			loadCalibrationDataToFile( const std::string& filename );
 		void			saveCalibrationDataToFile( const std::string& filename );
 
@@ -59,6 +62,7 @@ namespace V
 		bool			hasPixels()			{ return (_userPixels)?true:false;}
 		boost::uint8_t*	getPixels()			{ return _userPixels; }
 		boost::uint16_t*	getDepthPixels(){ return _userDepthPixels; }
+		XnPoint3D*		getDepthMapRealWorld()	{ return _depthMapRealWorld;	}
 		uint32_t		getId()				{ return mId; }
 		
 		float*			getCenterOfMass( bool doProjectiveCoords=false );
@@ -80,6 +84,7 @@ namespace V
 	protected:
 		void			allocate( int width, int height );
 
+
 	protected:
 		OpenNIDevice*	_device;
 		OpenNIDeviceRef	_deviceRef;
@@ -92,6 +97,7 @@ namespace V
 		uint8_t*		_userPixels;
 		uint8_t*		_backUserPixels;
 		uint16_t*		_userDepthPixels, *_backUserDepthPixels;
+		XnPoint3D*		_depthMapRealWorld, *_backDepthMapRealWorld;
 
 		uint16_t		mUserMinZDistance, mUserMaxZDistance;
 		uint16_t		mUserMinPixelIdx, mUserMaxPixelIdx;
@@ -106,6 +112,8 @@ namespace V
 		uint32_t		mHeight;	// Current dimensions of depthmap
 
 		OpenNIBoneList	mBoneList;
+
+		XnBoundingBox3D mBoundingBox;
 
 		UserStateEnum	mUserState;
 

@@ -73,12 +73,30 @@ namespace V
 		void setFPS( ProductionNodeType nodeType, int fps );
 		void setMapOutputMode( ProductionNodeType nodeType, int width, int height, int fps );
 		void readFrame();
+
+		void calcDepthImageRealWorld();
+		void calcDepthImageRealWorld( uint16_t* pixelData, XnPoint3D* worldData );
+		void getLabelMap( uint32_t labelId, uint16_t* labelMap );
 		void calculateHistogram();
 
 		void setLimits( int nearClip, int farClip );
 
 		void setPrimaryBuffer( int type );
 		void setMirrorMode( int type, bool flag );
+
+		float FieldOfViewHorz()
+		{
+			XnFieldOfView fieldOfView;
+			_depthGen.GetFieldOfView( fieldOfView );
+			return (float)fieldOfView.fHFOV;
+		}
+		float FieldOfViewVert()
+		{
+			XnFieldOfView fieldOfView;
+			_depthGen.GetFieldOfView( fieldOfView );
+			return (float)fieldOfView.fVFOV;
+		}
+
 
 		// Shifts depth pixel (bit operator) NOTE!this fucks with the correct distance values
 		// To get correct distances, set this value to 0 (zero)
@@ -95,10 +113,11 @@ namespace V
 		boost::uint16_t* getDepthMap();
 		//boost::uint8_t* getDepthMap8i();
 		boost::uint8_t* getDepthMap24();
+		XnPoint3D* getDepthMapRealWorld();
 		boost::uint16_t* getRawDepthMap();
 
 		xn::DepthMetaData* getDepthMetaData()		{ return _depthMetaData; }
-		xn::SceneMetaData* getUserMetaData()		{ return _sceneMetaData; }
+		xn::SceneMetaData* getSceneMetaData()		{ return _sceneMetaData; }
 		xn::ImageGenerator*	getImageGenerator()		{ return &_imageGen;	}
 		xn::IRGenerator* getIRGenerator()			{ return &_irGen;	}
 		xn::DepthGenerator*	getDepthGenerator()		{ return &_depthGen;	}
@@ -198,6 +217,8 @@ namespace V
 		boost::uint16_t*		_backDepthData;
 		//boost::uint8_t*			_depthData8;
 		boost::uint8_t*			_depthDataRGB;
+		XnPoint3D*				_depthMapRealWorld;
+		XnPoint3D*				_backDepthMapRealWorld;
 
 		XnRGB24Pixel*			g_pTexMap;
 		int						g_MaxDepth;
@@ -217,6 +238,7 @@ namespace V
 		bool					_isImageOn;
 		bool					_isIROn;
 		bool					_isDepthOn;
+		bool					_isSceneOn;
 		bool					_isUserOn;
 		bool					_isAudioOn;
 		bool					_isHandsOn;
@@ -233,6 +255,8 @@ namespace V
 		xn::AudioGenerator		_audioGen;
 		xn::HandsGenerator		_handsGen;
 
+		// scene
+		xn::SceneAnalyzer       _sceneAnalyzer;
 		xn::ImageMetaData*		_imageMetaData;
 		xn::IRMetaData*			_irMetaData;
 		xn::DepthMetaData*		_depthMetaData;
@@ -263,7 +287,6 @@ namespace V
 		OpenNIDeviceManager();
 		~OpenNIDeviceManager();
 
-		uint32_t enumDevices();
 		OpenNIDeviceRef createDevice( int nodeTypeFlags );
 		OpenNIDeviceRef createDevice( const std::string& xmlFile, bool allocUserIfNoNode=false );
 		void createDevices( uint32_t deviceCount, int nodeTypeFlags );
@@ -295,6 +318,9 @@ namespace V
 		const uint32_t getMaxNumOfUsers()			{ return mMaxNumOfUsers; }
 		void setMaxNumOfUsers( uint32_t count )		{ mMaxNumOfUsers = count; }
 
+
+		boost::uint8_t* getColorMap( uint32_t index );
+
 		//
 		// Instance
 		//
@@ -317,7 +343,7 @@ namespace V
 
 		void run();
 	public:
-		static const bool				USE_THREAD;
+		static bool						USE_THREAD;
 
 
 	protected:

@@ -43,6 +43,8 @@ namespace V
 		_backUserPixels = NULL;
 		_userDepthPixels = NULL;
 		_backUserDepthPixels = NULL;
+		_depthMapRealWorld = NULL;
+		_backDepthMapRealWorld = NULL;
 
 		_enablePixels = true;
 
@@ -60,6 +62,8 @@ namespace V
 		_backUserPixels = NULL;
 		_userDepthPixels = NULL;
 		_backUserDepthPixels = NULL;
+		_depthMapRealWorld = NULL;
+		_backDepthMapRealWorld = NULL;
 
 		_enablePixels = true;
 
@@ -76,6 +80,8 @@ namespace V
 		SAFE_DELETE_ARRAY( _backUserPixels );
 		SAFE_DELETE_ARRAY( _userDepthPixels );
 		SAFE_DELETE_ARRAY( _backUserDepthPixels );
+		SAFE_DELETE_ARRAY( _depthMapRealWorld );
+		SAFE_DELETE_ARRAY( _backDepthMapRealWorld );
 
 		if( !mBoneList.empty() )
 		{
@@ -122,6 +128,8 @@ namespace V
 	{
 		updatePixels();
 		updateBody();
+		// Update bounding box
+		getUserPosition();
 	}
 
 
@@ -134,8 +142,8 @@ namespace V
 		// Get metadata
 		//xn::DepthMetaData depthMetaData;
 		//depth->GetMetaData( depthMetaData );
-		xn::DepthMetaData* depthMetaData = _device->getDepthMetaData();
-		xn::SceneMetaData* sceneMetaData = _device->getUserMetaData();
+		//xn::DepthMetaData* depthMetaData = _device->getDepthMetaData();
+		xn::SceneMetaData* sceneMetaData = _device->getSceneMetaData();
 
 
 		//// Get Center Of Mass
@@ -155,6 +163,8 @@ namespace V
 			//xn::SceneMetaData sceneMetaData;
 			//user->GetUserPixels( mId, sceneMetaData );
 
+			uint8_t* depthMap24 = _device->getDepthMap24();
+
 			// Get labels
 			const XnLabel* labels = sceneMetaData->Data();
 			if( labels )
@@ -162,8 +172,8 @@ namespace V
 				//
 				// Generate a bitmap with the user pixels colored
 				//
-				int depthWidth = depthMetaData->XRes();
-				int depthHeight = depthMetaData->YRes();
+				int depthWidth = sceneMetaData->XRes();
+				int depthHeight = sceneMetaData->YRes();
 				if( !_userPixels || (mWidth != depthWidth) || (mHeight != depthHeight) )
 				{
 					mWidth = depthWidth;
@@ -175,11 +185,13 @@ namespace V
 				//xnOSMemSet( _userDepthPixels, 0, depthWidth*depthHeight*sizeof(uint16_t) );	// 16bit
 				xnOSMemSet( _backUserPixels, 0, depthWidth*depthHeight*3 );
 				xnOSMemSet( _backUserDepthPixels, 0, depthWidth*depthHeight*sizeof(uint16_t) );	// 16bit
+				xnOSMemSet( _backDepthMapRealWorld, 0, depthWidth*depthHeight*sizeof(XnPoint3D) );
+
 
 				uint16_t* pDepth = _device->getDepthMap();
 				uint8_t* pixels = _backUserPixels;
 				uint16_t* depthPixels = _backUserDepthPixels;
-
+				XnPoint3D* points = _backDepthMapRealWorld;
 
 				mUserMinZDistance = 65535;
 				mUserMaxZDistance = 0;
@@ -191,23 +203,24 @@ namespace V
 					for( int i=0; i<depthWidth; i++ )
 					{
 						// Only fill bitmap with current user's data
-						/*if( *labels != 0 && *labels == mId )
-						{
-							// Pixel is not empty, deal with it.
-							uint32_t nValue = *pDepth;
+						////if( *labels != 0 && *labels == mId )
+						////{
+						////	// Pixel is not empty, deal with it.
+						////	uint32_t nValue = *pDepth;
 
-							mColor[0] = g_Colors[mId][0];
-							mColor[1] = g_Colors[mId][1];
-							mColor[2] = g_Colors[mId][2];
+						////	mColor[0] = g_Colors[mId][0];
+						////	mColor[1] = g_Colors[mId][1];
+						////	mColor[2] = g_Colors[mId][2];
 
-							if( nValue != 0 )
-							{
-								int nHistValue = _device->getDepthMap24()[nValue];
-								pixels[index+0] = 0xff & static_cast<uint8_t>(nHistValue * mColor[0]);//g_Colors[nColorID][0]); 
-								pixels[index+1] = 0xff & static_cast<uint8_t>(nHistValue * mColor[1]);//g_Colors[nColorID][1]);
-								pixels[index+2] = 0xff & static_cast<uint8_t>(nHistValue * mColor[2]);//g_Colors[nColorID][2]);
-							}
-						}****/
+						////	if( nValue != 0 )
+						////	{
+						////		int nHistValue = _device->getDepthMap24()[nValue];
+						////		pixels[index+0] = 0xff & static_cast<uint8_t>(nHistValue * mColor[0]);//g_Colors[nColorID][0]); 
+						////		pixels[index+1] = 0xff & static_cast<uint8_t>(nHistValue * mColor[1]);//g_Colors[nColorID][1]);
+						////		pixels[index+2] = 0xff & static_cast<uint8_t>(nHistValue * mColor[2]);//g_Colors[nColorID][2]);
+						////	}
+						////}
+
 
 
 						// Check out for every user visible and fill bitmap with correct coloring
@@ -227,7 +240,7 @@ namespace V
 							mColor[2] = g_Colors[mId][2];
 							if( nValue != 0 )
 							{
-								uint32_t nHistValue = _device->getDepthMap24()[nValue];
+								uint32_t nHistValue = depthMap24[nValue];
 								pixels[index+0] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][0]); 
 								pixels[index+1] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][1]);
 								pixels[index+2] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][2]);
@@ -235,6 +248,10 @@ namespace V
 
 							// Keep depth value
 							*depthPixels = nValue;
+
+							(*points).X = (float)i;
+							(*points).Y = (float)j;
+							(*points).Z = (float)nValue;
 
 							// Get max and min z values for current user
 							//mUserMinZDistance = (nValue < mUserMinZDistance) ? nValue : mUserMinZDistance;
@@ -250,10 +267,16 @@ namespace V
 								mUserMaxPixelIdx = i + j * depthWidth;
 							}
 						}
+						else
+						{
+							(*points).X = 0;
+							(*points).Y = 0;
+							(*points).Z = -99999;
+						}
 
 
 						depthPixels++;
-
+						points++;
 						pDepth++;
 						labels++;
 						index += 3;
@@ -262,8 +285,11 @@ namespace V
 
 				memcpy( _userPixels, _backUserPixels, mWidth*mHeight*3 );
 				memcpy( _userDepthPixels, _backUserDepthPixels, mWidth*mHeight*sizeof(uint16_t) );  // 16bit
+				memcpy( _depthMapRealWorld, _backDepthMapRealWorld, mWidth*mHeight*sizeof(XnPoint3D) );
 			}
 		}
+
+		//calcDepthImageRealWorld();
 	}
 
 
@@ -373,6 +399,13 @@ namespace V
 
 			mUserState = USER_TRACKING;
 		}
+	}
+
+
+	void OpenNIUser::calcDepthImageRealWorld( XnPoint3D* points )
+	{
+		// convert all point into realworld coord
+		_device->getDepthGenerator()->ConvertProjectiveToRealWorld( mWidth*mHeight, _depthMapRealWorld, points );
 	}
 
 
@@ -650,6 +683,19 @@ namespace V
 		return mBoneList; 
 	}
 
+	bool OpenNIUser::getUserPosition()
+	{
+		if( !_device->getDepthGenerator()->IsValid() )
+			return false;
+
+		if( _device->getDepthGenerator()->IsCapabilitySupported( XN_CAPABILITY_USER_POSITION ) )
+		{
+			UserPositionCapability  userPosCap = _device->getDepthGenerator()->GetUserPositionCap();
+			userPosCap.GetUserPosition( mId, mBoundingBox );
+			return true;
+		}
+		return false;
+	}
 
 	void OpenNIUser::setSkeletonSmoothing( float value )
 	{
@@ -673,6 +719,12 @@ namespace V
 		if( _backUserDepthPixels ) SAFE_DELETE_ARRAY( _backUserDepthPixels );
 		_userDepthPixels = new uint16_t[width*height];
 		_backUserDepthPixels = new uint16_t[width*height];
+
+
+		if( _depthMapRealWorld ) SAFE_DELETE_ARRAY( _depthMapRealWorld );
+		if( _backDepthMapRealWorld ) SAFE_DELETE_ARRAY( _backDepthMapRealWorld );
+		_depthMapRealWorld = new XnPoint3D[width*height];
+		_backDepthMapRealWorld = new XnPoint3D[width*height];
 	}
 
 
