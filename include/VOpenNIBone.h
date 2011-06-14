@@ -17,8 +17,8 @@ namespace V
 				orientation[i] = 0.0f;
 
 
-			positionConfidence = 0.0f;
-			orientationConfidence = 0.0f;
+			//positionConfidence = 0.0f;
+			//orientationConfidence = 0.0f;
 		}
 
 		int id;
@@ -38,8 +38,8 @@ namespace V
 		float orientation[9];
 
 		// The confidence in the orientation 
-		float positionConfidence;
+		//float positionConfidence;
 		// The confidence in the orientation 
-		float orientationConfidence;
+		//float orientationConfidence;
 	};
 }

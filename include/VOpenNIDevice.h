@@ -3,15 +3,18 @@
 #include "VOpenNICommon.h"
 #include "VOpenNISurface.h"
 #include "VOpenNIUser.h"
-
+#include "VOpenNINetwork.h"
 
 namespace V
 {
 
 	// Forward declarations
+	struct OpenNIBone;
 	class OpenNIUser;
 	class OpenNIDevice;
 	class UserListener;
+	struct sDevice;
+
 
 	// Typedefs
 	typedef boost::shared_ptr<OpenNIUser> OpenNIUserRef;
@@ -20,6 +23,8 @@ namespace V
 	typedef std::list< OpenNIUserRef > OpenNIUserList;
 	typedef std::vector<UserListener*> UserListenerList;
 
+	// NEW WRAPPER
+	typedef std::list< boost::shared_ptr<sDevice> > OpenNISDeviceList;
 
 
 
@@ -44,6 +49,8 @@ namespace V
 		virtual void onNewUser( UserEvent event ) {};
 		virtual void onLostUser( UserEvent event ) {};
 	};
+
+
 
 
 	/************************************************************************/
@@ -107,6 +114,9 @@ namespace V
 		void setDepthInvert( bool flag );
 		bool getDepthInvert()						{ return _isDepthInverted; }
 
+		void setHistogram( bool flag )				{ _enableHistogram = flag;	}
+		bool getHistogram()							{ return _enableHistogram;	}
+
 		boost::uint8_t* getColorMap();
 		boost::uint16_t* getIRMap();
 		boost::uint8_t* getIRMap8i();
@@ -138,11 +148,11 @@ namespace V
 
 		//const std::string& getDebugInfo()			{ return mDebugInfo;}
 
-		void addUser( uint32_t id );
+		/*void addUser( uint32_t id );
 		OpenNIUserRef getUser( uint32_t id );
 		void removeUser( uint32_t id );
 		bool hasUser( int32_t id );
-		bool hasUsers()								{ return (mUserList.size()>0)?true:false; }
+		bool hasUsers()								{ return (mUserList.size()>0)?true:false; }*/
 
 
 		XnSkeletonProfile getSkeletonProfile()	{ return mSkeletonProfile;	}
@@ -180,14 +190,11 @@ namespace V
 		uint32_t enumDevices( void );
 		void privateInit();
 	public:
-		static const bool		USE_THREAD;
-		boost::shared_ptr<boost::thread> _thread;
-
 		std::string				mDeviceName;
 		//std::string				mDebugInfo;
 
-		bool					_isRunning;
 		bool					_isDepthInverted;
+		bool					_enableHistogram;
 
 		//std::string				_configFile;
 
@@ -265,7 +272,7 @@ namespace V
 
 
 		// Internal clip planes
-		int						mNearClipPlane, mFarClipPlane;
+		uint32_t				mNearClipPlane, mFarClipPlane;
 
 		// Users
 		OpenNIUserList			mUserList;
@@ -276,9 +283,141 @@ namespace V
 
 
 	/************************************************************************/
-	/* Device Manager
-	*/
+	/* Device Manager */
 	/************************************************************************/
+
+	struct NIDepthGenerator
+	{
+		NIDepthGenerator() : mWidth(0), mHeight(0), mHFov(0), mVFov(0), mMap(NULL), mGen(NULL) {};
+
+		uint32_t			mWidth, mHeight;
+		uint32_t			mFPS;
+		xn::DepthGenerator*	mGen;
+		xn::DepthMetaData	mMetaData;
+		uint16_t*			mMap;
+		float				mHFov, mVFov;
+	};
+
+	struct NIIRGenerator
+	{
+		NIIRGenerator() : mWidth(0), mHeight(0), mHFov(0), mVFov(0), mMap(NULL), mGen(NULL) {};
+
+		uint32_t			mWidth, mHeight;
+		uint32_t			mFPS;
+		xn::IRGenerator*	mGen;
+		xn::IRMetaData		mMetaData;
+		uint8_t*			mMap;
+		float				mHFov, mVFov;
+	};
+
+	struct NIImageGenerator
+	{
+		NIImageGenerator() : mWidth(0), mHeight(0), mMap(NULL), mGen(NULL) {};
+
+		uint32_t			mWidth, mHeight;
+		uint32_t			mFPS;
+		xn::ImageGenerator*	mGen;
+		xn::ImageMetaData	mMetaData;
+		uint8_t*			mMap;
+	};
+
+	struct NIUserGenerator
+	{
+		NIUserGenerator() : mWidth(0), mHeight(0), mGen(NULL) {};
+
+		uint32_t			mWidth, mHeight;
+		xn::UserGenerator*	mGen;
+		xn::SceneMetaData	mMetaData;
+		uint32_t			mNumOfUsers;
+	};
+
+	struct NISceneGenerator
+	{
+		NISceneGenerator() : mWidth(0), mHeight(0), mGen(NULL) {};
+
+		uint32_t			mWidth, mHeight;
+		xn::SceneAnalyzer*	mGen;
+		xn::SceneMetaData	mMetaData;
+	};
+
+	struct NIHandsGenerator
+	{
+		NIHandsGenerator() : mGen(NULL) {};
+
+		xn::HandsGenerator*	mGen;
+	};
+
+	// Define a kinect device
+	struct SDevice
+	{
+		typedef boost::shared_ptr<SDevice> Ref;
+
+		NIDepthGenerator	mDepthGen_;
+		NIIRGenerator		mIRGen_;
+		NIImageGenerator	mImageGen_;
+		NIUserGenerator		mUserGen_;
+		NISceneGenerator	mSceneGen_;
+		NIHandsGenerator	mHandsGen_;
+
+		// Depth
+		xn::DepthGenerator	mDepthGen;
+		xn::DepthMetaData	mDepthMD;
+
+		// RGB Image
+		xn::ImageGenerator	mImageGen;
+		xn::ImageMetaData	mImageMD;
+
+		// Infrared
+		xn::IRGenerator		mIRGen;
+		xn::IRMetaData		mIRMD;
+
+		// Scene/User analyzer
+		xn::SceneAnalyzer	mSceneAnalyzer;
+		xn::UserGenerator	mUserGen;
+		xn::SceneMetaData	mSceneMD;
+
+		// Fov, defines the view frustum
+		float				mHFov, mVFov;
+		float				mRealWorldXtoZ, mRealWorldYtoZ;
+
+		uint32_t			mNumOfUsers;
+		uint32_t			mMaxNumOfUsers;
+	};
+
+	struct SBone
+	{
+		XnPoint3D			mPos;	// Real world position
+		XnPoint3D			mProjPos;	// Projective position
+		XnMatrix3X3			mOrientation;	// Orientation matrix
+	};
+
+	struct SLimb
+	{
+		SBone				mB0, mB1;
+	};
+
+	struct SUser
+	{
+		typedef boost::shared_ptr<SUser> Ref;
+
+		SUser()	: mBoneArray(NULL), doUpdateProjective(false) {};
+
+		uint32_t			mNumOfBones;
+		SBone*				mBoneArray;
+		bool				doUpdateProjective;	// Enable projective computation?
+	};
+
+
+	// Flags that control internal computations
+	struct SUpdateInfo
+	{
+		uint32_t			mMaxUsers;	// Max number of valid users
+		bool				mUpdateUserProjective;	// Update bone's projective position?
+		bool				mUpdateSceneLabelMap;	// Update scene labels?
+		bool				mUpdateDepth8bit;		// Update Depthmap in 8bit?
+	};
+
+
 
 	// A singleton
 	class OpenNIDeviceManager : private boost::noncopyable
@@ -295,7 +434,9 @@ namespace V
 		//void destroyDevice( OpenNIDevice* device );
 		void destroyAll( void );
 
-		OpenNIDevice::Ref	getDevice( uint32_t index );
+		void			Init();
+
+		OpenNIDevice::Ref	getDevice( uint32_t deviceIdx=0 );
 
 		OpenNIUserRef addUser( xn::UserGenerator* userGen, uint32_t id );
 		void removeUser( uint32_t id );
@@ -319,8 +460,6 @@ namespace V
 		void setMaxNumOfUsers( uint32_t count )		{ mMaxNumOfUsers = count; }
 
 
-		boost::uint8_t* getColorMap( uint32_t index );
-
 		//
 		// Instance
 		//
@@ -339,7 +478,7 @@ namespace V
 		// Copy constructor
 		OpenNIDeviceManager( const OpenNIDeviceManager& ) {};
 		// Operators
-		OpenNIDeviceManager& operator = ( const OpenNIDeviceManager& ) {};
+		OpenNIDeviceManager& operator = ( const OpenNIDeviceManager& ) { return *this; };
 
 		void run();
 	public:
@@ -349,9 +488,11 @@ namespace V
 	protected:
 		static OpenNIDeviceManager		_singletonPointer;
 
+		bool							mIsContextInit;
+
 		boost::shared_ptr<boost::thread> _thread;
 		boost::mutex					 _mutex;
-		boost::recursive_mutex			 _rmutex;
+		//boost::recursive_mutex			 _rmutex;
 		bool							_isRunning;
 
 		xn::Context						_context;
@@ -367,6 +508,84 @@ namespace V
 
 		// Generic user list. These users have no knowledge of which device they come from
 		OpenNIUserList					mUserList;
-	};
 
+
+
+
+
+		//
+		// New Wrapper
+		//
+	public:
+		uint16_t*		getDepthMap( uint32_t deviceIdx=0 );
+		uint8_t*		getColorMap( uint32_t deviceIdx=0 );
+		void			SetPrimaryBuffer( uint32_t type );
+		void			CalcDepthImageRealWorld( uint32_t deviceIdx, uint16_t* pixelData, XnPoint3D* worldData );
+		void			SetFrameSync( uint32_t deviceIdx, uint32_t index1 );
+		void			AlignRGBAndDepth( uint32_t deviceIdx=0 );
+		void			CalcFieldOfView( uint32_t deviceIdx=0 );
+
+		// Getters
+		void			GetSceneLabelMap( uint32_t deviceIdx, uint32_t labelId, uint16_t* labelMap );
+		void			GetUserPixels( uint32_t deviceIdx, uint32_t userId, uint16_t* labelMap );
+		float			GetFieldOfViewH( uint32_t deviceIdx=0 );
+		float			GetFieldOfViewV( uint32_t deviceIdx=0 );
+		SUser::Ref		GetUser( uint32_t deviceIdx=0, uint32_t userId=1 );
+
+		void			UpdateFrame( uint32_t deviceIdx=0 );
+		void			UpdateUsers( uint32_t deviceIdx=0 );
+
+		void			EnableNetworking( bool flag, const std::string& hostName="127.0.0.1", uint16_t port=8888 );
+		void			SendNetworkUserData();
+		void			SendNetworkUserData( uint32_t userId );
+	public:
+		//xn::Context						mContext;
+
+		typedef std::shared_ptr<sDevice> SDeviceRef;
+		std::vector<SDevice::Ref>		mDeviceList;
+
+		xn::Generator*					mPrimaryGen;
+		std::vector<xn::DepthGenerator>	mDepthGenList;
+		std::vector<xn::ImageGenerator>	mImageGenList;
+		std::vector<xn::IRGenerator>	mIRGenList;
+		std::vector<xn::SceneAnalyzer>	mSceneAnalyzerList;
+		std::vector<xn::UserGenerator>	mUserGenList;
+		std::vector<xn::HandsGenerator>	mHandsGenList;
+
+		std::vector<xn::DepthMetaData>	mDepthMDList;
+		std::vector<xn::ImageMetaData>	mImageMDList;
+		std::vector<xn::IRMetaData>		mIRMDList;
+		std::vector<xn::SceneMetaData>	mSceneMDList;
+
+		xn::DepthMetaData				mDepthMD;
+		xn::ImageMetaData				mImageMD;
+		xn::IRMetaData					mIRMD;
+		xn::SceneMetaData				mSceneMD;
+
+		uint32_t						mDeviceCount;
+		uint32_t						mDepthGenCount;
+		uint32_t						mImageGenCount;
+		uint32_t						mIRGenCount;
+		uint32_t						mSceneAnalyzerCount;
+		uint32_t						mUserGenCount;
+		uint32_t						mHandsGenCount;
+
+		uint16_t*						mDepthMap;	// Holds Depth map data
+		uint8_t*						mColorMap;	// Holds Image/IR map data
+
+		// Users
+		uint32_t						mNumOfUsers;
+		std::vector<SUser>				mSUserList;
+
+
+		// FOV
+		float							mHFov, mVFov;
+		float							mRealWorldXtoZ; 
+		float							mRealWorldYtoZ;
+
+
+		bool							mEnableNetwork;	// Enable sending skeleton data over the network. default port: 8888
+		std::string						mNetworkMessage;
+		OpenNINetwork*					mNetworkMsg;
+	};
 }	// V

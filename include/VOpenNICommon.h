@@ -28,6 +28,8 @@
 #include <boost/thread/thread.hpp>
 
 // Std
+//#define _HAS_ITERATOR_DEBUGGING 0
+//#define _SECURE_SCL 0
 #include <string>
 #include <vector>
 
@@ -128,7 +130,7 @@ namespace V
 		SKEL_RIGHT_ANKLE = 23, 
 		SKEL_RIGHT_FOOT = 24,
 	};
-	// Mac count of bones
+	// Max count of bones
 	static const int BONE_COUNT = 24;
 
 }

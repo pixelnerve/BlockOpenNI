@@ -56,13 +56,15 @@ void MultipleKinectsApp::setup()
 {
 	// Init openni and devices
 	mManager = V::OpenNIDeviceManager::InstancePtr();
+	mManager->Init();	// Init context
+	// Init 2 devices with image/depth generators. NOTE: User generator not working properly. TODO: Fix
 	mManager->createDevices( 2, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );
 
 	// Create device 0 is available
 	try 
 	{
 		mDevice0 = mManager->getDevice( 0 );
-		mDevice0->setDepthShiftMul( 4 );	// scale depth values
+		mDevice0->setDepthShiftMul( 4 );	// scale depth values 
 		mDevice0->setMirrorMode( V::NODE_TYPE_IMAGE, true );
 		mDevice0->setMirrorMode( V::NODE_TYPE_DEPTH, true );
 	} catch( std::exception e )
@@ -88,6 +90,7 @@ void MultipleKinectsApp::setup()
 	mColorTex1 = gl::Texture( KINECT_WIDTH, KINECT_HEIGHT );
 	mDepthTex1 = gl::Texture( KINECT_WIDTH, KINECT_HEIGHT );
 
+	// Start device capture
 	mManager->start();
 
 	mPrevTime = mCurrTime = mFrameTime = 0;

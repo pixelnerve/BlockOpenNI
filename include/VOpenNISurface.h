@@ -28,12 +28,18 @@ namespace V
 			mWidth = width;
 			mHeight = height;
 			mData = NULL;
-			mData = new T[mWidth*mHeight*mBPP];
+
+			// malloc/free
+			mData = (T*)malloc(mWidth*mHeight*mBPP);
+			memset( mData, 0, mWidth*mHeight*mBPP );
+			// new/delete
+			//mData = new T[mWidth*mHeight*mBPP];
 		}
 
 		~OpenNISurfaceT() 
 		{
-			SAFE_DELETE_ARRAY( mData );
+			free( mData );
+			//SAFE_DELETE_ARRAY( mData );
 		}
 
 		void remap( uint32_t width, uint32_t height )
@@ -42,8 +48,22 @@ namespace V
 			{
 				mWidth = width;
 				mHeight = height;
-				SAFE_DELETE_ARRAY( mData );
-				mData = new T[width*height*mBPP];
+				
+				// realloc/free
+				T* tempBuffer = (T*)realloc( mData, width*height*mBPP);
+				// Make sure the new alloc is valid
+				if( tempBuffer )
+				{
+					mData = tempBuffer;
+					memset( mData, 0, mWidth*mHeight*mBPP );
+				}
+				else // There was an error
+				{
+					free( mData );
+				}
+				// new/delete
+				//SAFE_DELETE_ARRAY( mData );
+				//mData = new T[width*height*mBPP];
 			}
 		}
 		void update( T* data )			{ memcpy( mData, data, mWidth*mHeight*mBPP );		}

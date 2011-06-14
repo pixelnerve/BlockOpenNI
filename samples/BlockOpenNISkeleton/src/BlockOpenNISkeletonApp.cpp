@@ -121,14 +121,16 @@ public:
 		return ImageSourceRef( new ImageSourceKinectColor( activeColor, KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT ) );
 	}
 
-	ImageSourceRef getUserColorImage( int id )
+	ImageSourceRef getUserImage( int id )
 	{
 		V::OpenNIUserRef user = _manager->getUser(id);
 		if( !user ) return ImageSourceRef();
 
 		// register a reference to the active buffer
-		uint8_t *activeColor = user->getPixels();
-		return ImageSourceRef( new ImageSourceKinectColor( activeColor, KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT ) );
+		uint16_t* pixels = NULL;
+		// In case buffer is null, getLabelMap allocates the correct size, but you have to free it yourself
+		_device0->getLabelMap( id, pixels );
+		return ImageSourceRef( new ImageSourceKinectDepth( pixels, KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT ) );
 	}
 
 	ImageSourceRef getDepthImage()
@@ -170,14 +172,16 @@ void BlockOpenNISampleAppApp::prepareSettings( Settings *settings )
 void BlockOpenNISampleAppApp::setup()
 {
 	_manager = V::OpenNIDeviceManager::InstancePtr();
+	_manager->Init();	// Init context
 	//_device0 = _manager->createDevice( "data/configIR.xml", true );
-	_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_USER );
+	_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_USER );	// Create manually.
 	if( !_device0 ) 
 	{
 		DEBUG_MESSAGE( "(App)  Couldn't init device0\n" );
 		exit( 0 );
 	}
-	_device0->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
+	//_device0->setPrimaryBuffer( V::NODE_TYPE_DEPTH );	// Broken!! TODO: Fix with new design
+	_device0->setHistogram( true );	// Enable histogram depth map (RGB8bit bitmap)
 	_manager->start();
 
 
@@ -200,7 +204,7 @@ void BlockOpenNISampleAppApp::update()
 
 	// Uses manager to handle users.
 	if( _manager->hasUsers() && _manager->hasUser(1) ) 
-		mOneUserTex.update( getUserColorImage(1) );
+		mOneUserTex.update( getUserImage(1) );
 }
 
 void BlockOpenNISampleAppApp::draw()

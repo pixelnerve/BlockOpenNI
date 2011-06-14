@@ -106,13 +106,6 @@ public:
 		return ImageSourceRef( new ImageSourceKinectColor( activeColor, KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT ) );
 	}
 
-	ImageSourceRef getUserColorImage( int id )
-	{
-		// register a reference to the active buffer
-		uint8_t *activeColor = _manager->getUser(id)->getPixels();
-		return ImageSourceRef( new ImageSourceKinectColor( activeColor, KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT ) );
-	}
-
 	ImageSourceRef getDepthImage()
 	{
 		// register a reference to the active buffer
@@ -139,6 +132,7 @@ public:	// Members
 void BlockOpenNISampleAppApp::setup()
 {
 	_manager = V::OpenNIDeviceManager::InstancePtr();
+	_manager->Init();	// Init context
 	//_device0 = _manager->createDevice( "data/configIR.xml" );		// Load from xml
 	_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );	// Create manually.
 	if( !_device0 ) 
@@ -146,7 +140,8 @@ void BlockOpenNISampleAppApp::setup()
 		DEBUG_MESSAGE( "(App)  Couldn't init device0\n" );
 		exit( 0 );
 	}
-	_device0->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
+	//_device0->setPrimaryBuffer( V::NODE_TYPE_DEPTH );	// Broken!! TODO: Fix with new design
+	_device0->setHistogram( true );	// Enable histogram depth map (RGB8bit bitmap)
 	_manager->start();
 
 

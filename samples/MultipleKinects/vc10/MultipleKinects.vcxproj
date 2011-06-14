@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{74202EDD-91D2-4D2A-B0B6-355CEB16E6BE}</ProjectGuid>
+    <ProjectGuid>{598B1A68-7AD2-4BC6-BD3C-10B9957E0B62}</ProjectGuid>
     <RootNamespace>MultipleKinectsApp</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
