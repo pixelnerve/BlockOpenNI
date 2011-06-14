@@ -44,6 +44,9 @@
 
 
 
+//#define OPENNI_POSE_SAVE_CAPABILITY
+
+
 
 namespace V
 {

@@ -7,6 +7,8 @@
 #include "VOpenNIDevice.h"
 
 
+
+
 // Make sure we link libraries
 #pragma comment( lib, "openni.lib" )
 

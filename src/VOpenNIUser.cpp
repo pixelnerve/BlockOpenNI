@@ -161,6 +161,7 @@ namespace V
 	//
 	void OpenNIUser::loadCalibrationDataToFile( const std::string& filename )
 	{
+#ifdef OPENNI_POSE_SAVE_CAPABILITY
 		mSkelCap = &_device->getUserGenerator()->GetSkeletonCap();
 
 		if( mSkelCap->IsCalibrated( mId ) )
@@ -178,6 +179,9 @@ namespace V
 				mSkelCap->StartTracking( mId );
 			}
 		}
+#else
+		DEBUG_MESSAGE( "OpenNIUser::loadCalibrationDataToFile()  Not supported on the version" );
+#endif
 	}
 
 	//
@@ -185,6 +189,7 @@ namespace V
 	//
 	void OpenNIUser::saveCalibrationDataToFile( const std::string& filename )
 	{
+#ifdef OPENNI_POSE_SAVE_CAPABILITY
 		mSkelCap = &_device->getUserGenerator()->GetSkeletonCap();
 
 		if( mSkelCap->IsCalibrated( mId ) )
@@ -194,6 +199,9 @@ namespace V
 			XnStatus rc = mSkelCap->SaveCalibrationDataToFile( mId, filename.c_str() );
 			CHECK_RC( rc, "OpenNIUser::saveCalibrationDataToFile()" );
 		}
+#else
+		DEBUG_MESSAGE( "OpenNIUser::saveCalibrationDataToFile()  Not supported on the version" );
+#endif
 	}
 
 	void OpenNIUser::update()
