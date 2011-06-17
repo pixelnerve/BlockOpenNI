@@ -3,12 +3,12 @@
 #include "VOpenNICommon.h"
 #include "VOpenNISurface.h"
 #include "VOpenNIUser.h"
-#include "VOpenNINetwork.h"
 
 namespace V
 {
 
 	// Forward declarations
+	class OpenNINetwork;
 	struct OpenNIBone;
 	class OpenNIUser;
 	class OpenNIDevice;
@@ -483,6 +483,7 @@ namespace V
 		void run();
 	public:
 		static bool						USE_THREAD;
+		static bool						USE_NEW_WRAPPER_CODE;
 
 
 	protected:
@@ -517,7 +518,10 @@ namespace V
 		// New Wrapper
 		//
 	public:
+		void			AllocateMem( uint32_t width, uint32_t height );
+
 		uint16_t*		getDepthMap( uint32_t deviceIdx=0 );
+		uint16_t*		getDepthMapShift( uint32_t deviceIdx=0, uint32_t shiftMul=2 );
 		uint8_t*		getColorMap( uint32_t deviceIdx=0 );
 		void			SetPrimaryBuffer( uint32_t type );
 		void			CalcDepthImageRealWorld( uint32_t deviceIdx, uint16_t* pixelData, XnPoint3D* worldData );
@@ -535,7 +539,7 @@ namespace V
 		void			UpdateFrame( uint32_t deviceIdx=0 );
 		void			UpdateUsers( uint32_t deviceIdx=0 );
 
-		void			EnableNetworking( bool flag, const std::string& hostName="127.0.0.1", uint16_t port=8888 );
+		void			EnableNetworking( bool flag, const std::string& hostName="127.0.0.1", uint16_t port=3333 );
 		void			SendNetworkUserData();
 		void			SendNetworkUserData( uint32_t userId );
 	public:

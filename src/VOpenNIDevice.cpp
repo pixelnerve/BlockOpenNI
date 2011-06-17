@@ -4,6 +4,7 @@
 #endif
 #include "VOpenNIBone.h"
 #include "VOpenNIUser.h"
+#include "VOpenNINetwork.h"
 #include "VOpenNIDevice.h"
 
 
@@ -424,9 +425,9 @@ namespace V
 		//if( _userGen ) {
 		//	_userGen->GetUserPixels( 0, *_sceneMetaData );
 		//}
-		if( _isAudioOn ) {
-			_audioGen.GetMetaData( *_audioMetaData );
-		}
+		//if( _isAudioOn ) {
+		//	_audioGen.GetMetaData( *_audioMetaData );
+		//}
 
 
 
@@ -517,14 +518,14 @@ namespace V
 					DEBUG_MESSAGE( ss.str().c_str() );
 					_isSceneOn = true;
 					break;
-				case XN_NODE_TYPE_AUDIO:
-					//_audioGen = new AudioGenerator();
-					_audioMetaData = new AudioMetaData();
-					(*it).GetInstance( _audioGen );
-					ss << "Audio: " << _audioGen.GetName() << std::endl;
-					DEBUG_MESSAGE( ss.str().c_str() );
-					_isAudioOn = true;
-					break;
+				//case XN_NODE_TYPE_AUDIO:
+				//	//_audioGen = new AudioGenerator();
+				//	_audioMetaData = new AudioMetaData();
+				//	(*it).GetInstance( _audioGen );
+				//	ss << "Audio: " << _audioGen.GetName() << std::endl;
+				//	DEBUG_MESSAGE( ss.str().c_str() );
+				//	_isAudioOn = true;
+				//	break;
 				case XN_NODE_TYPE_HANDS:
 					//_handsGen = new HandsGenerator();
 					(*it).GetInstance( _handsGen );
@@ -1413,6 +1414,7 @@ namespace V
 	/************************************************************************/
 
 	bool OpenNIDeviceManager::USE_THREAD = false;
+	bool OpenNIDeviceManager::USE_NEW_WRAPPER_CODE = false;
 	OpenNIDeviceManager OpenNIDeviceManager::_singletonPointer;
 
 
@@ -1566,7 +1568,6 @@ namespace V
 		{
 			OpenNIDeviceRef dev = OpenNIDeviceRef( new OpenNIDevice(&_context) );
 			mDevices.push_back( dev );
-
 
 			SDevice::Ref sdev = SDevice::Ref( new SDevice() );
 			mDeviceList.push_back( sdev );
@@ -1766,6 +1767,14 @@ namespace V
 	}
 
 
+
+	void OpenNIDeviceManager::AllocateMem( uint32_t width, uint32_t height )
+	{
+		mDepthMap = new uint16_t[width*height];
+		mColorMap = new uint8_t[width*height];
+	}
+
+
 	OpenNIDevice::Ref OpenNIDeviceManager::getDevice( uint32_t deviceIdx/*=0*/ )
 	{
 		if( mDevices.empty() || deviceIdx >= mDevices.size() ) 
@@ -1818,8 +1827,6 @@ namespace V
 		//mSceneMDList.clear();
 
 
-		SAFE_DELETE( mNetworkMsg );
-
 		SAFE_DELETE_ARRAY( mDepthMap );
 		SAFE_DELETE_ARRAY( mColorMap );
 
@@ -1842,6 +1849,9 @@ namespace V
 		// Shutdown openNI context
 		//
 		_context.Shutdown();
+
+		mNetworkMsg->Release();
+		SAFE_DELETE( mNetworkMsg );
 	}
 
 
@@ -1913,7 +1923,7 @@ namespace V
 		//boost::lock_guard<boost::mutex> lock( _mutex );
 		//boost::mutex::scoped_lock lock( _mutex );
 
-		if( mUserList.empty() ) return OpenNIUserRef();
+		//if( mUserList.empty() ) return OpenNIUserRef();
 		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); ++it )
 		{
 			if( id == (*it)->getId() )
@@ -2006,14 +2016,15 @@ namespace V
 
 
 
-		//XnStatus rc = XN_STATUS_OK;
+		XnStatus rc = XN_STATUS_OK;
 		if( mPrimaryGen != NULL )
 		{
-			_context.WaitOneUpdateAll( *mPrimaryGen );
+			rc = _context.WaitOneUpdateAll( *mPrimaryGen );
 		}
 		else
 		{
-			_context.WaitNoneUpdateAll();	// Make sure we are not blocking the application to the refresh-rate of a camera/generator (usually 30fps)
+			rc = _context.WaitNoneUpdateAll();	// Make sure we are not blocking the application to the refresh-rate of a camera/generator (usually 30fps)
+			//rc = _context.WaitAndUpdateAll();
 			//rc = _context.WaitAnyUpdateAll();
 		}
 		//if( rc != XN_STATUS_OK )
@@ -2025,20 +2036,21 @@ namespace V
 		//}
 
 
-		// Handle device update
-		for( OpenNIDeviceList::iterator it = mDevices.begin(); it != mDevices.end(); ++it )
+		if( !USE_NEW_WRAPPER_CODE )
 		{
-			(*it)->readFrame();
-		}
+			// Handle device update
+			for( OpenNIDeviceList::iterator it = mDevices.begin(); it != mDevices.end(); ++it )
+			{
+				(*it)->readFrame();
+			}
 
-		// Handle user update
-		//if( !mUserList.empty() )
-		//{
+			// Handle user update
 			for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); ++it )
 			{
 				(*it)->update();
 			}
-		//}
+		}
+
 
 
 		// Sleep
@@ -2076,37 +2088,74 @@ namespace V
 
 		mDepthGenList[deviceIdx].GetMetaData( mDepthMD );
 
-/*		uint32_t size = mDepthMD.XRes()*mDepthMD.YRes();
-		const XnDepthPixel *map = mDepthMD.Data();
-		for( int i=0; i<size; i++ )
-		{
-			*mDepthMap = *map;
-
-			map++;
-			mDepthMap++;
-		}
-		return mDepthMap;*/
 		return (uint16_t*)mDepthMD.Data();
 	}
+
+
+	uint16_t* OpenNIDeviceManager::getDepthMapShift( uint32_t deviceIdx/*=0*/, uint32_t shiftMul/*=2*/ )
+	{
+		//if( USE_THREAD ) boost::mutex::scoped_lock lock( _mutex );
+
+		if( !mDepthGenList[deviceIdx].IsValid() ) return NULL;
+
+		mDepthGenList[deviceIdx].GetMetaData( mDepthMD );
+
+		uint32_t siz = mDepthMD.XRes()*mDepthMD.YRes();
+
+		if( !mDepthMap )
+			mDepthMap = new uint16_t[siz];
+
+		const XnDepthPixel *map = mDepthMD.Data();
+		uint16_t *dest = mDepthMap;
+		for( uint32_t i=0; i<siz; i++ )
+		{
+			uint32_t pixel = *map;
+			*dest = (pixel << shiftMul);
+
+			map++;
+			dest++;
+		}
+		return mDepthMap;
+	}
+
 
 	uint8_t* OpenNIDeviceManager::getColorMap( uint32_t deviceIdx/*=0*/ )
 	{
 		//if( USE_THREAD ) boost::mutex::scoped_lock lock( _mutex );
 
+		// Case if its Image
 		if( !mImageGenList.empty() && mImageGenList[deviceIdx].IsValid() )
 		{
 			mImageGenList[deviceIdx].GetMetaData( mImageMD );
 			return (uint8_t*)mImageMD.Data();
 		}
+
+		// Case if its Infrared
 		if( !mIRGenList.empty() && mIRGenList[deviceIdx].IsValid() )
 		{
 			mIRGenList[deviceIdx].GetMetaData( mIRMD );
 
-			XnUInt8 val;
+			uint32_t siz = mIRMD.XRes()*mIRMD.YRes();
 
 			if( !mColorMap ) 
-				mColorMap = new uint8_t[4*mIRMD.XRes()*mIRMD.YRes()*3];
+				mColorMap = new uint8_t[siz*3];
 
+
+			const XnDepthPixel *map = mIRMD.Data();
+			uint8_t *dest = mColorMap;
+			for( uint32_t i=0; i<siz; i++ )
+			{
+				uint32_t pixel = *map;
+				uint8_t value = (uint8_t)(pixel * 0.5f); 
+				*dest++ = value;
+				*dest++ = value;
+				*dest++ = value;
+
+				map++;
+			}
+
+			/*
+			XnUInt8 val;
 			for( XnUInt y=0; y<mIRMD.YRes(); ++y )
 			{
 				const XnIRPixel*   pIr		= mIRMD.Data()  + (y * mIRMD.XRes());
@@ -2117,10 +2166,10 @@ namespace V
 					// We divide value by 2
 					val = (XnUInt8)((float)*pIr * .5f);
 					*pPixel++ = val;
-					//*pPixel++ = val;
-					//*pPixel++ = val;
+					*pPixel++ = val;
+					*pPixel++ = val;
 				}
-			}
+			}*/
 
 			return mColorMap;
 		}
@@ -2346,6 +2395,7 @@ namespace V
 		{
 			if( !mNetworkMsg )
 				mNetworkMsg = new OpenNINetwork(hostName, port );
+				mNetworkMsg->Init();
 
 			mEnableNetwork = true;
 		}
@@ -2365,6 +2415,9 @@ namespace V
 		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); ++it )
 		{
 			OpenNIUser::Ref user = *it;
+			
+			if( user->getUserState() != V::USER_TRACKING )
+				continue;
 
 			for( OpenNIBoneList::iterator bit = user->getBoneList().begin(); bit != user->getBoneList().end(); ++bit )
 			{
@@ -2379,27 +2432,62 @@ namespace V
 				//mNetworkMsg->Send( message.str().c_str() );
 			}
 		}
+
+/*
+		// Send frame ID
+		unsigned char frameID[1] = { 0 };
+		mNetworkMsg->Send( (char*)frameID );
+
+		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); ++it )
+		{
+			OpenNIUser::Ref user = *it;
+
+			// Send user ID
+			mNetworkMsg->Send( (char*)user->getId() );
+
+			for( OpenNIBoneList::iterator bit = user->getBoneList().begin(); bit != user->getBoneList().end(); ++bit )
+			{
+				V::OpenNIBone* bone = *bit;
+
+				// Send bone data "USERID X Y Z Qx Qy Qz Qw"
+				float boneData[4] = { bone->id, bone->position[0], bone->position[1], bone->position[2] };
+				mNetworkMsg->Send( (char*)boneData );
+
+			}
+		}*/
 	}
 
 
 	void OpenNIDeviceManager::SendNetworkUserData( uint32_t userId )
 	{
 		OpenNIUser::Ref user = getUser( userId );
+
 		if( !mEnableNetwork || !user ) return;
+		if( user->getUserState() != V::USER_TRACKING ) return;
 
-		char buffer[1024];	// 1k 
+		OpenNIBoneList boneList = user->getBoneList();
 
-		for( OpenNIBoneList::iterator bit = user->getBoneList().begin(); bit != user->getBoneList().end(); ++bit )
+		//static const int bufferSize = 1024;
+		//char buffer[bufferSize];	// 1k 
+
+		int frameID = 9;
+
+		for( OpenNIBoneList::iterator bit = boneList.begin(); bit != boneList.end(); ++bit )
 		{
 			V::OpenNIBone* bone = *bit;
 
-			// Format message "USERID JOINTID X Y Z"
-			memset( buffer, 0, 1024 );
-			sprintf_s( buffer, "%d %d %f %f %f\0", user->getId(), bone->id, bone->position[0], bone->position[1], bone->position[2] );
-			mNetworkMsg->Send( buffer );
-			//std::stringstream message;
-			//message << user->getId() << " " << bone->id << " " << bone->position[0] << " " << bone->position[1] << " " << bone->position[2];
-			//mNetworkMsg->Send( message.str().c_str() );
+			// Format message "FRAMEID USERID JOINTID X Y Z Qx Qy Qz Qw"
+			//memset( buffer, 0, bufferSize*sizeof(char) );
+			//sprintf_s( buffer, "%d %d %d %0.2f %0.2f %0.2f\n", frameID, user->getId(), bone->id, bone->position[0], bone->position[1], bone->position[2] );
+			////sprintf_s( buffer, "%d %d %d %0.2f %0.2f %0.2f %0.2f %0.2f %0.2f %0.2f", 0, user->getId(), bone->id, bone->position[0], bone->position[1], bone->position[2] );
+			//int result = mNetworkMsg->Send( buffer );
+
+			float buff[6] = { (float)frameID, (float)user->getId(), (float)bone->id, bone->position[0], bone->position[1], bone->position[2] };
+			int result = mNetworkMsg->Send( buff, 6 );
+
+			//std::stringstream ss;
+			//ss << "Send result: " << result << std::endl;
+			//OutputDebugStringA( ss.str().c_str() );
 		}
 	}
 
