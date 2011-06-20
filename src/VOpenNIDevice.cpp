@@ -1850,8 +1850,11 @@ namespace V
 		//
 		_context.Shutdown();
 
-		mNetworkMsg->Release();
-		SAFE_DELETE( mNetworkMsg );
+		if( mNetworkMsg )
+		{
+			mNetworkMsg->Release();
+			SAFE_DELETE( mNetworkMsg );
+		}
 	}
 
 
