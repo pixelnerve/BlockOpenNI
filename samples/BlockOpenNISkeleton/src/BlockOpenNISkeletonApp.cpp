@@ -104,6 +104,8 @@ public:
 	static const int KINECT_DEPTH_FPS = 30;
 
 
+	BlockOpenNISampleAppApp();
+	~BlockOpenNISampleAppApp();
 	void setup();
 	void mouseDown( MouseEvent event );	
 	void update();
@@ -123,12 +125,8 @@ public:
 
 	ImageSourceRef getUserImage( int id )
 	{
-		V::OpenNIUserRef user = _manager->getUser(id);
-		if( !user ) return ImageSourceRef();
+		if( _manager->hasUser(id) ) return ImageSourceRef();
 
-		// register a reference to the active buffer
-		uint16_t* pixels = NULL;
-		// In case buffer is null, getLabelMap allocates the correct size, but you have to free it yourself
 		_device0->getLabelMap( id, pixels );
 		return ImageSourceRef( new ImageSourceKinectDepth( pixels, KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT ) );
 	}
@@ -147,7 +145,6 @@ public:
 		return ImageSourceRef( new ImageSourceKinectColor( activeDepth, KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT ) );
 	}
 	void prepareSettings( Settings *settings );
-
 public:	// Members
 	V::OpenNIDeviceManager*	_manager;
 	V::OpenNIDevice::Ref	_device0;
@@ -155,8 +152,21 @@ public:	// Members
 	gl::Texture				mColorTex;
 	gl::Texture				mDepthTex;
 	gl::Texture				mOneUserTex;	 
+	
+	uint16_t*				pixels;
 };
 
+
+
+BlockOpenNISampleAppApp::BlockOpenNISampleAppApp() {}
+BlockOpenNISampleAppApp::~BlockOpenNISampleAppApp()
+{
+	if( pixels )
+	{
+		delete[] pixels;
+		pixels = NULL;
+	}
+}
 
 void BlockOpenNISampleAppApp::prepareSettings( Settings *settings )
 {
@@ -172,7 +182,6 @@ void BlockOpenNISampleAppApp::prepareSettings( Settings *settings )
 void BlockOpenNISampleAppApp::setup()
 {
 	_manager = V::OpenNIDeviceManager::InstancePtr();
-	_manager->Init();	// Init context
 	//_device0 = _manager->createDevice( "data/configIR.xml", true );
 	_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_USER );	// Create manually.
 	if( !_device0 ) 
@@ -180,10 +189,12 @@ void BlockOpenNISampleAppApp::setup()
 		DEBUG_MESSAGE( "(App)  Couldn't init device0\n" );
 		exit( 0 );
 	}
-	//_device0->setPrimaryBuffer( V::NODE_TYPE_DEPTH );	// Broken!! TODO: Fix with new design
 	_device0->setHistogram( true );	// Enable histogram depth map (RGB8bit bitmap)
 	_manager->start();
 
+
+	pixels = NULL;
+	pixels = new uint16_t[ KINECT_COLOR_WIDTH*KINECT_COLOR_HEIGHT ];
 
 	gl::Texture::Format format;
 	gl::Texture::Format depthFormat;
@@ -203,7 +214,7 @@ void BlockOpenNISampleAppApp::update()
 	mDepthTex.update( getDepthImage24() );	// Histogram
 
 	// Uses manager to handle users.
-	if( _manager->hasUsers() && _manager->hasUser(1) ) 
+	if( _manager->hasUser(1) ) 
 		mOneUserTex.update( getUserImage(1) );
 }
 
@@ -229,7 +240,7 @@ void BlockOpenNISampleAppApp::draw()
 	gl::draw( mColorTex, Rectf( xoff+sx*1, yoff, xoff+sx*2, yoff+sy) );
 
 
-	if( _manager->hasUsers() && _manager->hasUser(1) )
+	if( _manager->hasUser(1) )
 	{
 		gl::disable( GL_TEXTURE_2D );
 		// Render skeleton if available

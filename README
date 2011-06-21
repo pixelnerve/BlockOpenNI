@@ -2,16 +2,35 @@ Block OpenNI
 ------------
 A C++ wrapper for OpenNI
 
+Important:
+Current API version this block was compiled with (Current version tested on windows, both with Kinect and Xtion):
+OpenNI-Win32-1.1.0.39-Dev
+NITE-Win32-1.3.1.5-Dev
 
-First version:
-Support for several generators as Image, IR, Depth, User and Audio.
-Skeleton tracking support is also available.
+
+2011-06-20:
+This block is going through heavy remake and so old code/methods are mixed with new methods for the moment.
+I will be changing the way things are handled at the moment when i'm finished. All for better support on multiple devices.
 
 
+
+
+
+Basic description
+-----------------
+
+Support for several generators as Image, IR, Depth and User.
+Skeleton tracking support is available.
+
+
+
+
+How to use
+----------
 
 You need to install the sensor drivers, OpenNI and NITE.
-PrimeSense drivers do not run with kinect. 
-To use a kinect get SensorKinect from avin2 or ros.
+PrimeSense drivers do not run with Kinect (Works with Xtion). 
+Instead, get SensorKinect from avin2 or ros.
 
 
 More information and downloads:

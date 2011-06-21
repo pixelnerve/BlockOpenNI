@@ -1115,12 +1115,14 @@ namespace V
 	}
 
 
-	void OpenNIDevice::getLabelMap( uint32_t labelId, uint16_t* labelMap )
+	void OpenNIDevice::getLabelMap( uint32_t userId, uint16_t* labelMap )
 	{
 		if( !_sceneAnalyzer.IsValid() ) return;
 
 		_sceneAnalyzer.GetMetaData( *_sceneMetaData );
 		//CHECK_RC( _status, "calcLabelMap()" );
+
+		uint32_t labelId = userId;
 
 		const XnLabel* labels = _sceneMetaData->Data();
 		if( labels )
@@ -1133,30 +1135,36 @@ namespace V
 
 
 			// Same as below but no label checking
-			memcpy( labelMap, pDepth, depthWidth*depthHeight*sizeof(uint16_t) );
+			//memcpy( labelMap, pDepth, depthWidth*depthHeight*sizeof(uint16_t) );
 
-			//// Copy label map
-			//memset( labelMap, 0, depthWidth*depthHeight*sizeof(uint16_t) );
-			//uint16_t* pDepth = _depthData;
-			//uint16_t* map = labelMap;
+			// Copy label map
+			memset( labelMap, 0, depthWidth*depthHeight*sizeof(uint16_t) );
+			uint16_t* pDepth = _depthData;
+			uint16_t* map = labelMap;
 
-			////int index = 0;
-			//for( int j=0; j<depthHeight; j++ )
-			//{
-			//	for( int i=0; i<depthWidth; i++ )
-			//	{
-			//		XnLabel label = *labels;
+			//int index = 0;
+			for( int j=0; j<depthHeight; j++ )
+			{
+				for( int i=0; i<depthWidth; i++ )
+				{
+					XnLabel label = *labels;
 
-			//		if( label != 0 )
-			//		{
-			//			*map = *pDepth;
-			//		}
+					if( label != labelId )
+					{
+						// If a user pixel, take depth value from our depthmap
+						*map = *pDepth;
+					}
+					else
+					{
+						// If pixel is null, set color to black
+						*map = 0;
+					}
 
-			//		pDepth++;
-			//		map++;
-			//		labels++;
-			//	}
-			//}
+					pDepth++;
+					map++;
+					labels++;
+				}
+			}
 		}
 	}
 

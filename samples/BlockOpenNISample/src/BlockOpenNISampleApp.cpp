@@ -132,15 +132,15 @@ public:	// Members
 void BlockOpenNISampleAppApp::setup()
 {
 	_manager = V::OpenNIDeviceManager::InstancePtr();
-	_manager->Init();	// Init context
-	//_device0 = _manager->createDevice( "data/configIR.xml" );		// Load from xml
-	_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );	// Create manually.
+	_device0 = _manager->createDevice( "data/configIR.xml" );		// Load from xml
+	//_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );	// Create manually.
 	if( !_device0 ) 
 	{
 		DEBUG_MESSAGE( "(App)  Couldn't init device0\n" );
 		exit( 0 );
 	}
-	//_device0->setPrimaryBuffer( V::NODE_TYPE_DEPTH );	// Broken!! TODO: Fix with new design
+	//_device0->setPrimaryBuffer( V::NODE_TYPE_DEPTH );	// Broken!! TODO: Will be available with new version. Still a way to do it is as below
+	//_manager->mPrimaryBuffer = _device0->getDepthGenerator();	// Hack on generator wait update
 	_device0->setHistogram( true );	// Enable histogram depth map (RGB8bit bitmap)
 	_manager->start();
 
