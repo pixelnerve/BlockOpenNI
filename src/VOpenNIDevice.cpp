@@ -327,7 +327,7 @@ namespace V
 		mNearClipPlane = 0;
 		mFarClipPlane = 6000;
 
-		mDepthShiftValue = 4;
+		mDepthShiftValue = 3;
 
 		mSkeletonProfile = XN_SKEL_PROFILE_ALL;
 
@@ -2103,7 +2103,7 @@ namespace V
 	}
 
 
-	uint16_t* OpenNIDeviceManager::getDepthMapShift( uint32_t deviceIdx/*=0*/, uint32_t shiftMul/*=2*/ )
+	uint16_t* OpenNIDeviceManager::getDepthMapShift( uint32_t deviceIdx/*=0*/, uint32_t shiftMul/*=3*/ )
 	{
 		//if( USE_THREAD ) boost::mutex::scoped_lock lock( _mutex );
 

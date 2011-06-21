@@ -521,7 +521,7 @@ namespace V
 		void			AllocateMem( uint32_t width, uint32_t height );
 
 		uint16_t*		getDepthMap( uint32_t deviceIdx=0 );
-		uint16_t*		getDepthMapShift( uint32_t deviceIdx=0, uint32_t shiftMul=2 );
+		uint16_t*		getDepthMapShift( uint32_t deviceIdx=0, uint32_t shiftMul=3 );
 		uint8_t*		getColorMap( uint32_t deviceIdx=0 );
 		void			SetPrimaryBuffer( uint32_t type );
 		void			CalcDepthImageRealWorld( uint32_t deviceIdx, uint16_t* pixelData, XnPoint3D* worldData );
