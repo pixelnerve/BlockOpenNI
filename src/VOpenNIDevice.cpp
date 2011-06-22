@@ -1122,8 +1122,6 @@ namespace V
 		_sceneAnalyzer.GetMetaData( *_sceneMetaData );
 		//CHECK_RC( _status, "calcLabelMap()" );
 
-		uint32_t labelId = userId;
-
 		const XnLabel* labels = _sceneMetaData->Data();
 		if( labels )
 		{
@@ -1149,16 +1147,16 @@ namespace V
 				{
 					XnLabel label = *labels;
 
-					if( label != labelId )
+					if( label == userId )
 					{
 						// If a user pixel, take depth value from our depthmap
 						*map = *pDepth;
 					}
-					else
-					{
-						// If pixel is null, set color to black
-						*map = 0;
-					}
+					//else
+					//{
+					//	// If pixel is null, set color to black
+					//	*map = 0;
+					//}
 
 					pDepth++;
 					map++;
@@ -2276,7 +2274,7 @@ namespace V
 				{
 					XnLabel label = *labels;
 
-					if( label != 0 )
+					if( label == labelId )
 					{
 						*map = *pDepth;
 					}
@@ -2321,7 +2319,7 @@ namespace V
 				{
 					XnLabel label = *labels;
 
-					if( label != 0 )
+					if( label == userId )
 					{
 						*map = *pDepth;
 					}
@@ -2399,7 +2397,7 @@ namespace V
 	{
 	}
 
-
+#ifdef _WIN32
 	void OpenNIDeviceManager::EnableNetworking( bool flag, const std::string& hostName/*="127.0.0.1"*/, uint16_t port/*=8888*/ )
 	{
 		if( flag )
@@ -2501,5 +2499,6 @@ namespace V
 			//OutputDebugStringA( ss.str().c_str() );
 		}
 	}
+#endif
 
 }	// Namespace V

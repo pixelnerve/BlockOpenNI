@@ -32,7 +32,6 @@ namespace V
 	int g_UsedBoneIndexArray[15] = { 1, 2, 3, 6, 7, 9, 12, 13, 15, 17, 18, 20, 21, 22, 24 };
 
 
-
 	OpenNIUser::OpenNIUser( int32_t id, OpenNIDevice* device ) 
 		: mUserState(USER_NONE)
 	{
