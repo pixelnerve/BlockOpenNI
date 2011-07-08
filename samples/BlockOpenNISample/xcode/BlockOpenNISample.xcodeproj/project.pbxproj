@@ -15,7 +15,7 @@
 		00B784B60FF439BC000DE1D7 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B20FF439BC000DE1D7 /* CoreAudio.framework */; };
 		00BAE65A0E7ED9C10018A608 /* BlockOpenNISampleApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00BAE6590E7ED9C10018A608 /* BlockOpenNISampleApp.cpp */; };
 		00CCAF15116A9FEE008396D5 /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 00CCAF14116A9FEE008396D5 /* CinderApp.icns */; };
-		471421C4134A33B400AB44D9 /* configIR.xml in Resources */ = {isa = PBXBuildFile; fileRef = 471421C3134A33B400AB44D9 /* configIR.xml */; };
+		2042DF4013C764500062DCE9 /* configIR.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2042DF3F13C764500062DCE9 /* configIR.xml */; };
 		472B10B71349789200637FB8 /* OpenNIRecorder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 472B10B31349789200637FB8 /* OpenNIRecorder.cpp */; };
 		472B10B81349789200637FB8 /* VOpenNIDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 472B10B41349789200637FB8 /* VOpenNIDevice.cpp */; };
 		472B10B91349789200637FB8 /* VOpenNIDeviceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 472B10B51349789200637FB8 /* VOpenNIDeviceManager.cpp */; };
@@ -37,10 +37,10 @@
 		00CCAF14116A9FEE008396D5 /* CinderApp.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = CinderApp.icns; sourceTree = SOURCE_ROOT; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		2042DF3F13C764500062DCE9 /* configIR.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = configIR.xml; path = ../resources/configIR.xml; sourceTree = SOURCE_ROOT; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* BlockOpenNISample_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockOpenNISample_Prefix.pch; sourceTree = "<group>"; };
-		471421C3134A33B400AB44D9 /* configIR.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = configIR.xml; sourceTree = "<group>"; };
 		472B10B31349789200637FB8 /* OpenNIRecorder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OpenNIRecorder.cpp; path = ../../../src/OpenNIRecorder.cpp; sourceTree = "<group>"; };
 		472B10B41349789200637FB8 /* VOpenNIDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VOpenNIDevice.cpp; path = ../../../src/VOpenNIDevice.cpp; sourceTree = "<group>"; };
 		472B10B51349789200637FB8 /* VOpenNIDeviceManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VOpenNIDeviceManager.cpp; path = ../../../src/VOpenNIDeviceManager.cpp; sourceTree = "<group>"; };
@@ -143,7 +143,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				471421C2134A33B400AB44D9 /* data */,
+				2042DF3F13C764500062DCE9 /* configIR.xml */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				00CCAF14116A9FEE008396D5 /* CinderApp.icns */,
 			);
@@ -157,15 +157,6 @@
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		471421C2134A33B400AB44D9 /* data */ = {
-			isa = PBXGroup;
-			children = (
-				471421C3134A33B400AB44D9 /* configIR.xml */,
-			);
-			name = data;
-			path = ../data;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -216,7 +207,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				00CCAF15116A9FEE008396D5 /* CinderApp.icns in Resources */,
-				471421C4134A33B400AB44D9 /* configIR.xml in Resources */,
+				2042DF4013C764500062DCE9 /* configIR.xml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

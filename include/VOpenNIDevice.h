@@ -547,7 +547,7 @@ namespace V
 	public:
 		//xn::Context						mContext;
 
-		typedef std::shared_ptr<sDevice> SDeviceRef;
+		typedef boost::shared_ptr<sDevice> SDeviceRef;
 		std::vector<SDevice::Ref>		mDeviceList;
 
 		xn::Generator*					mPrimaryGen;

@@ -1451,9 +1451,9 @@ namespace V
 		_idCount = 0;
 		mMaxNumOfUsers = 2;
 		mDebugInfo = "No debug information\n";
-
+#ifdef WIN32
 		mNetworkMsg = NULL;
-
+#endif
 		mPrimaryGen = NULL;
 		mDeviceCount = 0;
 		mDepthGenCount = 0;
@@ -1472,8 +1472,40 @@ namespace V
 		destroyAll();
 	}
 
+	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( const std::string& xmlFile/*=""*/, bool allocUserIfNoNode/*=false */ )
+	{
+		if( mDevices.size() >= MAX_DEVICES ) return boost::shared_ptr<OpenNIDevice>();
+		
+		// Bail out if its an empty filename
+		if( xmlFile == "" )
+		{
+			DEBUG_MESSAGE( "not implemented" );
+			return boost::shared_ptr<OpenNIDevice>();
+		}
+		
+		// Local copy of the filename
+		std::string path = xmlFile;
+		
+		// Initialize device
+		boost::shared_ptr<OpenNIDevice> dev = boost::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
+		if( !dev->initFromXmlFile( path, allocUserIfNoNode ) ) 
+		{
+			DEBUG_MESSAGE( "[OpenNIDeviceManager]  Couldn't create device from xml\n" );
+			return boost::shared_ptr<OpenNIDevice>();
+		}
+		// By default set depth as primary generator
+		dev->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
+		
+		// Save device to our list
+		mDevices.push_back( dev );
+		return dev;
+	}
 
-	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( const std::string& xmlFile, bool allocUserIfNoNode/*=false */ )
+	
+	/* ORIGINAL VERSION **
+	 
+	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( const std::string& xmlFile, bool allocUserIfNoNode //=false 
+														)
 	{
 		if( mDevices.size() >= MAX_DEVICES ) return boost::shared_ptr<OpenNIDevice>();
 
@@ -1519,7 +1551,7 @@ namespace V
 		mDevices.push_back( dev );
 		return dev;
 	}
-
+*/
 
 	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( int nodeTypeFlags )
 	{
@@ -1787,7 +1819,9 @@ namespace V
 		{
 			std::stringstream ss;
 			ss << "[OpenNIDeviceManager]  Device '" << deviceIdx << "' is not available" << std::endl;
-			throw std::exception( ss.str().c_str() );
+			
+			//throw std::exception( ss.str().c_str() );
+			
 			return OpenNIDevice::Ref();
 		}
 
@@ -1855,14 +1889,14 @@ namespace V
 		// Shutdown openNI context
 		//
 		_context.Shutdown();
-
+#ifdef WIN32
 		if( mNetworkMsg )
 		{
 			mNetworkMsg->Release();
 			SAFE_DELETE( mNetworkMsg );
 		}
+#endif
 	}
-
 
 
 	OpenNIUserRef OpenNIDeviceManager::addUser( xn::UserGenerator* userGen, uint32_t id )

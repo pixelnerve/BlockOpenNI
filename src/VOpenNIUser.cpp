@@ -421,7 +421,7 @@ namespace V
 			XnSkeletonJointPosition jointPos;
 			//XnSkeletonJointOrientation jointOri;
 			XnPoint3D projectivePos;
-			xn::SkeletonCapability& skelCap = user->GetSkeletonCap();
+			xn::SkeletonCapability skelCap = user->GetSkeletonCap();
 
 			int index = 0;
 			int index2 = 0;

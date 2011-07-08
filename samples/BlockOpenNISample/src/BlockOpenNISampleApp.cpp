@@ -132,8 +132,17 @@ public:	// Members
 void BlockOpenNISampleAppApp::setup()
 {
 	_manager = V::OpenNIDeviceManager::InstancePtr();
-	_device0 = _manager->createDevice( "data/configIR.xml" );		// Load from xml
+#if defined(CINDER_MSW) || defined(CINDER_LINUX)
+	string xmlpath = getAppPath() + ("resources/".append("configIR.xml"));
+#elif defined(CINDER_MAC) || defined(CINDER_COCOA) || defined(CINDER_COCOA_TOUCH)				
+	string xmlpath = getAppPath() + "/Contents/Resources/configIR.xml";
+#endif
+	
+	// console() << "Loading config xml:" << xmlpath << std::endl;
+	_device0 = _manager->createDevice( xmlpath, true );
+	
 	//_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );	// Create manually.
+	
 	if( !_device0 ) 
 	{
 		DEBUG_MESSAGE( "(App)  Couldn't init device0\n" );
