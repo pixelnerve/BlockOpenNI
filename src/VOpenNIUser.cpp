@@ -419,7 +419,7 @@ namespace V
 			//DepthGenerator* depth = _device->getDepthGenerator();
 
 			XnSkeletonJointPosition jointPos;
-			//XnSkeletonJointOrientation jointOri;
+			XnSkeletonJointOrientation jointOri;
 			XnPoint3D projectivePos;
 			xn::SkeletonCapability& skelCap = user->GetSkeletonCap();
 
@@ -428,24 +428,23 @@ namespace V
 			for( OpenNIBoneList::iterator it = mBoneList.begin(); it != mBoneList.end(); ++it )
 			//for( int i=0; i<BONE_COUNT; i++ )
 			{
-
-				//
+/***				//
 				// Update only *USED* positions
 				//
 				if( (index+1) == g_UsedBoneIndexArray[index2] )
 				{
 					skelCap.GetSkeletonJointPosition( mId, (XnSkeletonJoint)(g_UsedBoneIndexArray[index2]), jointPos );
-					//skelCap.GetSkeletonJointOrientation( mId, (XnSkeletonJoint)(g_BoneIndexArray[index]), jointOri );
+					skelCap.GetSkeletonJointOrientation( mId, (XnSkeletonJoint)(g_BoneIndexArray[index2]), jointOri );
 
-					if( //jointOri.fConfidence >= 0.0f || 
-						jointPos.fConfidence >= 0.0f )
+					//if( jointOri.fConfidence >= 0.3f || 
+						//jointPos.fConfidence >= 0.3f )
 					{
 						OpenNIBone* bone = *it;
 						//OpenNIBone* bone = mBoneList[i];
 
 						//bone->id = g_BoneIndexArray[i];
 						// Is active?
-						//bone->active = true;
+						bone->active = true;
 
 						// Position (actual position in world coordinates)
 						bone->position[0] = jointPos.position.X;
@@ -460,23 +459,23 @@ namespace V
 						bone->positionProjective[2] = (projectivePos.Z > 0) ? projectivePos.Z : 0;
 
 						// Orientation
-						//memcpy( bone->orientation, jointOri.orientation.elements, 9*sizeof(float) );
+						memcpy( bone->orientation, jointOri.orientation.elements, 9*sizeof(float) );
 
 						// Confidence
 						//bone->positionConfidence = jointPos.fConfidence;
-						// Confidence
 						//bone->orientationConfidence = jointOri.fConfidence;
 					}
 
 					index2++;
 				}
+**/
 
-/*
+
 				//
 				// Update *ALL* positions
 				//
-				skelCap.GetSkeletonJointPosition( mId, (XnSkeletonJoint)(g_UsedBoneIndexArray[index2]), jointPos );
-				//skelCap.GetSkeletonJointOrientation( mId, (XnSkeletonJoint)(g_BoneIndexArray[index]), jointOri );
+				skelCap.GetSkeletonJointPosition( mId, (XnSkeletonJoint)(g_UsedBoneIndexArray[index]), jointPos );
+				skelCap.GetSkeletonJointOrientation( mId, (XnSkeletonJoint)(g_BoneIndexArray[index]), jointOri );
 
 				//if( jointOri.fConfidence >= 0.25f || jointPos.fConfidence >= 0.25f )
 				{
@@ -485,7 +484,7 @@ namespace V
 
 					//bone->id = g_BoneIndexArray[i];
 					// Is active?
-					//bone->active = true;
+					bone->active = true;
 
 					// Position (actual position in world coordinates)
 					bone->position[0] = jointPos.position.X;
@@ -500,12 +499,12 @@ namespace V
 					bone->positionProjective[2] = (projectivePos.Z > 0) ? projectivePos.Z : 0;
 
 					// Orientation
-					//memcpy( bone->orientation, jointOri.orientation.elements, 9*sizeof(float) );
+					memcpy( bone->orientation, jointOri.orientation.elements, 9*sizeof(float) );
 
 					// Confidence
-					bone->positionConfidence = jointPos.fConfidence;
+					//bone->positionConfidence = jointPos.fConfidence;
+					//bone->orientationConfidence = jointOri.fConfidence;
 				}
-*/
 
 				index++;
 			}

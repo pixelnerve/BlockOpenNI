@@ -540,9 +540,11 @@ namespace V
 		void			UpdateUsers( uint32_t deviceIdx=0 );
 
 #ifdef _WIN32
-		void			EnableNetworking( bool flag, const std::string& hostName="127.0.0.1", uint16_t port=3333 );
+		void			EnableNetworking( bool flag, const std::string& hostName="127.0.0.1", uint16_t port=8888 );
 		void			SendNetworkUserData();
 		void			SendNetworkUserData( uint32_t userId );
+		void			SendNetworkPixels( uint32_t deviceIdx, uint16_t* pixels, uint32_t sendBlocksSize/*=65535*/ );
+		void			SendNetworkUserPixels( uint32_t deviceIdx, uint32_t userId, uint32_t sendBlocksSize/*=65535*/ );
 #endif
 	public:
 		//xn::Context						mContext;
@@ -594,6 +596,7 @@ namespace V
 		bool							mEnableNetwork;	// Enable sending skeleton data over the network. default port: 8888
 		std::string						mNetworkMessage;
 		OpenNINetwork*					mNetworkMsg;
+		uint16_t*						mTempPixels;
 #endif
 	};
 }	// V

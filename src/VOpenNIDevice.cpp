@@ -1453,6 +1453,7 @@ namespace V
 		mDebugInfo = "No debug information\n";
 
 		mNetworkMsg = NULL;
+		mTempPixels = NULL;
 
 		mPrimaryGen = NULL;
 		mDeviceCount = 0;
@@ -1861,6 +1862,7 @@ namespace V
 			mNetworkMsg->Release();
 			SAFE_DELETE( mNetworkMsg );
 		}
+		SAFE_DELETE_ARRAY( mTempPixels );
 	}
 
 
@@ -2403,8 +2405,11 @@ namespace V
 		if( flag )
 		{
 			if( !mNetworkMsg )
+			{
 				mNetworkMsg = new OpenNINetwork(hostName, port );
 				mNetworkMsg->Init();
+				mTempPixels = new uint16_t[640*480];
+			}
 
 			mEnableNetwork = true;
 		}
@@ -2491,14 +2496,66 @@ namespace V
 			////sprintf_s( buffer, "%d %d %d %0.2f %0.2f %0.2f %0.2f %0.2f %0.2f %0.2f", 0, user->getId(), bone->id, bone->position[0], bone->position[1], bone->position[2] );
 			//int result = mNetworkMsg->Send( buffer );
 
-			float buff[6] = { (float)frameID, (float)user->getId(), (float)bone->id, bone->position[0], bone->position[1], bone->position[2] };
-			int result = mNetworkMsg->Send( buff, 6 );
+			float buff[10] = { (float)frameID, 
+								(float)user->getId(), 
+								(float)bone->id, 
+								(float)bone->position[0], 
+								(float)bone->position[1], 
+								(float)bone->position[2], 
+								(float)-1, 
+								(float)-1, 
+								(float)-1, 
+								(float)-1
+							};
+			int result = mNetworkMsg->Send<float>( buff, 10 );
 
 			//std::stringstream ss;
 			//ss << "Send result: " << result << std::endl;
 			//OutputDebugStringA( ss.str().c_str() );
 		}
 	}
+
+
+	void OpenNIDeviceManager::SendNetworkPixels( uint32_t deviceIdx, uint16_t* pixels, uint32_t sendBlocksSize/*=65535*/ )
+	{
+		if( !mEnableNetwork || !pixels ) return;
+
+		//uint16_t header[1] = { 0xffff };
+		//int result = mNetworkMsg->Send( header, 1 );
+
+		// Send all image at once
+		int result = mNetworkMsg->Send<uint16_t>( pixels, 640*480 );
+
+/*		int count = 0;
+		uint16_t *buff = pixels;
+		while( count < 640*480 )
+		{
+			int result = mNetworkMsg->Send( buff, sendBlocksSize );
+			buff += sendBlocksSize;
+			count += sendBlocksSize;
+		}*/
+	}
+
+	void OpenNIDeviceManager::SendNetworkUserPixels( uint32_t deviceIdx, uint32_t userId, uint32_t sendBlocksSize/*=65535*/ )
+	{
+		if( !mEnableNetwork ) return;
+		//OpenNIUser::Ref user = getUser( userId );
+		//if( !mEnableNetwork || !user ) return;
+
+		OpenNIDeviceRef device = getDevice( deviceIdx );
+		device->getLabelMap( userId, mTempPixels );
+		//GetSceneLabelMap( deviceIdx, userId, pixels );
+
+		int count = 0;
+		uint16_t *buff = mTempPixels;
+		while( count < 640*480 )
+		{
+			int result = mNetworkMsg->Send<uint16_t>( buff, sendBlocksSize );
+			buff += sendBlocksSize;
+			count += sendBlocksSize;
+		}
+	}
+
 #endif
 
 }	// Namespace V
