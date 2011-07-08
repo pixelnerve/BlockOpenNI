@@ -2,7 +2,9 @@
 
 
 #include "VOpenNICommon.h"
-#include "VOpenNINetwork.h"
+// #ifdef _WIN32
+// #include "VOpenNINetwork.h"
+// #endif
 #include "VOpenNIBone.h"
 #include "VOpenNIDevice.h"
 #include "VOpenNISurface.h"

@@ -9,9 +9,9 @@
 #else
 #error "Unknown platform"
 #endif
+#include "VOpenNICommon.h"
 
-
-#define NETWORK_USE_THREAD
+#define NETWORK_USE_THREAD 1
 
 namespace V
 {
@@ -20,258 +20,29 @@ namespace V
 	class OpenNINetwork
 	{
 		public:
-			OpenNINetwork( const std::string& hostName, uint16_t port, bool isServer=true )
-				: mHostName(hostName), mHostPort(port), mIsServer(isServer)
-			{
-				mSocketId = INVALID_SOCKET;
-				mSocketType = SOCK_STREAM;
-				mIsRunning = false;
-			}
+			OpenNINetwork( const std::string& hostName, uint16_t port, bool isServer=true );
+			~OpenNINetwork();
+			void Init();
+			void InitClient();
+			void Release();
+			int Send( char* message );
 
+			template<class T>
+			int Send( const T* message, int count );
 
-			~OpenNINetwork()
-			{
-			}
+			int Receive();
+			int ReceiveFloatBuffer( int count );
+			//int ReceiveUInt16Buffer( uint16_t* dest, int32_t* bytesRead, int count )
 
-
-			void Init()
-			{
-				WSADATA data;
-				WSAStartup( MAKEWORD(2,0), &data );
-
-				mSocketId = ::socket( AF_INET, mSocketType, IPPROTO_TCP );
-				if( mSocketId == INVALID_SOCKET )
-				{
-					OutputDebugStringA( "Invalid socket!\n" );
-					return;
-				}
-				
-				struct sockaddr_in dest_addr;
-				memset( &dest_addr, 0, sizeof(dest_addr) );
-				dest_addr.sin_family = AF_INET;
-				dest_addr.sin_addr.s_addr = inet_addr( mHostName.c_str() );
-				dest_addr.sin_port = htons( mHostPort );
-				
-				if( ::bind(mSocketId, (struct sockaddr *)&dest_addr, sizeof(sockaddr_in)) == SOCKET_ERROR )
-				{
-					closesocket( mSocketId );
-					OutputDebugStringA( "Failed on connection!\n" );
-					return;
-				}
-
-
-				//if( mIsServer ) 
-				{
-					if( ::listen( mSocketId, 1) == SOCKET_ERROR )
-					{
-						int res = WSAGetLastError();
-						OutputDebugStringA( "listen(): Error listening on socket %ld.\n" );
-						return;
-					}
-					else
-					{
-						OutputDebugStringA("listen() is OK, I'm waiting for connections...\n");
-					}
-#ifdef NETWORK_USE_THREAD
-					DEBUG_MESSAGE( "Starting thread on network\n" );
-					assert( !_thread );
-					_thread = boost::shared_ptr<boost::thread>( new boost::thread(&OpenNINetwork::run, this) );
-					mIsRunning = true;
-#endif
-				}
-
-				std::stringstream ss;
-				ss << "SERVER: Listen to '" << mHostName << "' at port: " << mHostPort << std::endl;
-				OutputDebugStringA( ss.str().c_str() );
-			}
-
-
-			void InitClient()
-			{
-				WSADATA data;
-				WSAStartup( MAKEWORD(2,0), &data );
-
-				mSocketId = ::socket( AF_INET, mSocketType, IPPROTO_TCP );
-				if( mSocketId == INVALID_SOCKET )
-				{
-					OutputDebugStringA( "Invalid socket!\n" );
-					return;
-				}
-
-				struct sockaddr_in dest_addr;
-				memset( &dest_addr, 0, sizeof(dest_addr) );
-				dest_addr.sin_family = AF_INET;
-				dest_addr.sin_addr.s_addr = inet_addr( mHostName.c_str() );
-				dest_addr.sin_port = htons( mHostPort );
-
-				if( ::connect(mSocketId, (struct sockaddr *)&dest_addr, sizeof(sockaddr_in)) == SOCKET_ERROR )
-				{
-					closesocket( mSocketId );
-					OutputDebugStringA( "Failed on connection!\n" );
-					return;
-				}
-
-				std::stringstream ss;
-				ss << "CLIENT: Connect to '" << mHostName << "' at port: " << mHostPort << std::endl;
-				OutputDebugStringA( ss.str().c_str() );
-			}
-
-
-			void Release()
-			{
-#ifdef NETWORK_USE_THREAD
-				if( mIsServer && mIsRunning )
-				{
-					DEBUG_MESSAGE( "Stop running thread on network\n" );
-					assert( _thread );
-					mIsRunning = false;
-					//_thread->join();
-					_thread.reset();
-				}
-#endif
-				::closesocket( mSocketId );
-				::WSACleanup();
-			}
-
-			int Send( char* message )
-			{
-				int res = ::send( mSocketId, message, strlen(message), 0 );
-				//int error = WSAGetLastError();
-				//if( error != 0 ) checkStatus( error );
-				//std::stringstream ss;
-				//ss << "Message size: " << msgSize << " error: " << error << std::endl;
-				//OutputDebugStringA( ss.str().c_str() );
-
-				return res;
-			}
-
-
-			int Send( const float* message, int count )
-			{
-				char* msg = (char*)message;
-				int res = ::send( mSocketId, msg, count*sizeof(float), 0 );
-				int error = WSAGetLastError();
-				//if( error != 0 ) checkStatus( error );
-				//std::stringstream ss;
-				//ss << "Message size: " << 6*4 << " error: " << error << std::endl;
-				//OutputDebugStringA( ss.str().c_str() );
-
-				return res;
-			}
-
-
-			int Receive()
-			{
-				static const int bufferSize = 1024;
-				char message[bufferSize];
-				memset( message, 0, bufferSize );
-				int res = ::recv( mSocketId, message, bufferSize, 0 );
-				int error = WSAGetLastError();
-				if( error != 0 ) checkStatus( error );
-				//if( WSAGetLastError() == 0 )
-				{
-					std::stringstream ss;
-					ss << "Size: " << res << "   Message: " << message << " " << std::endl;
-					OutputDebugStringA( ss.str().c_str() );
-				}
-
-				return res;
-			}
-
-			int ReceiveFloatBuffer( int count )
-			{
-				static const int bufferSize = 32;
-				float message[bufferSize];
-				memset( message, 0, bufferSize );
-				int res = ::recv( mSocketId, (char*)message, count*sizeof(float), 0 );
-				int error = WSAGetLastError();
-				if( error != 0 ) checkStatus( error );
-				//if( WSAGetLastError() == 0 )
-				{
-					std::stringstream ss;
-					ss << "Size: " << res << "   Message: " << message[2] << " " << std::endl;
-					OutputDebugStringA( ss.str().c_str() );
-				}
-
-				return res;
-			}
-
+			template<class T>
+			int ReceiveBuffer( T* dest, int count );
 
 #ifdef NETWORK_USE_THREAD
-			void run()
-			{
-				SOCKET AcceptSocket;
-
-
-				while( mIsRunning )
-				{
-					AcceptSocket = SOCKET_ERROR;
-
-					while( AcceptSocket == SOCKET_ERROR && mIsRunning )
-					{
-						AcceptSocket = accept( mSocketId, NULL, NULL );
-
-						boost::this_thread::sleep( boost::posix_time::millisec(30) ); 
-					}
-
-					// else, accept the connection...
-					// When the client connection has been accepted, transfer control from the
-					// temporary socket to the original socket and stop checking for new connections.
-					OutputDebugStringA( "Server: Client Connected!\n" );
-					mSocketId = AcceptSocket;
-					break;				
-				}
-			}
+			void run();
 #endif
 
-
-			void checkStatus( int error )
-			{
-				std::stringstream ss;
-				switch( error )
-				{
-				case WSANOTINITIALISED:
-					ss << "WSANOTINITIALISED" << std::endl;
-					OutputDebugStringA( ss.str().c_str() );
-					break;
-				case WSAENETDOWN:
-					ss << "WSAENETDOWN" << std::endl;
-					OutputDebugStringA( ss.str().c_str() );
-					break;
-				case WSAEACCES:
-					ss << "WSAEACCES" << std::endl;
-					OutputDebugStringA( ss.str().c_str() );
-					break;
-				case WSAEINTR:
-					ss << "WSAEINTR" << std::endl;
-					OutputDebugStringA( ss.str().c_str() );
-					break;
-				case WSAEINPROGRESS:
-					ss << "WSAEINPROGRESS" << std::endl;
-					OutputDebugStringA( ss.str().c_str() );
-					break;
-				case WSAEFAULT:
-					ss << "WSAEFAULT" << std::endl;
-					OutputDebugStringA( ss.str().c_str() );
-					break;
-				case WSAENETRESET:
-					ss << "WSAENETRESET" << std::endl;
-					OutputDebugStringA( ss.str().c_str() );
-					break;
-				case WSAENOBUFS:
-					ss << "WSAENOBUFS" << std::endl;
-					OutputDebugStringA( ss.str().c_str() );
-					break;
-				case WSAEMSGSIZE:
-					ss << "WSAEMSGSIZE" << std::endl;
-					OutputDebugStringA( ss.str().c_str() );
-					break;
-				default:
-					ss << "Other error not listed!" << std::endl;
-					OutputDebugStringA( ss.str().c_str() );
-					break;
-				}
-			}
+		private:
+			void CheckStatus( int error );
 
 		private:
 			bool				mIsServer;
@@ -283,7 +54,84 @@ namespace V
 			uint16_t			mHostPort;
 			SOCKET				mSocketId;
 			int					mSocketType;
+
+			uint16_t*			mUIntMessage;
 	};
+
+
+
+
+	template<class T>
+	int OpenNINetwork::Send( const T* message, int count )
+	{
+		int error = 0;
+		int sent = 0;
+		int sentTotal = 0;
+		int sendLeft = count*sizeof(T);
+
+		char* msg = (char*)message;
+
+		//sent = ::send( mSocketId, msg, sendLeft, 0 );
+		//sendLeft -= sent;
+		//sentTotal += sent;
+
+		while( sendLeft > 0 )
+		{
+			sent = ::send( mSocketId, msg, sendLeft, 0 );
+			error = WSAGetLastError();
+			if( error != 0 ) 
+			{
+				CheckStatus( error );
+				break;
+			}
+			msg += sent;
+			sendLeft -= sent;
+			sentTotal += sent;
+		}
+		return sentTotal;
+
+/*		char* msg = (char*)message;
+		int res = ::send( mSocketId, msg, count*sizeof(T), 0 );
+		int error = WSAGetLastError();
+		if( error != 0 ) CheckStatus( error );
+		return 640*480*2;
+*/
+	}
+
+
+	template<class T>
+	int OpenNINetwork::ReceiveBuffer( T* dest, int count )
+	{
+		if( count > 640*480 ) return -1;
+
+		memset( mUIntMessage, 0, count*sizeof(T) );
+		char* msg = (char*)mUIntMessage;
+
+		int error = 0;
+		int receivedTotal = 0;
+		int received = 0;
+		int receivedLeft = count*sizeof(T);
+
+		//received = ::recv( mSocketId, msg, receivedLeft, 0 );
+		//receivedLeft -= received;
+		//receivedTotal += received;
+		while( receivedLeft > 0 )
+		{
+			received = ::recv( mSocketId, msg, receivedLeft, 0 );
+			error = WSAGetLastError();
+			if( error != 0 ) //|| receivedTotal >= count*sizeof(T) )
+			{
+				CheckStatus( error );
+				break;
+			}
+			msg += received;
+			receivedLeft -= received;
+			receivedTotal += received;
+		}
+		if( receivedTotal > 0 ) memcpy( dest, mUIntMessage, receivedTotal );
+		return receivedTotal;
+	}
 }
+
 
 #endif
