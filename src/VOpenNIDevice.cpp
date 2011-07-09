@@ -6,7 +6,7 @@
 #include "VOpenNIUser.h"
 #include "VOpenNINetwork.h"
 #include "VOpenNIDevice.h"
-
+#include <iostream>
 
 
 
@@ -1128,6 +1128,9 @@ namespace V
 			int depthWidth = _sceneMetaData->XRes();
 			int depthHeight = _sceneMetaData->YRes();
 
+			
+			std::cout << "depth width:" << depthWidth << ", height:" << depthHeight << std::endl;
+			
 			//if( !labelMap )
 				//labelMap = new uint16_t[depthWidth * depthHeight];
 

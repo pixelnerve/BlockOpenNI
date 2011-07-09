@@ -125,10 +125,8 @@ public:
 
 	ImageSourceRef getUserImage( int id )
 	{
-		if( _manager->hasUser(id) ) return ImageSourceRef();
-
 		_device0->getLabelMap( id, pixels );
-		return ImageSourceRef( new ImageSourceKinectDepth( pixels, KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT ) );
+		return ImageSourceRef( new ImageSourceKinectDepth( pixels, KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT ) );
 	}
 
 	ImageSourceRef getDepthImage()
@@ -202,7 +200,7 @@ void BlockOpenNISampleAppApp::setup()
 
 
 	pixels = NULL;
-	pixels = new uint16_t[ KINECT_COLOR_WIDTH*KINECT_COLOR_HEIGHT ];
+	pixels = new uint16_t[ KINECT_DEPTH_WIDTH*KINECT_DEPTH_HEIGHT ];
 
 	gl::Texture::Format format;
 	gl::Texture::Format depthFormat;
