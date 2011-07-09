@@ -32,7 +32,6 @@ namespace V
 
 			int Receive();
 			int ReceiveFloatBuffer( int count );
-			//int ReceiveUInt16Buffer( uint16_t* dest, int32_t* bytesRead, int count )
 
 			template<class T>
 			int ReceiveBuffer( T* dest, int count );
@@ -71,10 +70,6 @@ namespace V
 
 		char* msg = (char*)message;
 
-		//sent = ::send( mSocketId, msg, sendLeft, 0 );
-		//sendLeft -= sent;
-		//sentTotal += sent;
-
 		while( sendLeft > 0 )
 		{
 			sent = ::send( mSocketId, msg, sendLeft, 0 );
@@ -89,13 +84,6 @@ namespace V
 			sentTotal += sent;
 		}
 		return sentTotal;
-
-/*		char* msg = (char*)message;
-		int res = ::send( mSocketId, msg, count*sizeof(T), 0 );
-		int error = WSAGetLastError();
-		if( error != 0 ) CheckStatus( error );
-		return 640*480*2;
-*/
 	}
 
 
@@ -112,14 +100,11 @@ namespace V
 		int received = 0;
 		int receivedLeft = count*sizeof(T);
 
-		//received = ::recv( mSocketId, msg, receivedLeft, 0 );
-		//receivedLeft -= received;
-		//receivedTotal += received;
 		while( receivedLeft > 0 )
 		{
 			received = ::recv( mSocketId, msg, receivedLeft, 0 );
 			error = WSAGetLastError();
-			if( error != 0 ) //|| receivedTotal >= count*sizeof(T) )
+			if( error != 0 )
 			{
 				CheckStatus( error );
 				break;
