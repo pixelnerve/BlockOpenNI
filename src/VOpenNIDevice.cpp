@@ -1419,7 +1419,7 @@ namespace V
 	/* Device Manager
 	/************************************************************************/
 
-	bool OpenNIDeviceManager::USE_THREAD = false;
+	bool OpenNIDeviceManager::USE_THREAD = true;
 	bool OpenNIDeviceManager::USE_NEW_WRAPPER_CODE = false;
 	OpenNIDeviceManager OpenNIDeviceManager::_singletonPointer;
 
@@ -1500,6 +1500,15 @@ namespace V
 		
 		// Save device to our list
 		mDevices.push_back( dev );
+		
+		/* DEBUG STUFF *
+		char msg[255];
+
+		sprintf(msg, "Now there are %d OpenNI devices", mDevices.size());
+		
+		DEBUG_MESSAGE ( msg );
+		*/
+		
 		return dev;
 	}
 

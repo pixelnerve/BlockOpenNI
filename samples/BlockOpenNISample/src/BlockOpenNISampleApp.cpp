@@ -157,7 +157,7 @@ void BlockOpenNISampleAppApp::setup()
 	gl::Texture::Format format;
 	gl::Texture::Format depthFormat;
 	mColorTex = gl::Texture( KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT, format );
-	mDepthTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT, format );
+	mDepthTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT, depthFormat );
 }
 
 void BlockOpenNISampleAppApp::mouseDown( MouseEvent event )
