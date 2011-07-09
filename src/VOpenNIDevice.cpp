@@ -1453,9 +1453,8 @@ namespace V
 		mDebugInfo = "No debug information\n";
 #ifdef WIN32
 		mNetworkMsg = NULL;
-
-#endif
 		mTempPixels = NULL;
+#endif
 
 		mPrimaryGen = NULL;
 		mDeviceCount = 0;
@@ -1898,8 +1897,8 @@ namespace V
 			mNetworkMsg->Release();
 			SAFE_DELETE( mNetworkMsg );
 		}
-#endif
 		SAFE_DELETE_ARRAY( mTempPixels );
+#endif
 	}
 
 
