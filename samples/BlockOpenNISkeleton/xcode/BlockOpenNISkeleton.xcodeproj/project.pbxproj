@@ -313,6 +313,7 @@
 					"\"$(CINDER_PATH)/boost\"",
 					"../../../include/**",
 				);
+				LIBRARY_SEARCH_PATHS = ../../../lib/macosx/;
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				OTHER_LDFLAGS = "$(CINDER_PATH)/blocks/BlockOpenNI/lib/macosx/libOpenNI.dylib";
 				PREBINDING = NO;
