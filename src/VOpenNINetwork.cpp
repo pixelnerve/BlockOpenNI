@@ -25,17 +25,21 @@ namespace V
 		WSADATA data;
 		WSAStartup( MAKEWORD(2,2), &data );
 
-		mSocketId = ::socket( AF_INET, mSocketType, IPPROTO_TCP );
+		//mSocketId = ::socket( AF_INET, SOCK_DGRAM, 0 );
+		mSocketId = ::socket( PF_INET, mSocketType, IPPROTO_TCP );
 		if( mSocketId == INVALID_SOCKET )
 		{
 			OutputDebugStringA( "Invalid socket!\n" );
 			return;
 		}
-				
+
+		int unused = true;
+		setsockopt( mSocketId, SOL_SOCKET, SO_REUSEADDR, (char*)&unused, sizeof(unused) );
+
 		struct sockaddr_in dest_addr;
 		memset( &dest_addr, 0, sizeof(dest_addr) );
 		dest_addr.sin_family = AF_INET;
-		dest_addr.sin_addr.s_addr = 0; //inet_addr( mHostName.c_str() );
+		dest_addr.sin_addr.s_addr = INADDR_ANY; //inet_addr( mHostName.c_str() );
 		dest_addr.sin_port = htons( mHostPort );
 				
 		if( ::bind(mSocketId, (struct sockaddr *)&dest_addr, sizeof(sockaddr_in)) == SOCKET_ERROR )
@@ -79,7 +83,8 @@ namespace V
 		WSADATA data;
 		WSAStartup( MAKEWORD(2,0), &data );
 
-		mSocketId = ::socket( AF_INET, mSocketType, IPPROTO_TCP );
+		//mSocketId = ::socket( AF_INET, SOCK_DGRAM, 0 );
+		mSocketId = ::socket( PF_INET, mSocketType, IPPROTO_TCP );
 		if( mSocketId == INVALID_SOCKET )
 		{
 			OutputDebugStringA( "Invalid socket!\n" );

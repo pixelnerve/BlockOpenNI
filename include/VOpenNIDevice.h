@@ -91,17 +91,40 @@ namespace V
 		void setPrimaryBuffer( int type );
 		void setMirrorMode( int type, bool flag );
 
+		/*
+			Get Horizontal FOV
+		*/
 		float FieldOfViewHorz()
 		{
 			XnFieldOfView fieldOfView;
 			_depthGen.GetFieldOfView( fieldOfView );
 			return (float)fieldOfView.fHFOV;
 		}
+
+		/*
+			Get Vertical FOV
+		*/
 		float FieldOfViewVert()
 		{
 			XnFieldOfView fieldOfView;
 			_depthGen.GetFieldOfView( fieldOfView );
 			return (float)fieldOfView.fVFOV;
+		}
+
+
+		/*
+			Get floor plane.
+			Only works with SceneAnalyzer enabled and when a user is found.
+		*/
+		XnPlane3D GetFloor() const
+		{
+			XnPlane3D plane; 
+			XnStatus st = _sceneAnalyzer.GetFloor( plane );
+			// 			if( st != XN_STATUS_OK )
+			// 			{
+			// 				DEBUG_MESSAGE( "Failed to find floor plane\n" );
+			// 			}
+			return plane;
 		}
 
 
