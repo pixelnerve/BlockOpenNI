@@ -27,7 +27,7 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/thread.hpp>
 
-// Std
+// Std∫
 //#define _HAS_ITERATOR_DEBUGGING 0
 //#define _SECURE_SCL 0
 #include <string>

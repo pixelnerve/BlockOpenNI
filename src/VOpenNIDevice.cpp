@@ -1453,9 +1453,8 @@ namespace V
 		mDebugInfo = "No debug information\n";
 #ifdef WIN32
 		mNetworkMsg = NULL;
-
-#endif
 		mTempPixels = NULL;
+#endif
 
 		mPrimaryGen = NULL;
 		mDeviceCount = 0;
@@ -1891,15 +1890,16 @@ namespace V
 		//
 		// Shutdown openNI context
 		//
-		_context.Shutdown();
+		_context.Release();
+		//_context.Shutdown();
 #ifdef WIN32
 		if( mNetworkMsg )
 		{
 			mNetworkMsg->Release();
 			SAFE_DELETE( mNetworkMsg );
 		}
-#endif
 		SAFE_DELETE_ARRAY( mTempPixels );
+#endif
 	}
 
 

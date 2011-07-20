@@ -1,5 +1,6 @@
 #include "VOpenNINetwork.h"
 
+#ifdef _WIN32
 namespace V
 {
 	OpenNINetwork::OpenNINetwork( const std::string& hostName, uint16_t port, bool isServer/*=true*/ )
@@ -240,3 +241,4 @@ namespace V
 		}
 	}
 }
+#endif

@@ -19,54 +19,31 @@
 *  along with OpenNI. If not, see <http://www.gnu.org/licenses/>.           *
 *                                                                           *
 ****************************************************************************/
-#ifndef __XN_FPS_CALCULATOR_H__
-#define __XN_FPS_CALCULATOR_H__
+#ifndef _XN_PLATFORM_ANDROID_ARM_H_
+#define _XN_PLATFORM_ANDROID_ARM_H_
+
+// Start with Linux-x86, and override what's different
+#include "../Linux-x86/XnPlatformLinux-x86.h"
 
 //---------------------------------------------------------------------------
-// Includes
+// Platform Basic Definition
 //---------------------------------------------------------------------------
-#include <XnPlatform.h>
-#include <XnStatus.h>
+#undef XN_PLATFORM
+#undef XN_PLATFORM_STRING
 
-//---------------------------------------------------------------------------
-// Types
-//---------------------------------------------------------------------------
-struct XnFPSDataImpl;
-typedef struct XnFPSDataImpl* XnFPSData; 
+#define XN_PLATFORM XN_PLATFORM_ANDROID_ARM
+#define XN_PLATFORM_STRING "Android-Arm"
 
-//---------------------------------------------------------------------------
-// Exported Functions
-//---------------------------------------------------------------------------
-/**
-* This function initializes the FPS calculator.
-* 
-* @param	pFPS			[in]	A pointer to an XnFPSData struct.
-* @param	nSamplesCount	[in]	The number of last frames to be kept.
-*/
-XN_C_API XnStatus XN_C_DECL xnFPSInit(XnFPSData* pFPS, XnUInt32 nSamplesCount);
+#define XN_PLATFORM_HAS_NO_TIMED_OPS
+#define XN_PLATFORM_HAS_NO_CLOCK_GETTIME
+#define XN_PLATFORM_HAS_NO_SCHED_PARAM
+#define XN_PLATFORM_HAS_BUILTIN_SEMUN
 
-/**
-* This function marks that another frame was processed.
-* 
-* @param	pFPS	[in]	A pointer to an XnFPSData struct.
-* @param	nNow	[in]	Optional. Current time. When not provided, function will take it itself.
-*/
-XN_C_API XnStatus XN_C_DECL xnFPSMarkFrame(XnFPSData* pFPS, XnUInt64 nNow = 0);
-	
-/**
-* This function calculates the average FPS over the last frames.
-* 
-* @param	pFPS			[in]	A pointer to an XnFPSData struct.
-* @param	nAverageOver	[in]	The number of milliseconds to average over.
-* @param	nNow			[in]	Optional. Current time. When not provided, function will take it itself.
-*/
-XN_C_API XnDouble XN_C_DECL xnFPSCalc(XnFPSData* pFPS, XnUInt32 nAverageOver = 3000, XnUInt64 nNow = 0);
+#define XN_PLATFORM_LINUX_NO_GLIBC
+#define XN_PLATFORM_LINUX_NO_SYSV
+#define XN_PLATFORM_LINUX_NO_GLOB
+#define XN_PLATFORM_LINUX_NO_POSIX_MEMALIGN
+#define XN_PLATFORM_LINUX_NO_SHM
+#define XN_PLATFORM_LINUX_NO_PTHREAD_CANCEL
 
-/**
-* This function frees the FPS calculator.
-* 
-* @param	pFPS	[in]	A pointer to an XnFPSData struct.
-*/
-XN_C_API XnStatus XN_C_DECL xnFPSFree(XnFPSData* pFPS);
-
-#endif //__XN_FPS_CALCULATOR_H__
+#endif //_XN_PLATFORM_LINUX_ARM_H_

@@ -19,54 +19,62 @@
 *  along with OpenNI. If not, see <http://www.gnu.org/licenses/>.           *
 *                                                                           *
 ****************************************************************************/
-#ifndef __XN_FPS_CALCULATOR_H__
-#define __XN_FPS_CALCULATOR_H__
+#ifndef __XN_LOG_TYPES_H__
+#define __XN_LOG_TYPES_H__
 
 //---------------------------------------------------------------------------
 // Includes
 //---------------------------------------------------------------------------
-#include <XnPlatform.h>
-#include <XnStatus.h>
+#include "XnPlatform.h"
+#include "XnTypes.h"
 
 //---------------------------------------------------------------------------
-// Types
+// Defines
 //---------------------------------------------------------------------------
-struct XnFPSDataImpl;
-typedef struct XnFPSDataImpl* XnFPSData; 
+#define XN_LOG_DIR_NAME			"Log"
+#define XN_LOG_MASKS_STRING_LEN	600
+#define XN_MASK_LOG				"Log"
+#define XN_LOG_MASK_ALL			"ALL"
 
 //---------------------------------------------------------------------------
-// Exported Functions
+// Enums
 //---------------------------------------------------------------------------
-/**
-* This function initializes the FPS calculator.
-* 
-* @param	pFPS			[in]	A pointer to an XnFPSData struct.
-* @param	nSamplesCount	[in]	The number of last frames to be kept.
-*/
-XN_C_API XnStatus XN_C_DECL xnFPSInit(XnFPSData* pFPS, XnUInt32 nSamplesCount);
+typedef enum XnLogSeverity
+{
+	XN_LOG_VERBOSE,
+	XN_LOG_INFO,
+	XN_LOG_WARNING,
+	XN_LOG_ERROR
+} XnLogSeverity;
 
-/**
-* This function marks that another frame was processed.
-* 
-* @param	pFPS	[in]	A pointer to an XnFPSData struct.
-* @param	nNow	[in]	Optional. Current time. When not provided, function will take it itself.
-*/
-XN_C_API XnStatus XN_C_DECL xnFPSMarkFrame(XnFPSData* pFPS, XnUInt64 nNow = 0);
-	
-/**
-* This function calculates the average FPS over the last frames.
-* 
-* @param	pFPS			[in]	A pointer to an XnFPSData struct.
-* @param	nAverageOver	[in]	The number of milliseconds to average over.
-* @param	nNow			[in]	Optional. Current time. When not provided, function will take it itself.
-*/
-XN_C_API XnDouble XN_C_DECL xnFPSCalc(XnFPSData* pFPS, XnUInt32 nAverageOver = 3000, XnUInt64 nNow = 0);
+typedef enum XnLogFilteringType
+{
+	XN_LOG_WRITE_NONE,
+	XN_LOG_WRITE_ALL,
+	XN_LOG_WRITE_MASKS
+} XnLogFilteringType;
 
-/**
-* This function frees the FPS calculator.
-* 
-* @param	pFPS	[in]	A pointer to an XnFPSData struct.
-*/
-XN_C_API XnStatus XN_C_DECL xnFPSFree(XnFPSData* pFPS);
+//---------------------------------------------------------------------------
+// Structs
+//---------------------------------------------------------------------------
+typedef struct XnLogEntry
+{
+	XnUInt64 nTimestamp;
+	XnLogSeverity nSeverity;
+	const XnChar* strSeverity;
+	const XnChar* strMask;
+	const XnChar* strMessage;
+	const XnChar* strFile;
+	XnUInt32 nLine;
+} XnLogEntry;
 
-#endif //__XN_FPS_CALCULATOR_H__
+typedef struct XnLogWriter
+{
+	void* pCookie;
+	void (XN_CALLBACK_TYPE* WriteEntry)(const XnLogEntry* pEntry, void* pCookie);
+	void (XN_CALLBACK_TYPE* WriteUnformatted)(const XnChar* strMessage, void* pCookie);
+	void (XN_CALLBACK_TYPE* OnConfigurationChanged)(void* pCookie);
+	void (XN_CALLBACK_TYPE* OnClosing)(void* pCookie);
+} XnLogWriter;
+
+#endif // __XN_LOG_TYPES_H__

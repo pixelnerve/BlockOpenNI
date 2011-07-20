@@ -112,7 +112,7 @@ namespace V
 		}
 
 
-		/*
+		/*Unused variable 'index'
 			Get floor plane.
 			Only works with SceneAnalyzer enabled and when a user is found.
 		*/
@@ -120,10 +120,10 @@ namespace V
 		{
 			XnPlane3D plane; 
 			XnStatus st = _sceneAnalyzer.GetFloor( plane );
-			// 			if( st != XN_STATUS_OK )
-			// 			{
-			// 				DEBUG_MESSAGE( "Failed to find floor plane\n" );
-			// 			}
+			if( st != XN_STATUS_OK )
+			{
+				DEBUG_MESSAGE( "Failed to find floor plane\n" );
+			}
 			return plane;
 		}
 
