@@ -1129,7 +1129,7 @@ namespace V
 			int depthHeight = _sceneMetaData->YRes();
 
 			
-			std::cout << "depth width:" << depthWidth << ", height:" << depthHeight << std::endl;
+			//std::cout << "depth width:" << depthWidth << ", height:" << depthHeight << std::endl;
 			
 			//if( !labelMap )
 				//labelMap = new uint16_t[depthWidth * depthHeight];
