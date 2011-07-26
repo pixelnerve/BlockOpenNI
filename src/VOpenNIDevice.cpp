@@ -838,8 +838,8 @@ namespace V
 			g_pTexMap = new XnRGB24Pixel[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			break;
 		case NODE_TYPE_SCENE:
-			// Set scene analyzer mode and get out
-			_sceneAnalyzer.SetMapOutputMode( mode );
+			// Set scene analyzer mode and get out (done above
+			//_sceneAnalyzer.SetMapOutputMode( mode );
 			break;
 		default:
 			DEBUG_MESSAGE( "Can't change bitmap size." );
