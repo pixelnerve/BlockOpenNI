@@ -36,6 +36,9 @@
     <ClCompile Include="..\..\..\src\VOpenNIUser.cpp">
       <Filter>Addons\OpenNI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\VOpenNINetwork.cpp">
+      <Filter>Addons\OpenNI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Resources.h">
@@ -67,6 +70,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\VOpenNIUser.h">
       <Filter>Addons\OpenNI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\SkeletonPoseDetector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\VOpenNINetwork.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
