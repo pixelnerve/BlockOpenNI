@@ -94,7 +94,7 @@ namespace V
 
 		//xn::UserGenerator*	mUserGen;
 		xn::DepthGenerator*	mDepthGen;
-		xn::SkeletonCapability* mSkelCap;
+//		xn::SkeletonCapability& mSkelCap;
 
 		bool			_enablePixels;
 

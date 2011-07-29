@@ -424,7 +424,6 @@ namespace V
 			xn::SkeletonCapability skelCap = user->GetSkeletonCap();
 
 			int index = 0;
-			int index2 = 0;
 			for( OpenNIBoneList::iterator it = mBoneList.begin(); it != mBoneList.end(); ++it )
 			//for( int i=0; i<BONE_COUNT; i++ )
 			{
@@ -819,13 +818,11 @@ namespace V
 		if( !_device->getDepthGenerator()->IsCapabilitySupported( XN_CAPABILITY_SKELETON ) )
 			return;
 
-		mSkelCap = &_device->getUserGenerator()->GetSkeletonCap();
-
-		if( mSkelCap->IsTracking( mId ) )
+		if( _device->getUserGenerator()->GetSkeletonCap().IsTracking( mId ) )
 		//if( _device->getUserGenerator() && _device->getUserGenerator()->GetSkeletonCap().IsTracking( mId ) )
 		{
 			mSkeletonSmoothing = value;
-			mSkelCap->SetSmoothing( mSkeletonSmoothing );
+			_device->getUserGenerator()->GetSkeletonCap().SetSmoothing( mSkeletonSmoothing );
 		}
 	}
 

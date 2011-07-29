@@ -339,7 +339,7 @@ namespace V
 
 
 	bool OpenNIDevice::init( uint64_t nodeTypeFlags )
-	{
+	{      
 		// Pick image or IR map
 		if( nodeTypeFlags & NODE_TYPE_IMAGE )
 		{
@@ -992,7 +992,6 @@ namespace V
 
 			uint16_t* backDepthPtr = _backDepthData;
 
-			uint32_t index = 0;
 			for( XnUInt y = 0; y < _depthMetaData->YRes(); y++ )
 			{
 				const XnDepthPixel* pDepth = pDepthRow;
@@ -1418,9 +1417,9 @@ namespace V
 
 
 
-	/************************************************************************/
-	/* Device Manager
-	/************************************************************************/
+	/*
+	   Device Manager
+	*/
 
 	bool OpenNIDeviceManager::USE_THREAD = true;
 	bool OpenNIDeviceManager::USE_NEW_WRAPPER_CODE = false;
@@ -1481,13 +1480,28 @@ namespace V
 	{
 		if( mDevices.size() >= MAX_DEVICES ) return boost::shared_ptr<OpenNIDevice>();
 		
+		// Make sure we initialize our context
+		if( !mIsContextInit ) 
+			Init();
+        
+		
+        // Make sure we have a device connected
+        NodeInfoList list;
+        EnumerationErrors errors;
+        XnStatus status = _context.EnumerateProductionTrees( XN_NODE_TYPE_DEVICE, NULL, list, &errors );
+        CHECK_RC( status, "No kinect device was found" );
+        if( status != XN_STATUS_OK )
+        {
+            return OpenNIDeviceRef();            
+        }
+
 		// Bail out if its an empty filename
 		if( xmlFile == "" )
 		{
 			DEBUG_MESSAGE( "not implemented" );
-			return boost::shared_ptr<OpenNIDevice>();
-		}
-		
+			return OpenNIDeviceRef();
+		}        
+        
 		// Local copy of the filename
 		std::string path = xmlFile;
 		
@@ -1576,6 +1590,17 @@ namespace V
 		if( !mIsContextInit ) 
 			Init();
 
+        // Make sure we have a device connected
+        NodeInfoList list;
+        EnumerationErrors errors;
+        XnStatus status = _context.EnumerateProductionTrees( XN_NODE_TYPE_DEVICE, NULL, list, &errors );
+        CHECK_RC( status, "No kinect device was found" );
+        if( status != XN_STATUS_OK )
+        {
+            return OpenNIDeviceRef();            
+        }
+
+        
 		OpenNIDeviceRef dev = OpenNIDeviceRef( new OpenNIDevice(&_context) );
 		if( !dev->init( nodeTypeFlags ) ) 
 		{
@@ -1609,6 +1634,10 @@ namespace V
 			devicesCount++;
 			mDeviceCount++;
 		}
+        
+        // No device is connected. Abort!
+        if( deviceCount == 0 ) 
+            return;
 
 		// Make sure we do not allocate more than the ones connected
 		if( deviceCount > devicesCount ) deviceCount = devicesCount;
