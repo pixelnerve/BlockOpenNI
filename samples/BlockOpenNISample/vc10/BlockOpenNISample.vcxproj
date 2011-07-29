@@ -104,18 +104,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\OpenNIRecorder.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNIDevice.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNIDeviceManager.cpp" />
+    <ClCompile Include="..\..\..\src\VOpenNINetwork.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNIUser.cpp" />
     <ClCompile Include="..\src\BlockOpenNISampleApp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\include\OpenNIRecorder.h" />
+    <ClInclude Include="..\..\..\include\SkeletonPoseDetector.h" />
     <ClInclude Include="..\..\..\include\VOpenNIBone.h" />
     <ClInclude Include="..\..\..\include\VOpenNICallback.h" />
     <ClInclude Include="..\..\..\include\VOpenNICommon.h" />
     <ClInclude Include="..\..\..\include\VOpenNIDevice.h" />
     <ClInclude Include="..\..\..\include\VOpenNIDeviceManager.h" />
     <ClInclude Include="..\..\..\include\VOpenNIHeaders.h" />
+    <ClInclude Include="..\..\..\include\VOpenNINetwork.h" />
     <ClInclude Include="..\..\..\include\VOpenNISurface.h" />
     <ClInclude Include="..\..\..\include\VOpenNIUser.h" />
     <ClInclude Include="..\include\Resources.h" />

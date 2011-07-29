@@ -1,3 +1,16 @@
+/***
+	OpenNI Wrapper.
+
+	Victor Martins
+	2010-2011 Pixelnerve 
+	http://www.pixelnerve.com
+
+
+	Current version:
+		OpenNI	1.3.2.3
+		NITE	1.4.1.2
+***/
+
 #pragma once
 
 #include "VOpenNICommon.h"
@@ -203,9 +216,11 @@ namespace V
 		static void XN_CALLBACK_TYPE Callback_NewUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie );
 		static void XN_CALLBACK_TYPE Callback_LostUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie );
 		static void XN_CALLBACK_TYPE Callback_PoseDetected( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie );
+		static void XN_CALLBACK_TYPE Callback_PoseInProgress( xn::PoseDetectionCapability& pose, const XnChar* strPose, XnUserID nId, XnPoseDetectionStatus poseError, void* pCookie );
 		static void XN_CALLBACK_TYPE Callback_PoseDetectionEnd( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie );
 		static void XN_CALLBACK_TYPE Callback_CalibrationStart( xn::SkeletonCapability& capability, XnUserID nId, void* pCookie );
-		static void XN_CALLBACK_TYPE Callback_CalibrationEnd( xn::SkeletonCapability& capability, XnUserID nId, XnBool bSuccess, void* pCookie );
+		static void XN_CALLBACK_TYPE Callback_CalibrationInProgress( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie );
+		static void XN_CALLBACK_TYPE Callback_CalibrationEnd( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie );
 
 
 	private:
@@ -222,6 +237,7 @@ namespace V
 		//std::string				_configFile;
 
 		xn::Context*			_context;	// Pointer to context in device manager
+		xn::ScriptNode			mScriptNode;
 
 		xn::Device				_device;	// Device object
 

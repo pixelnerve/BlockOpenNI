@@ -44,6 +44,12 @@ Fork charlesdietrich/BlockOpenNI
 
 Support for Mac OS X. 
 
+
+(Update)
+For OS X: Follow the instructions found on the README file at https://github.com/avin2/SensorKinect.
+It's well described (using macports) and works nicely.
+
+
 Installation instructions for OS X:
 
 First, get libusb and the kinect patch on http://openkinect.org/wiki/Getting_Started#Manual_Build_under_OSX. Patch libusb.

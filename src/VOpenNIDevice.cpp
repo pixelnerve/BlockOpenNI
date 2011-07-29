@@ -1,3 +1,16 @@
+/***
+	OpenNI Wrapper.
+
+	Victor Martins
+	2010-2011 Pixelnerve 
+	http://www.pixelnerve.com
+
+
+	Current version:
+		OpenNI	1.3.2.3
+		NITE	1.4.1.2
+***/
+
 #include "VOpenNICommon.h"
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #include <direct.h>
@@ -11,7 +24,8 @@
 
 
 // Make sure we link libraries
-#pragma comment( lib, "openni.lib" )
+#pragma comment( lib, "openni.lib" )	// 32bit version
+//#pragma comment( lib, "openNI64.lib" )	// 64bit version
 
 
 namespace V
@@ -161,6 +175,15 @@ namespace V
 			device->getUserGenerator()->GetSkeletonCap().RequestCalibration( nId, TRUE );
 		}
 	}
+	// Callback: pose detection in progress
+	void XN_CALLBACK_TYPE OpenNIDevice::Callback_PoseInProgress( xn::PoseDetectionCapability& pose, const XnChar* strPose, XnUserID nId, XnPoseDetectionStatus poseError, void* pCookie )
+	{
+		std::stringstream ss;
+		ss << "Pose detection start: '" << strPose << "' on User: " << nId << std::endl;
+		DEBUG_MESSAGE( ss.str().c_str() );
+
+		OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
+	}
 	// Callback: When the user is out of pose
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_PoseDetectionEnd( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie )
 	{
@@ -181,8 +204,18 @@ namespace V
 		OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 
+	// Callback: Started calibration
+	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationInProgress( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie )
+	{
+		std::stringstream ss;
+		ss << "Calibration in progress for user " << nId << std::endl;
+		DEBUG_MESSAGE( ss.str().c_str() );
+
+		OpenNIDeviceManager::Instance().setText( ss.str() );
+	}
+
 	// Callback: Finished calibration
-	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationEnd( xn::SkeletonCapability& capability, XnUserID nId, XnBool bSuccess, void* pCookie )
+	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationEnd( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie )
 	{
 		OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
 
@@ -199,7 +232,7 @@ namespace V
 		//}
 
 
-		if( bSuccess )
+		if( calibrationError != XN_STATUS_OK )
 		{
 			// Calibration succeeded
 			std::stringstream ss;
@@ -346,7 +379,7 @@ namespace V
 			//_imageGen = new xn::ImageGenerator();
 			_imageMetaData = new xn::ImageMetaData();
 			_status = _imageGen.Create( *_context );	//, NULL, &_errors );
-			//CHECK_RC( _status, "Create image generator" );
+			CHECK_RC( _status, "Create image generator" );
 			_isImageOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_IR )
@@ -354,7 +387,7 @@ namespace V
 			//_irGen = new xn::IRGenerator();
 			_irMetaData = new xn::IRMetaData();
 			_status = _irGen.Create( *_context );	//, NULL, &_errors );
-			//CHECK_RC( _status, "Create IR generator" );
+			CHECK_RC( _status, "Create IR generator" );
 			_isIROn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_DEPTH )
@@ -363,7 +396,7 @@ namespace V
 			//_depthGen = new xn::DepthGenerator();
 			_depthMetaData = new xn::DepthMetaData();
 			_status = _depthGen.Create( *_context );	//, NULL, &_errors );
-			//CHECK_RC( _status, "Create depth generator" );
+			CHECK_RC( _status, "Create depth generator" );
 			_isDepthOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_USER )
@@ -372,7 +405,7 @@ namespace V
 			//_userGen = new xn::UserGenerator();
 			_sceneMetaData = new xn::SceneMetaData();
 			_status = _userGen.Create( *_context );	//, NULL, &_errors );
-			//CHECK_RC( _status, "Create user generator" );
+			CHECK_RC( _status, "Create user generator" );
 			_isUserOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_SCENE )
@@ -452,7 +485,7 @@ namespace V
 	{
 		//_configFile = xmlFile;
 
-		_status = _context->InitFromXmlFile( xmlFile.c_str(), &_errors );
+		_status = _context->InitFromXmlFile( xmlFile.c_str(), mScriptNode, &_errors );
 		if( _status != XN_STATUS_OK )
 		{
 			std::stringstream ss;
@@ -718,7 +751,10 @@ namespace V
 	bool OpenNIDevice::requestUserCalibration()
 	{
 		XnCallbackHandle hUserCallbacks = 0;
-		XnCallbackHandle hCalibrationCallbacks = 0;
+		//XnCallbackHandle hCalibrationCallbacks = 0;
+		XnCallbackHandle hCalibrationStartCallback = 0;
+		XnCallbackHandle hCalibrationInProgressCallback = 0;
+		XnCallbackHandle hCalibrationEndCallback = 0;
 		if( !_userGen.IsCapabilitySupported(XN_CAPABILITY_SKELETON) )
 		{
 			DEBUG_MESSAGE( "Supplied user generator doesn't support skeleton\n" );
@@ -727,7 +763,12 @@ namespace V
 		_userGen.RegisterUserCallbacks( &V::OpenNIDevice::Callback_NewUser, &V::OpenNIDevice::Callback_LostUser, this, hUserCallbacks );
 	
 
-		_userGen.GetSkeletonCap().RegisterCalibrationCallbacks( &V::OpenNIDevice::Callback_CalibrationStart, &V::OpenNIDevice::Callback_CalibrationEnd, this, hCalibrationCallbacks );
+		// New version for NITE 1.4.*.*
+		_userGen.GetSkeletonCap().RegisterToCalibrationStart( &V::OpenNIDevice::Callback_CalibrationStart, this, hCalibrationStartCallback );
+		_userGen.GetSkeletonCap().RegisterToCalibrationInProgress( &V::OpenNIDevice::Callback_CalibrationInProgress, this, hCalibrationInProgressCallback );
+		_userGen.GetSkeletonCap().RegisterToCalibrationComplete( &V::OpenNIDevice::Callback_CalibrationEnd, this, hCalibrationEndCallback );
+		// Old version
+		//_userGen.GetSkeletonCap().RegisterCalibrationCallbacks( &V::OpenNIDevice::Callback_CalibrationStart, &V::OpenNIDevice::Callback_CalibrationEnd, this, hCalibrationCallbacks );
 		if( _userGen.GetSkeletonCap().NeedPoseForCalibration() )
 		{
 			g_bNeedPose = TRUE;
@@ -737,10 +778,15 @@ namespace V
 				return false;
 			}
 			
-			XnCallbackHandle hPoseCallbacks = 0;
+			XnCallbackHandle hPoseDetectedCallback = 0;
+			XnCallbackHandle hPoseInProgressCallback = 0;
+			//XnCallbackHandle hPoseCallbacks = 0;
 
-			//_userGen->GetPoseDetectionCap().RegisterToPoseCallbacks( &V::OpenNIDevice::Callback_PoseDetected, NULL, this, hPoseCallbacks );
-			_userGen.GetPoseDetectionCap().RegisterToPoseCallbacks( &V::OpenNIDevice::Callback_PoseDetected, &V::OpenNIDevice::Callback_PoseDetectionEnd, this, hPoseCallbacks );
+			// New version for NITE 1.4.*.*
+			_userGen.GetPoseDetectionCap().RegisterToPoseDetected( &V::OpenNIDevice::Callback_PoseDetected, this, hPoseDetectedCallback );
+			_userGen.GetPoseDetectionCap().RegisterToPoseInProgress( &V::OpenNIDevice::Callback_PoseInProgress, this, hPoseInProgressCallback );
+			// Old version
+			//_userGen.GetPoseDetectionCap().RegisterToPoseCallbacks( &V::OpenNIDevice::Callback_PoseDetected, &V::OpenNIDevice::Callback_PoseDetectionEnd, this, hPoseCallbacks );
 			_userGen.GetSkeletonCap().GetCalibrationPose( g_strPose );
 			std::stringstream ss;
 			ss << "--> User pose name: '" << g_strPose << "'" << std::endl;
@@ -1591,9 +1637,9 @@ namespace V
 			Init();
 
         // Make sure we have a device connected
-        NodeInfoList list;
-        EnumerationErrors errors;
-        XnStatus status = _context.EnumerateProductionTrees( XN_NODE_TYPE_DEVICE, NULL, list, &errors );
+        xn::NodeInfoList deviceList;
+        //xn::EnumerationErrors errors;
+        XnStatus status = _context.EnumerateProductionTrees( XN_NODE_TYPE_DEVICE, NULL, deviceList, NULL );
         CHECK_RC( status, "No kinect device was found" );
         if( status != XN_STATUS_OK )
         {
@@ -1693,9 +1739,8 @@ namespace V
 				OpenNIDevice::Ref dev = *devIt;
 				xn::NodeInfo nodeInfo = *nodeIt;
 
-				status = _context.CreateProductionTree( nodeInfo ); 
-
-				status = nodeInfo.GetInstance( dev->_depthGen );
+				status = _context.CreateProductionTree( nodeInfo, dev->_depthGen ); 
+				//status = nodeInfo.GetInstance( dev->_depthGen );
 
 				DepthGenerator gen;
 				status = nodeInfo.GetInstance( gen );
@@ -1721,9 +1766,10 @@ namespace V
 				OpenNIDevice::Ref dev = *devIt;
 				xn::NodeInfo nodeInfo = *nodeIt;
 
-				status = _context.CreateProductionTree( nodeInfo ); 
-
-				status = nodeInfo.GetInstance( dev->_irGen );
+				status = _context.CreateProductionTree( nodeInfo, dev->_irGen ); 
+				// Old version
+				//status = _context.CreateProductionTree( nodeInfo ); 
+				//status = nodeInfo.GetInstance( dev->_irGen );
 
 				IRGenerator gen;
 				status = nodeInfo.GetInstance( gen );
@@ -1748,9 +1794,10 @@ namespace V
 				OpenNIDevice::Ref dev = *devIt;
 				xn::NodeInfo nodeInfo = *nodeIt;
 
-				status = _context.CreateProductionTree( nodeInfo ); 
-
-				status = nodeInfo.GetInstance( dev->_imageGen );
+				status = _context.CreateProductionTree( nodeInfo, dev->_imageGen ); 
+				// Old version
+				//status = _context.CreateProductionTree( nodeInfo ); 
+				//status = nodeInfo.GetInstance( dev->_imageGen );
 
 				ImageGenerator gen;
 				status = nodeInfo.GetInstance( gen );
@@ -1776,9 +1823,9 @@ namespace V
 				OpenNIDevice::Ref dev = *devIt;
 				xn::NodeInfo nodeInfo = *nodeIt;
 
-				status = _context.CreateProductionTree( nodeInfo ); 
-
-				status = nodeInfo.GetInstance( dev->_depthGen );
+				status = _context.CreateProductionTree( nodeInfo, dev->_depthGen ); 
+				//status = _context.CreateProductionTree( nodeInfo ); 
+				//status = nodeInfo.GetInstance( dev->_depthGen );
 
 				UserGenerator gen;
 				status = nodeInfo.GetInstance( gen );
@@ -1795,14 +1842,18 @@ namespace V
 		count = 0;
 		if( nodeTypeFlags & NODE_TYPE_SCENE )
 		{
+			OpenNIDeviceList::iterator devIt = mDevices.begin();
 			for( xn::NodeInfoList::Iterator nodeIt=scene_nodes.Begin(); nodeIt!=scene_nodes.End(); nodeIt++ ) 
 			{
 				if( count >= deviceCount )	
 					break;
 
+				OpenNIDevice::Ref dev = *devIt;
 				xn::NodeInfo nodeInfo = *nodeIt;
 
-				status = _context.CreateProductionTree( nodeInfo ); 
+				status = _context.CreateProductionTree( nodeInfo, dev->_sceneAnalyzer ); 
+				//status = _context.CreateProductionTree( nodeInfo ); 
+				//status = nodeInfo.GetInstance( gen );
 
 				SceneAnalyzer gen;
 				status = nodeInfo.GetInstance( gen );
@@ -1816,14 +1867,17 @@ namespace V
 		count = 0;
 		if( nodeTypeFlags & NODE_TYPE_HANDS )
 		{
+			OpenNIDeviceList::iterator devIt = mDevices.begin();
 			for( xn::NodeInfoList::Iterator nodeIt=hands_nodes.Begin(); nodeIt!=hands_nodes.End(); nodeIt++ ) 
 			{
 				if( count >= deviceCount )	
 					break;
 
+				OpenNIDevice::Ref dev = *devIt;
 				xn::NodeInfo nodeInfo = *nodeIt;
 
-				status = _context.CreateProductionTree( nodeInfo ); 
+				status = _context.CreateProductionTree( nodeInfo, dev->_handsGen ); 
+				//status = _context.CreateProductionTree( nodeInfo ); 
 
 				HandsGenerator gen;
 				status = nodeInfo.GetInstance( gen );
@@ -1842,7 +1896,7 @@ namespace V
 		_context.Init();
 
 		XnCallbackHandle hDummy;
-		_context.RegisterToErrorStateChange(onErrorStateChanged, NULL, hDummy);
+		_context.RegisterToErrorStateChange( onErrorStateChanged, NULL, hDummy );
 
 		mIsContextInit = true;
 	}

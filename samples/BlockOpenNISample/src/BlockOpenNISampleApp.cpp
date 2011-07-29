@@ -133,7 +133,7 @@ void BlockOpenNISampleAppApp::setup()
 {
 	_manager = V::OpenNIDeviceManager::InstancePtr();
 #if defined(CINDER_MSW) || defined(CINDER_LINUX)
-	string xmlpath = getAppPath() + ("resources/".append("configIR.xml"));
+	string xmlpath = "resources/configIR.xml";
 #elif defined(CINDER_MAC) || defined(CINDER_COCOA) || defined(CINDER_COCOA_TOUCH)				
 	string xmlpath = getAppPath() + "/Contents/Resources/configIR.xml";
 #endif
