@@ -106,13 +106,6 @@ public:
 		return ImageSourceRef( new ImageSourceKinectColor( activeColor, KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT ) );
 	}
 
-	ImageSourceRef getUserColorImage( int id )
-	{
-		// register a reference to the active buffer
-		uint8_t *activeColor = _manager->getUser(id)->getPixels();
-		return ImageSourceRef( new ImageSourceKinectColor( activeColor, KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT ) );
-	}
-
 	ImageSourceRef getDepthImage()
 	{
 		// register a reference to the active buffer
@@ -139,21 +132,32 @@ public:	// Members
 void BlockOpenNISampleAppApp::setup()
 {
 	_manager = V::OpenNIDeviceManager::InstancePtr();
-	//_device0 = _manager->createDevice( "data/configIR.xml" );		// Load from xml
-	_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );	// Create manually.
+#if defined(CINDER_MSW) || defined(CINDER_LINUX)
+	string xmlpath = "resources/configIR.xml";
+#elif defined(CINDER_MAC) || defined(CINDER_COCOA) || defined(CINDER_COCOA_TOUCH)				
+	string xmlpath = getAppPath() + "/Contents/Resources/configIR.xml";
+#endif
+	
+	// console() << "Loading config xml:" << xmlpath << std::endl;
+	_device0 = _manager->createDevice( xmlpath, true );
+	
+	//_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );	// Create manually.
+	
 	if( !_device0 ) 
 	{
 		DEBUG_MESSAGE( "(App)  Couldn't init device0\n" );
 		exit( 0 );
 	}
-	_device0->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
+	//_device0->setPrimaryBuffer( V::NODE_TYPE_DEPTH );	// Broken!! TODO: Will be available with new version. Still a way to do it is as below
+	//_manager->mPrimaryBuffer = _device0->getDepthGenerator();	// Hack on generator wait update
+	_device0->setHistogram( true );	// Enable histogram depth map (RGB8bit bitmap)
 	_manager->start();
 
 
 	gl::Texture::Format format;
 	gl::Texture::Format depthFormat;
 	mColorTex = gl::Texture( KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT, format );
-	mDepthTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT, format );
+	mDepthTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT, depthFormat );
 }
 
 void BlockOpenNISampleAppApp::mouseDown( MouseEvent event )

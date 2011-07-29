@@ -47,7 +47,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(VITAMIN_PATH)\addons\openni\include;d:\Development\OpenNI\Include;..\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\boost</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VITAMIN_PATH)\addons\openni\include;c:\Program Files (x86)\OpenNI\Include;..\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\boost</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -62,7 +62,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>openni.lib;cinder_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>d:\Development\OpenNI\lib;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\lib;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\lib\msw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:\Program Files (x86)\OpenNI\Lib;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\lib;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\lib\msw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -74,7 +74,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\boost</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:\Program Files (x86)\OpenNI\Include;..\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\boost</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
@@ -90,7 +90,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>cinder.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\lib;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\lib\msw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:\Program Files (x86)\OpenNI\Lib;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\lib;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\lib\msw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
@@ -104,18 +104,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\OpenNIRecorder.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNIDevice.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNIDeviceManager.cpp" />
+    <ClCompile Include="..\..\..\src\VOpenNINetwork.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNIUser.cpp" />
     <ClCompile Include="..\src\BlockOpenNISampleApp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\include\OpenNIRecorder.h" />
+    <ClInclude Include="..\..\..\include\SkeletonPoseDetector.h" />
     <ClInclude Include="..\..\..\include\VOpenNIBone.h" />
     <ClInclude Include="..\..\..\include\VOpenNICallback.h" />
     <ClInclude Include="..\..\..\include\VOpenNICommon.h" />
     <ClInclude Include="..\..\..\include\VOpenNIDevice.h" />
     <ClInclude Include="..\..\..\include\VOpenNIDeviceManager.h" />
     <ClInclude Include="..\..\..\include\VOpenNIHeaders.h" />
+    <ClInclude Include="..\..\..\include\VOpenNINetwork.h" />
     <ClInclude Include="..\..\..\include\VOpenNISurface.h" />
     <ClInclude Include="..\..\..\include\VOpenNIUser.h" />
     <ClInclude Include="..\include\Resources.h" />

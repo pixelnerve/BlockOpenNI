@@ -1,0 +1,37 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlockOpenNISample", "BlockOpenNISample\vc10\BlockOpenNISample.vcxproj", "{74202EDD-91D2-4D2A-B0B6-355CEB16E6BE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlockOpenNISkeleton", "BlockOpenNISkeleton\vc10\BlockOpenNISkeleton.vcxproj", "{2AB1D430-DB69-4A75-897E-C6B6EBEAFB6C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MultipleKinects", "MultipleKinects\vc10\MultipleKinects.vcxproj", "{598B1A68-7AD2-4BC6-BD3C-10B9957E0B62}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlockSandbox", "BlockSandbox\vc10\BlockSandbox.vcxproj", "{BC984CA1-F46F-43AB-8A73-BF1964F4ED2B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{74202EDD-91D2-4D2A-B0B6-355CEB16E6BE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{74202EDD-91D2-4D2A-B0B6-355CEB16E6BE}.Debug|Win32.Build.0 = Debug|Win32
+		{74202EDD-91D2-4D2A-B0B6-355CEB16E6BE}.Release|Win32.ActiveCfg = Release|Win32
+		{74202EDD-91D2-4D2A-B0B6-355CEB16E6BE}.Release|Win32.Build.0 = Release|Win32
+		{2AB1D430-DB69-4A75-897E-C6B6EBEAFB6C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2AB1D430-DB69-4A75-897E-C6B6EBEAFB6C}.Debug|Win32.Build.0 = Debug|Win32
+		{2AB1D430-DB69-4A75-897E-C6B6EBEAFB6C}.Release|Win32.ActiveCfg = Release|Win32
+		{2AB1D430-DB69-4A75-897E-C6B6EBEAFB6C}.Release|Win32.Build.0 = Release|Win32
+		{598B1A68-7AD2-4BC6-BD3C-10B9957E0B62}.Debug|Win32.ActiveCfg = Debug|Win32
+		{598B1A68-7AD2-4BC6-BD3C-10B9957E0B62}.Debug|Win32.Build.0 = Debug|Win32
+		{598B1A68-7AD2-4BC6-BD3C-10B9957E0B62}.Release|Win32.ActiveCfg = Release|Win32
+		{598B1A68-7AD2-4BC6-BD3C-10B9957E0B62}.Release|Win32.Build.0 = Release|Win32
+		{BC984CA1-F46F-43AB-8A73-BF1964F4ED2B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BC984CA1-F46F-43AB-8A73-BF1964F4ED2B}.Debug|Win32.Build.0 = Debug|Win32
+		{BC984CA1-F46F-43AB-8A73-BF1964F4ED2B}.Release|Win32.ActiveCfg = Release|Win32
+		{BC984CA1-F46F-43AB-8A73-BF1964F4ED2B}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
