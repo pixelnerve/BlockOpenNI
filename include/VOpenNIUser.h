@@ -35,7 +35,7 @@ namespace V
 
 	public:
 		OpenNIUser( boost::int32_t id, OpenNIDevice* device );
-		OpenNIUser( boost::int32_t id, OpenNIDeviceRef device );
+		//OpenNIUser( boost::int32_t id, OpenNIDeviceRef device );
 		~OpenNIUser();
 		void init();
 		void update();
@@ -50,15 +50,19 @@ namespace V
 		OpenNIBoneList	getBoneList();
 		OpenNIBone*		getBone( int id );
 
+		bool			getUserPosition();
+		void			calcDepthImageRealWorld( XnPoint3D* points );
+
 		void			loadCalibrationDataToFile( const std::string& filename );
 		void			saveCalibrationDataToFile( const std::string& filename );
 
 		void			setText( const std::string& info )	{ _debugInfo = info; }
 		const std::string& getText()		{ return _debugInfo; }
 
-		bool			hasPixels()			{ return (_userPixels)?true:false;}
-		boost::uint8_t*	getPixels()			{ return _userPixels; }
-		boost::uint16_t*	getDepthPixels(){ return _userDepthPixels; }
+		//bool			hasPixels()			{ return (_userPixels)?true:false;}
+		//uint8_t*		getPixels()			{ return _userPixels; }
+		uint16_t*		getDepthPixels();
+		//XnPoint3D*		getDepthMapRealWorld()	{ return _depthMapRealWorld;	}
 		uint32_t		getId()				{ return mId; }
 		
 		float*			getCenterOfMass( bool doProjectiveCoords=false );
@@ -80,18 +84,24 @@ namespace V
 	protected:
 		void			allocate( int width, int height );
 
+
 	protected:
 		OpenNIDevice*	_device;
 		OpenNIDeviceRef	_deviceRef;
 
 		std::string		_debugInfo;
 
+
+		//xn::UserGenerator*	mUserGen;
+		xn::DepthGenerator*	mDepthGen;
+//		xn::SkeletonCapability& mSkelCap;
+
 		bool			_enablePixels;
 
 		// User pixels for convenience
-		uint8_t*		_userPixels;
-		uint8_t*		_backUserPixels;
+		//uint8_t*		_userPixels, *_backUserPixels;
 		uint16_t*		_userDepthPixels, *_backUserDepthPixels;
+		//XnPoint3D*		_depthMapRealWorld, *_backDepthMapRealWorld;
 
 		uint16_t		mUserMinZDistance, mUserMaxZDistance;
 		uint16_t		mUserMinPixelIdx, mUserMaxPixelIdx;
@@ -106,6 +116,8 @@ namespace V
 		uint32_t		mHeight;	// Current dimensions of depthmap
 
 		OpenNIBoneList	mBoneList;
+
+		XnBoundingBox3D mBoundingBox;
 
 		UserStateEnum	mUserState;
 

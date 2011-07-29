@@ -29,7 +29,7 @@ namespace V
 	XnUInt32 nColors = 10;
 
 	int g_BoneIndexArray[BONE_COUNT] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 };
-
+	int g_UsedBoneIndexArray[15] = { 1, 2, 3, 6, 7, 9, 12, 13, 15, 17, 18, 20, 21, 22, 24 };
 
 
 	OpenNIUser::OpenNIUser( int32_t id, OpenNIDevice* device ) 
@@ -39,17 +39,22 @@ namespace V
 		_device = device;
 		mId = id;
 
-		_userPixels = NULL;
-		_backUserPixels = NULL;
+		//mUserGen = NULL;
+		mDepthGen = NULL;
+
+		//_userPixels = NULL;
+		//_backUserPixels = NULL;
 		_userDepthPixels = NULL;
 		_backUserDepthPixels = NULL;
+		//_depthMapRealWorld = NULL;
+		//_backDepthMapRealWorld = NULL;
 
 		_enablePixels = true;
 
 		init();
 	}
 
-	OpenNIUser::OpenNIUser( int32_t id, OpenNIDeviceRef device )
+	/*OpenNIUser::OpenNIUser( int32_t id, OpenNIDeviceRef device )
 		: mUserState(USER_NONE)
 	{
 		//_userGen = boost::shared_ptr<xn::UserGenerator>( new xn::UserGenerator );
@@ -60,11 +65,13 @@ namespace V
 		_backUserPixels = NULL;
 		_userDepthPixels = NULL;
 		_backUserDepthPixels = NULL;
+		_depthMapRealWorld = NULL;
+		_backDepthMapRealWorld = NULL;
 
 		_enablePixels = true;
 
 		init();
-	}
+	}*/
 
 	OpenNIUser::~OpenNIUser()
 	{
@@ -72,14 +79,16 @@ namespace V
 		ss << "DESTRUCTOR USER ID: " << mId << std::endl;
 		DEBUG_MESSAGE( ss.str().c_str() );
 
-		SAFE_DELETE_ARRAY( _userPixels );
-		SAFE_DELETE_ARRAY( _backUserPixels );
+		//SAFE_DELETE_ARRAY( _userPixels );
+		//SAFE_DELETE_ARRAY( _backUserPixels );
 		SAFE_DELETE_ARRAY( _userDepthPixels );
 		SAFE_DELETE_ARRAY( _backUserDepthPixels );
+		//SAFE_DELETE_ARRAY( _depthMapRealWorld );
+		//SAFE_DELETE_ARRAY( _backDepthMapRealWorld );
 
 		if( !mBoneList.empty() )
 		{
-			for ( std::vector<OpenNIBone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); it++ )
+			for ( std::vector<OpenNIBone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); ++it )
 			{
 				SAFE_DELETE( *it );
 			}
@@ -102,40 +111,119 @@ namespace V
 		// Allocate memory for every bone/joint
 		for( int i=0; i<BONE_COUNT; i++ )
 		{
-			mBoneList.push_back( new OpenNIBone() );
+			OpenNIBone* bone = new OpenNIBone();
+			bone->id = g_BoneIndexArray[i];
+			// Is active?
+			bone->active = true;
+
+			mBoneList.push_back( bone );
 		}
 
 
+		// TODO: Fix this. Remove hardcoded values
 		mWidth = 640;
 		mHeight = 480;
 		allocate( mWidth, mHeight );
 
 
-		mSkeletonSmoothing = 0.2f;
+		//mUserGen = _device->getUserGenerator();
+		mDepthGen = _device->getDepthGenerator();
+
+		mSkeletonSmoothing = 0.4f;
 		if( _device->getUserGenerator()->IsCapabilitySupported(XN_CAPABILITY_SKELETON) )
 		{
 			_device->getUserGenerator()->GetSkeletonCap().SetSmoothing( mSkeletonSmoothing );
 		}
 	}
 
+	void OpenNIUser::allocate( int width, int height )
+	{
+		//SAFE_DELETE_ARRAY( _backUserPixels );
+		//SAFE_DELETE_ARRAY( _userPixels );
+		//_userPixels = new uint8_t[width*height*3];
+		//_backUserPixels = new uint8_t[width*height*3];
+
+		SAFE_DELETE_ARRAY( _userDepthPixels );
+		SAFE_DELETE_ARRAY( _backUserDepthPixels );
+		_userDepthPixels = new uint16_t[width*height];
+		_backUserDepthPixels = new uint16_t[width*height];
+
+		//SAFE_DELETE_ARRAY( _depthMapRealWorld );
+		//SAFE_DELETE_ARRAY( _backDepthMapRealWorld );
+		//_depthMapRealWorld = new XnPoint3D[width*height];
+		//_backDepthMapRealWorld = new XnPoint3D[width*height];
+	}
+
+
+	//
+	// Load a calibration data file and apply to current user
+	//
+	void OpenNIUser::loadCalibrationDataToFile( const std::string& filename )
+	{
+#ifdef OPENNI_POSE_SAVE_CAPABILITY
+		mSkelCap = &_device->getUserGenerator()->GetSkeletonCap();
+
+		if( mSkelCap->IsCalibrated( mId ) )
+			//if( _device->getUserGenerator() && _device->getUserGenerator()->GetSkeletonCap().IsCalibrated( mId ) )
+		{
+			// Save user's calibration to file
+			XnStatus rc = mSkelCap->LoadCalibrationDataFromFile( mId, filename.c_str() );
+			//XnStatus rc = _device->getUserGenerator()->GetSkeletonCap().LoadCalibrationDataFromFile( mId, filename.c_str() );
+			CHECK_RC( rc, "OpenNIUser::loadCalibrationDataToFile()" );
+			if( rc == XN_STATUS_OK )
+			{
+				// Make sure state 
+				mUserState = USER_TRACKING;
+				_device->getUserGenerator()->GetPoseDetectionCap().StopPoseDetection( mId );
+				mSkelCap->StartTracking( mId );
+			}
+		}
+#else
+		DEBUG_MESSAGE( "OpenNIUser::loadCalibrationDataToFile()  Not supported on the version" );
+#endif
+	}
+
+	//
+	// Save current user's calibration data to a file
+	//
+	void OpenNIUser::saveCalibrationDataToFile( const std::string& filename )
+	{
+#ifdef OPENNI_POSE_SAVE_CAPABILITY
+		mSkelCap = &_device->getUserGenerator()->GetSkeletonCap();
+
+		if( mSkelCap->IsCalibrated( mId ) )
+			//if( _device->getUserGenerator() && _device->getUserGenerator()->GetSkeletonCap().IsCalibrated( mId ) )
+		{
+			// Save user's calibration to file
+			XnStatus rc = mSkelCap->SaveCalibrationDataToFile( mId, filename.c_str() );
+			CHECK_RC( rc, "OpenNIUser::saveCalibrationDataToFile()" );
+		}
+#else
+		DEBUG_MESSAGE( "OpenNIUser::saveCalibrationDataToFile()  Not supported on the version" );
+#endif
+	}
+
 	void OpenNIUser::update()
 	{
-		updatePixels();
+		//updatePixels();
 		updateBody();
+		// Update bounding box
+		//getUserPosition();
 	}
 
 
 	void OpenNIUser::updatePixels()
 	{
+/****
 		// Get device generators
-		DepthGenerator* depth = _device->getDepthGenerator();
+		//DepthGenerator* depth = _device->getDepthGenerator();
 		UserGenerator* user = _device->getUserGenerator();
 
 		// Get metadata
 		//xn::DepthMetaData depthMetaData;
 		//depth->GetMetaData( depthMetaData );
-		xn::DepthMetaData* depthMetaData = _device->getDepthMetaData();
-		xn::SceneMetaData* sceneMetaData = _device->getUserMetaData();
+		//xn::DepthMetaData* depthMetaData = _device->getDepthMetaData();
+		xn::SceneMetaData* sceneMetaData = _device->getSceneMetaData();
 
 
 		//// Get Center Of Mass
@@ -155,6 +243,8 @@ namespace V
 			//xn::SceneMetaData sceneMetaData;
 			//user->GetUserPixels( mId, sceneMetaData );
 
+			uint8_t* depthMap24 = _device->getDepthMap24();
+
 			// Get labels
 			const XnLabel* labels = sceneMetaData->Data();
 			if( labels )
@@ -162,8 +252,8 @@ namespace V
 				//
 				// Generate a bitmap with the user pixels colored
 				//
-				int depthWidth = depthMetaData->XRes();
-				int depthHeight = depthMetaData->YRes();
+				int depthWidth = sceneMetaData->XRes();
+				int depthHeight = sceneMetaData->YRes();
 				if( !_userPixels || (mWidth != depthWidth) || (mHeight != depthHeight) )
 				{
 					mWidth = depthWidth;
@@ -175,11 +265,13 @@ namespace V
 				//xnOSMemSet( _userDepthPixels, 0, depthWidth*depthHeight*sizeof(uint16_t) );	// 16bit
 				xnOSMemSet( _backUserPixels, 0, depthWidth*depthHeight*3 );
 				xnOSMemSet( _backUserDepthPixels, 0, depthWidth*depthHeight*sizeof(uint16_t) );	// 16bit
+				xnOSMemSet( _backDepthMapRealWorld, 0, depthWidth*depthHeight*sizeof(XnPoint3D) );
+
 
 				uint16_t* pDepth = _device->getDepthMap();
 				uint8_t* pixels = _backUserPixels;
 				uint16_t* depthPixels = _backUserDepthPixels;
-
+				XnPoint3D* points = _backDepthMapRealWorld;
 
 				mUserMinZDistance = 65535;
 				mUserMaxZDistance = 0;
@@ -191,23 +283,24 @@ namespace V
 					for( int i=0; i<depthWidth; i++ )
 					{
 						// Only fill bitmap with current user's data
-						/*if( *labels != 0 && *labels == mId )
-						{
-							// Pixel is not empty, deal with it.
-							uint32_t nValue = *pDepth;
+						////if( *labels != 0 && *labels == mId )
+						////{
+						////	// Pixel is not empty, deal with it.
+						////	uint32_t nValue = *pDepth;
 
-							mColor[0] = g_Colors[mId][0];
-							mColor[1] = g_Colors[mId][1];
-							mColor[2] = g_Colors[mId][2];
+						////	mColor[0] = g_Colors[mId][0];
+						////	mColor[1] = g_Colors[mId][1];
+						////	mColor[2] = g_Colors[mId][2];
 
-							if( nValue != 0 )
-							{
-								int nHistValue = _device->getDepthMap24()[nValue];
-								pixels[index+0] = 0xff & static_cast<uint8_t>(nHistValue * mColor[0]);//g_Colors[nColorID][0]); 
-								pixels[index+1] = 0xff & static_cast<uint8_t>(nHistValue * mColor[1]);//g_Colors[nColorID][1]);
-								pixels[index+2] = 0xff & static_cast<uint8_t>(nHistValue * mColor[2]);//g_Colors[nColorID][2]);
-							}
-						}****/
+						////	if( nValue != 0 )
+						////	{
+						////		int nHistValue = _device->getDepthMap24()[nValue];
+						////		pixels[index+0] = 0xff & static_cast<uint8_t>(nHistValue * mColor[0]);//g_Colors[nColorID][0]); 
+						////		pixels[index+1] = 0xff & static_cast<uint8_t>(nHistValue * mColor[1]);//g_Colors[nColorID][1]);
+						////		pixels[index+2] = 0xff & static_cast<uint8_t>(nHistValue * mColor[2]);//g_Colors[nColorID][2]);
+						////	}
+						////}
+
 
 
 						// Check out for every user visible and fill bitmap with correct coloring
@@ -227,7 +320,7 @@ namespace V
 							mColor[2] = g_Colors[mId][2];
 							if( nValue != 0 )
 							{
-								uint32_t nHistValue = _device->getDepthMap24()[nValue];
+								uint32_t nHistValue = depthMap24[nValue];
 								pixels[index+0] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][0]); 
 								pixels[index+1] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][1]);
 								pixels[index+2] = 0xff & static_cast<uint8_t>(nHistValue * g_Colors[nColorID][2]);
@@ -235,6 +328,10 @@ namespace V
 
 							// Keep depth value
 							*depthPixels = nValue;
+
+							(*points).X = (float)i;
+							(*points).Y = (float)j;
+							(*points).Z = (float)nValue;
 
 							// Get max and min z values for current user
 							//mUserMinZDistance = (nValue < mUserMinZDistance) ? nValue : mUserMinZDistance;
@@ -250,10 +347,16 @@ namespace V
 								mUserMaxPixelIdx = i + j * depthWidth;
 							}
 						}
+						else
+						{
+							(*points).X = 0;
+							(*points).Y = 0;
+							(*points).Z = -99999;
+						}
 
 
 						depthPixels++;
-
+						points++;
 						pDepth++;
 						labels++;
 						index += 3;
@@ -262,9 +365,14 @@ namespace V
 
 				memcpy( _userPixels, _backUserPixels, mWidth*mHeight*3 );
 				memcpy( _userDepthPixels, _backUserDepthPixels, mWidth*mHeight*sizeof(uint16_t) );  // 16bit
+				memcpy( _depthMapRealWorld, _backDepthMapRealWorld, mWidth*mHeight*sizeof(XnPoint3D) );
 			}
 		}
+
+		//calcDepthImageRealWorld();
+****/
 	}
+
 
 
 	void OpenNIUser::updateBody()
@@ -273,9 +381,9 @@ namespace V
 		if( !user ) return;
 
 		// If not tracking, bail out!
-		if( !user->GetSkeletonCap().IsTracking(mId) )
+		if( user->GetSkeletonCap().IsTracking(mId) == false )
 		{
-			_debugInfo = "User is not being tracked";
+			//_debugInfo = "User is not being tracked";
 			mUserState = USER_NONE;
 			//DEBUG_MESSAGE( "User is not being tracked!\n" );
 			return;
@@ -293,9 +401,8 @@ namespace V
 		// If tracking is on...
 		if( user->GetSkeletonCap().IsTracking(mId) )
 		{
-			_debugInfo = "User is being tracked";
+			//_debugInfo = "User is being tracked";
 
-			 
 			//XnSkeletonJoint activeJoints[BONE_COUNT];
 			//XnUInt16 numOfJoints = BONE_COUNT;
 			//user->GetSkeletonCap().EnumerateActiveJoints( activeJoints, numOfJoints );
@@ -309,31 +416,72 @@ namespace V
 			//}
 
 			// Save joint's transformation to our list
+			//DepthGenerator* depth = _device->getDepthGenerator();
+
 			XnSkeletonJointPosition jointPos;
 			XnSkeletonJointOrientation jointOri;
+			XnPoint3D projectivePos;
+			xn::SkeletonCapability skelCap = user->GetSkeletonCap();
+
 			int index = 0;
-			//for( std::vector<OpenNIBone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); it++, index++ )
-			for( int i=0; i<V::BONE_COUNT; i++ )
+			for( OpenNIBoneList::iterator it = mBoneList.begin(); it != mBoneList.end(); ++it )
+			//for( int i=0; i<BONE_COUNT; i++ )
 			{
-				user->GetSkeletonCap().GetSkeletonJointPosition( mId, static_cast<XnSkeletonJoint>(g_BoneIndexArray[index]), jointPos );
-				user->GetSkeletonCap().GetSkeletonJointOrientation( mId, static_cast<XnSkeletonJoint>(g_BoneIndexArray[index]), jointOri );
-
-				if( jointOri.fConfidence >= 0.25f || jointPos.fConfidence >= 0.25f )
+/***				//
+				// Update only *USED* positions
+				//
+				if( (index+1) == g_UsedBoneIndexArray[index2] )
 				{
-					//if( jointPos.position.X == 0.0f ||
-					//	jointPos.position.Y == 0.0f ||
-					//	jointPos.position.Z == 0.0f )
-					//{
-					//	mUserState = USER_INVALID;
-					//	Vitamin::LogManager::getSingleton().logMessage( "OpenNIUser. USER INVALID" );
-					//	continue;
-					//}
+					skelCap.GetSkeletonJointPosition( mId, (XnSkeletonJoint)(g_UsedBoneIndexArray[index2]), jointPos );
+					skelCap.GetSkeletonJointOrientation( mId, (XnSkeletonJoint)(g_BoneIndexArray[index2]), jointOri );
 
-					//OpenNIBone* bone = *it;
-					OpenNIBone* bone = mBoneList[i];
+					//if( jointOri.fConfidence >= 0.3f || 
+						//jointPos.fConfidence >= 0.3f )
+					{
+						OpenNIBone* bone = *it;
+						//OpenNIBone* bone = mBoneList[i];
 
-					bone->id = g_BoneIndexArray[i];
+						//bone->id = g_BoneIndexArray[i];
+						// Is active?
+						bone->active = true;
 
+						// Position (actual position in world coordinates)
+						bone->position[0] = jointPos.position.X;
+						bone->position[1] = jointPos.position.Y;
+						bone->position[2] = jointPos.position.Z;
+						//memcpy( bone->position, (float*)&jointPos.position.X, 3*sizeof(float) );
+
+						// Compute Projective position coordinates
+						mDepthGen->ConvertRealWorldToProjective( 1, &jointPos.position, &projectivePos );
+						bone->positionProjective[0] = (projectivePos.X > 0) ? projectivePos.X : 0;
+						bone->positionProjective[1] = (projectivePos.Y > 0) ? projectivePos.Y : 0;
+						bone->positionProjective[2] = (projectivePos.Z > 0) ? projectivePos.Z : 0;
+
+						// Orientation
+						memcpy( bone->orientation, jointOri.orientation.elements, 9*sizeof(float) );
+
+						// Confidence
+						//bone->positionConfidence = jointPos.fConfidence;
+						//bone->orientationConfidence = jointOri.fConfidence;
+					}
+
+					index2++;
+				}
+**/
+
+
+				//
+				// Update *ALL* positions
+				//
+				skelCap.GetSkeletonJointPosition( mId, (XnSkeletonJoint)(g_UsedBoneIndexArray[index]), jointPos );
+				skelCap.GetSkeletonJointOrientation( mId, (XnSkeletonJoint)(g_BoneIndexArray[index]), jointOri );
+
+				//if( jointOri.fConfidence >= 0.25f || jointPos.fConfidence >= 0.25f )
+				{
+					OpenNIBone* bone = *it;
+					//OpenNIBone* bone = mBoneList[i];
+
+					//bone->id = g_BoneIndexArray[i];
 					// Is active?
 					bone->active = true;
 
@@ -344,9 +492,7 @@ namespace V
 					//memcpy( bone->position, (float*)&jointPos.position.X, 3*sizeof(float) );
 
 					// Compute Projective position coordinates
-					XnPoint3D projectivePos;
-					DepthGenerator* depth = _device->getDepthGenerator();
-					depth->ConvertRealWorldToProjective( 1, &jointPos.position, &projectivePos );
+					mDepthGen->ConvertRealWorldToProjective( 1, &jointPos.position, &projectivePos );
 					bone->positionProjective[0] = (projectivePos.X > 0) ? projectivePos.X : 0;
 					bone->positionProjective[1] = (projectivePos.Y > 0) ? projectivePos.Y : 0;
 					bone->positionProjective[2] = (projectivePos.Z > 0) ? projectivePos.Z : 0;
@@ -355,17 +501,8 @@ namespace V
 					memcpy( bone->orientation, jointOri.orientation.elements, 9*sizeof(float) );
 
 					// Confidence
-					bone->positionConfidence = jointPos.fConfidence;
-					// Confidence
-					bone->orientationConfidence = jointOri.fConfidence;
-
-					//// Log first time this runs
-					//if( mUserState != USER_TRACKING )
-					//{
-					//	std::stringstream ss;
-					//	ss << bone->id << " - " << bone->position[0] << ", " << bone->position[1] << ", " << bone->position[2] << ", " << std::endl;
-					//	Vitamin::LogManager::getSingleton().logMessage( ss.str() );
-					//}
+					//bone->positionConfidence = jointPos.fConfidence;
+					//bone->orientationConfidence = jointOri.fConfidence;
 				}
 
 				index++;
@@ -373,20 +510,6 @@ namespace V
 
 			mUserState = USER_TRACKING;
 		}
-	}
-
-
-	float* OpenNIUser::getCenterOfMass( bool doProjectiveCoords/*=false*/ )
-	{
-		//// Get Center Of Mass
-		XnPoint3D com;
-		_device->getUserGenerator()->GetCoM( mId, com );
-		// Convert to screen coordinates
-		if( doProjectiveCoords ) _device->getDepthGenerator()->ConvertRealWorldToProjective( 1, &com, &com );
-		mCenter[0] = com.X;
-		mCenter[1] = com.Y;
-		mCenter[2] = com.Z;
-		return mCenter; 
 	}
 
 
@@ -406,7 +529,7 @@ namespace V
 			// Old OpenGL rendering method. it's fine for now.
 			glBegin( GL_QUADS );
 			int index = 1;
-			for( std::vector<OpenNIBone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); it++, index++ )
+			for( std::vector<OpenNIBone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); ++it, index++ )
 			{
 				OpenNIBone* bone = *it;
 
@@ -505,7 +628,7 @@ namespace V
 			// Old OpenGL rendering method. it's fine for now.
 			glBegin( GL_QUADS );
 			int index = 1;
-			for( OpenNIBoneList::iterator it = mBoneList.begin(); it != mBoneList.end(); it++, index++ )
+			for( OpenNIBoneList::iterator it = mBoneList.begin(); it != mBoneList.end(); ++it, index++ )
 			{
 				OpenNIBone* bone = *it;
 
@@ -650,62 +773,59 @@ namespace V
 		return mBoneList; 
 	}
 
+	bool OpenNIUser::getUserPosition()
+	{
+		if( !_device->getDepthGenerator()->IsValid() )
+			return false;
+
+		if( _device->getDepthGenerator()->IsCapabilitySupported( XN_CAPABILITY_USER_POSITION ) )
+		{
+			UserPositionCapability  userPosCap = _device->getDepthGenerator()->GetUserPositionCap();
+			userPosCap.GetUserPosition( mId, mBoundingBox );
+			return true;
+		}
+		return false;
+	}
+
+	uint16_t* OpenNIUser::getDepthPixels()
+	{
+		_device->getLabelMap( mId, _userDepthPixels );
+		return _userDepthPixels;
+	}
+	//void OpenNIUser::calcDepthImageRealWorld( XnPoint3D* points )
+	//{
+	//	// convert all point into realworld coord
+	//	_device->getDepthGenerator()->ConvertProjectiveToRealWorld( mWidth*mHeight, _depthMapRealWorld, points );
+	//}
+
+
+	float* OpenNIUser::getCenterOfMass( bool doProjectiveCoords/*=false*/ )
+	{
+		//// Get Center Of Mass
+		XnPoint3D com;
+		_device->getUserGenerator()->GetCoM( mId, com );
+		// Convert to screen coordinates
+		if( doProjectiveCoords ) _device->getDepthGenerator()->ConvertRealWorldToProjective( 1, &com, &com );
+		mCenter[0] = com.X;
+		mCenter[1] = com.Y;
+		mCenter[2] = com.Z;
+		return mCenter; 
+	}
+
 
 	void OpenNIUser::setSkeletonSmoothing( float value )
 	{
-		mSkeletonSmoothing = value;
-		if( _device->getUserGenerator() && _device->getUserGenerator()->GetSkeletonCap().IsTracking( mId ) )
+		if( !_device->getDepthGenerator()->IsCapabilitySupported( XN_CAPABILITY_SKELETON ) )
+			return;
+
+		if( _device->getUserGenerator()->GetSkeletonCap().IsTracking( mId ) )
+		//if( _device->getUserGenerator() && _device->getUserGenerator()->GetSkeletonCap().IsTracking( mId ) )
 		{
-			_device->getUserGenerator()->GetSkeletonCap().SetSmoothing( value );
+			mSkeletonSmoothing = value;
+			_device->getUserGenerator()->GetSkeletonCap().SetSmoothing( mSkeletonSmoothing );
 		}
 	}
 
 
 
-	void OpenNIUser::allocate( int width, int height )
-	{
-		if( _backUserPixels ) SAFE_DELETE_ARRAY( _backUserPixels );
-		if( _userPixels ) SAFE_DELETE_ARRAY( _userPixels );
-		_userPixels = new uint8_t[width*height*3];
-		_backUserPixels = new uint8_t[width*height*3];
-
-		if( _userDepthPixels ) SAFE_DELETE_ARRAY( _userDepthPixels );
-		if( _backUserDepthPixels ) SAFE_DELETE_ARRAY( _backUserDepthPixels );
-		_userDepthPixels = new uint16_t[width*height];
-		_backUserDepthPixels = new uint16_t[width*height];
-	}
-
-
-	//
-	// Load a calibration data file and apply to current user
-	//
-	void OpenNIUser::loadCalibrationDataToFile( const std::string& filename )
-	{
-		if( _device->getUserGenerator() && _device->getUserGenerator()->GetSkeletonCap().IsCalibrated( mId ) )
-		{
-			// Save user's calibration to file
-			XnStatus rc = _device->getUserGenerator()->GetSkeletonCap().LoadCalibrationDataFromFile( mId, filename.c_str() );
-			CHECK_RC( rc, "OpenNIUser::loadCalibrationDataToFile()" );
-			if( rc == XN_STATUS_OK )
-			{
-				// Make sure state 
-				mUserState = USER_TRACKING;
-				_device->getUserGenerator()->GetPoseDetectionCap().StopPoseDetection( mId );
-				_device->getUserGenerator()->GetSkeletonCap().StartTracking( mId );
-			}
-		}
-	}
-
-	//
-	// Save current user's calibration data to a file
-	//
-	void OpenNIUser::saveCalibrationDataToFile( const std::string& filename )
-	{
-		if( _device->getUserGenerator() && _device->getUserGenerator()->GetSkeletonCap().IsCalibrated( mId ) )
-		{
-			// Save user's calibration to file
-			XnStatus rc = _device->getUserGenerator()->GetSkeletonCap().SaveCalibrationDataToFile( mId, filename.c_str() );
-			CHECK_RC( rc, "OpenNIUser::saveCalibrationDataToFile()" );
-		}
-	}
 }

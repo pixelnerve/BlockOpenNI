@@ -27,7 +27,9 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/thread.hpp>
 
-// Std
+// Std∫
+//#define _HAS_ITERATOR_DEBUGGING 0
+//#define _SECURE_SCL 0
 #include <string>
 #include <vector>
 
@@ -40,6 +42,9 @@
 #include "XnVersion.h"
 #include "XnUtils.h"
 
+
+
+//#define OPENNI_POSE_SAVE_CAPABILITY
 
 
 
@@ -89,13 +94,14 @@ namespace V
 	// Enumeration of production nodes
 	enum ProductionNodeType
 	{
-		NODE_TYPE_NONE	= 0x00000000,
-		NODE_TYPE_IMAGE	= 0x00000001,
-		NODE_TYPE_IR	= 0x00000010,
-		NODE_TYPE_DEPTH	= 0x00000100,
-		NODE_TYPE_USER	= 0x00001000,
-		NODE_TYPE_AUDIO	= 0x00010000,
-		NODE_TYPE_HANDS = 0x00100000
+		NODE_TYPE_NONE	= (1<<0),
+		NODE_TYPE_IMAGE	= (1<<1),
+		NODE_TYPE_IR	= (1<<2),
+		NODE_TYPE_DEPTH	= (1<<3),
+		NODE_TYPE_SCENE	= (1<<4),
+		NODE_TYPE_USER	= (1<<5),
+		NODE_TYPE_AUDIO	= (1<<6),
+		NODE_TYPE_HANDS = (1<<7)
 	};
 
 
@@ -127,7 +133,7 @@ namespace V
 		SKEL_RIGHT_ANKLE = 23, 
 		SKEL_RIGHT_FOOT = 24,
 	};
-	// Mac count of bones
+	// Max count of bones
 	static const int BONE_COUNT = 24;
 
 }
