@@ -73,6 +73,7 @@ void MultipleKinectsApp::setup()
 		app::console() << e.what() << std::endl;
 	}
 
+
 	// Create device 1 is available
 	try 
 	{
