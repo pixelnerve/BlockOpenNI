@@ -473,7 +473,7 @@ namespace V
 				//
 				// Update *ALL* positions
 				//
-				skelCap.GetSkeletonJointPosition( mId, (XnSkeletonJoint)(g_UsedBoneIndexArray[index]), jointPos );
+				skelCap.GetSkeletonJointPosition( mId, (XnSkeletonJoint)(g_BoneIndexArray[index]), jointPos );
 				skelCap.GetSkeletonJointOrientation( mId, (XnSkeletonJoint)(g_BoneIndexArray[index]), jointOri );
 
 				//if( jointOri.fConfidence >= 0.25f || jointPos.fConfidence >= 0.25f )
