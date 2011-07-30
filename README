@@ -2,12 +2,6 @@ Block OpenNI
 ------------
 A C++ wrapper for OpenNI
 
-Important:
-Current API version this block was compiled with (Current version tested on windows, both with Kinect and Xtion):
-OpenNI-Win32-1.1.0.39-Dev
-NITE-Win32-1.3.1.5-Dev
-
-
 2011-06-20:
 This block is going through heavy remake and so old code/methods are mixed with new methods for the moment.
 I will be changing the way things are handled at the moment when i'm finished. All for better support on multiple devices.
