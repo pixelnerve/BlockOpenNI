@@ -10,7 +10,7 @@
 #elif defined(linux) || defined(__linux) || defined(__linux__)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
-#define DEBUG_MESSAGE( x ) printf( x )
+#define DEBUG_MESSAGE( x ) printf( "%s", x )
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
@@ -112,22 +112,26 @@ namespace V
 		SKEL_NECK = 2, 
 		SKEL_TORSO = 3, 
 		SKEL_WAIST = 4, 
+        
 		SKEL_LEFT_COLLAR = 5, 
 		SKEL_LEFT_SHOULDER = 6, 
 		SKEL_LEFT_ELBOW = 7, 
 		SKEL_LEFT_WRIST = 8, 
 		SKEL_LEFT_HAND = 9, 
 		SKEL_LEFT_FINGERTIP = 10, 
+        
 		SKEL_RIGHT_COLLAR = 11, 
 		SKEL_RIGHT_SHOULDER = 12, 
 		SKEL_RIGHT_ELBOW = 13, 
 		SKEL_RIGHT_WRIST = 14, 
 		SKEL_RIGHT_HAND = 15, 
 		SKEL_RIGHT_FINGERTIP = 16, 
+        
 		SKEL_LEFT_HIP = 17, 
 		SKEL_LEFT_KNEE = 18, 
 		SKEL_LEFT_ANKLE = 19, 
 		SKEL_LEFT_FOOT = 20, 
+        
 		SKEL_RIGHT_HIP = 21, 
 		SKEL_RIGHT_KNEE = 22, 
 		SKEL_RIGHT_ANKLE = 23, 

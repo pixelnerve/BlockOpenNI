@@ -582,16 +582,16 @@ namespace V
 			//
 			renderBone( SKEL_HEAD, SKEL_NECK, width, height, depth, true, renderDepth );
 
-			renderBone( SKEL_NECK, SKEL_LEFT_SHOULDER, width, height, depth, true, renderDepth );
+			renderBone( SKEL_TORSO, SKEL_LEFT_SHOULDER, width, height, depth, true, renderDepth );
 			renderBone( SKEL_LEFT_SHOULDER, SKEL_LEFT_ELBOW, width, height, depth, true, renderDepth );
 			renderBone( SKEL_LEFT_ELBOW, SKEL_LEFT_HAND, width, height, depth, true, renderDepth );
 
-			renderBone( SKEL_NECK, SKEL_RIGHT_SHOULDER, width, height, depth, true, renderDepth );
+			renderBone( SKEL_TORSO, SKEL_RIGHT_SHOULDER, width, height, depth, true, renderDepth );
 			renderBone( SKEL_RIGHT_SHOULDER, SKEL_RIGHT_ELBOW, width, height, depth, true, renderDepth );
 			renderBone( SKEL_RIGHT_ELBOW, SKEL_RIGHT_HAND, width, height, depth, true, renderDepth );
 
-			renderBone( SKEL_LEFT_SHOULDER, SKEL_TORSO, width, height, depth, true, renderDepth );
-			renderBone( SKEL_RIGHT_SHOULDER, SKEL_TORSO, width, height, depth, true, renderDepth );
+//			renderBone( SKEL_LEFT_SHOULDER, SKEL_TORSO, width, height, depth, true, renderDepth );
+//			renderBone( SKEL_RIGHT_SHOULDER, SKEL_TORSO, width, height, depth, true, renderDepth );
 
 			renderBone( SKEL_TORSO, SKEL_LEFT_HIP, width, height, depth, true, renderDepth );
 			renderBone( SKEL_LEFT_HIP, SKEL_LEFT_KNEE, width, height, depth, true, renderDepth );
@@ -601,7 +601,9 @@ namespace V
 			renderBone( SKEL_RIGHT_HIP, SKEL_RIGHT_KNEE, width, height, depth, true, renderDepth );
 			renderBone( SKEL_RIGHT_KNEE, SKEL_RIGHT_FOOT, width, height, depth, true, renderDepth );
 
-			renderBone( SKEL_LEFT_HIP, SKEL_RIGHT_HIP, width, height, depth, true, renderDepth );
+			renderBone( SKEL_WAIST, SKEL_RIGHT_HIP, width, height, depth, true, renderDepth );
+			renderBone( SKEL_WAIST, SKEL_LEFT_HIP, width, height, depth, true, renderDepth );
+//			renderBone( SKEL_LEFT_HIP, SKEL_RIGHT_HIP, width, height, depth, true, renderDepth );
 
 			renderBone( SKEL_WAIST, SKEL_TORSO, width, height, depth, true, renderDepth );
 			renderBone( SKEL_WAIST, SKEL_NECK, width, height, depth, true, renderDepth );
@@ -657,28 +659,30 @@ namespace V
 			// Render body connecting lines
 			//
 			renderBone( SKEL_HEAD, SKEL_NECK, false );
-
-			renderBone( SKEL_NECK, SKEL_LEFT_SHOULDER, false );
+            
+			renderBone( SKEL_TORSO, SKEL_LEFT_SHOULDER, false );
 			renderBone( SKEL_LEFT_SHOULDER, SKEL_LEFT_ELBOW, false );
 			renderBone( SKEL_LEFT_ELBOW, SKEL_LEFT_HAND, false );
-
-			renderBone( SKEL_NECK, SKEL_RIGHT_SHOULDER, false );
+            
+			renderBone( SKEL_TORSO, SKEL_RIGHT_SHOULDER, false );
 			renderBone( SKEL_RIGHT_SHOULDER, SKEL_RIGHT_ELBOW, false );
 			renderBone( SKEL_RIGHT_ELBOW, SKEL_RIGHT_HAND, false );
-
-			renderBone( SKEL_LEFT_SHOULDER, SKEL_TORSO, false );
-			renderBone( SKEL_RIGHT_SHOULDER, SKEL_TORSO, false );
-
+            
+//			renderBone( SKEL_LEFT_SHOULDER, SKEL_TORSO, width, height, depth, true, renderDepth );
+//			renderBone( SKEL_RIGHT_SHOULDER, SKEL_TORSO, width, height, depth, true, renderDepth );
+            
 			renderBone( SKEL_TORSO, SKEL_LEFT_HIP, false );
 			renderBone( SKEL_LEFT_HIP, SKEL_LEFT_KNEE, false );
 			renderBone( SKEL_LEFT_KNEE, SKEL_LEFT_FOOT, false );
-
+            
 			renderBone( SKEL_TORSO, SKEL_RIGHT_HIP, false );
 			renderBone( SKEL_RIGHT_HIP, SKEL_RIGHT_KNEE, false );
 			renderBone( SKEL_RIGHT_KNEE, SKEL_RIGHT_FOOT, false );
-
-			renderBone( SKEL_LEFT_HIP, SKEL_RIGHT_HIP, false );
-
+            
+			renderBone( SKEL_WAIST, SKEL_RIGHT_HIP, false );
+			renderBone( SKEL_WAIST, SKEL_LEFT_HIP, false );
+//            renderBone( SKEL_LEFT_HIP, SKEL_RIGHT_HIP, width, height, depth, true, renderDepth );
+            
 			renderBone( SKEL_WAIST, SKEL_TORSO, false );
 			renderBone( SKEL_WAIST, SKEL_NECK, false );
 
