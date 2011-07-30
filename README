@@ -51,9 +51,9 @@ https://github.com/avin2/SensorKinect/blob/unstable/Bin/SensorKinect-Win-OpenSou
 Download/Install NITE:
 http://openni.org/downloadfiles/opennimodules/openni-compliant-middleware-binaries/latest-unstable/177-primesense-nite-unstable-build-for-windows-x86-32-bit-v1-4-1/download
 
-At this moment you should be able to try the samples that comes with OpenNI. 
-Goto OpenNI's folder and browse to /Samples/Bin/Release. 
-Run NiViewer. You should see a window with the RGB and Depth feed from the kinect
+At this moment you should now be able to run the samples in OpenNI. 
+Go to OpenNI's folder and browse to /Samples/Bin/Release. 
+Run NiViewer.exe. You should now be looking at a window with the RGB and Depth feed coming from the kinect
 
 
 
@@ -64,33 +64,33 @@ MacOSX 32bit:
 	(Snow Leopard 10.6) https://distfiles.macports.org/MacPorts/MacPorts-2.0.0-10.5-Leopard.dmg
 	(Lion 10.7) https://distfiles.macports.org/MacPorts/MacPorts-2.0.0-10.7-Lion.dmg
 
-2) Open the terminal to install libtool/libusb.
+2) Open the terminal, install libtool/libusb.
 	2.1) Type and run: sudo port install libtool
 	2.2) Type and run: sudo port install libusb-devel +universal
 
 
 3) Download/Untar OpenNI
 	http://openni.org/downloadfiles/opennimodules/openni-binaries/latest-unstable/162-openni-unstable-build-for-macosx-10-6-universal-x86x64-3264-bit-v1-3-2/download
-	3.1) Open the terminal and goto openni's folder that you just untar'ed.
+	3.1) Open the terminal, goto openni's folder you just untar'ed.
 	3.2) Type and run: sudo ./install.sh
 
 4) Download Avin2's SensorKinect
 	https://github.com/avin2/SensorKinect/blob/unstable/Bin/SensorKinect-Bin-MacOSX-v5.0.3.4.tar.bz2
-	4.1) Open the terminal and goto SensorKinect's folder that you just untar'ed.
+	4.1) Open the terminal, goto SensorKinect's folder you just untar'ed.
 	4.2) Type and run: sudo ./install.sh
 
 5) Download NITE
 	http://openni.org/downloadfiles/opennimodules/openni-compliant-middleware-binaries/latest-unstable/176-primesense-nite-unstable-build-for-macosx-10-6-universal-x86x64-3264-bit-v1-4-1/download
-	4.1) Open the terminal and goto NITE's folder that you just untar'ed.
+	4.1) Open the terminal, goto NITE's folder you just untar'ed.
 	4.2) Type and run: sudo ./install.sh
 
-At this moment you should be able to try the samples that comes with OpenNI. 
-Goto OpenNI's folder and browse to /Samples/Bin/Release (use terminal). 
-Run ./NiViewer. You should see a window with the RGB and Depth feed from the kinect
+At this moment you should now be able to run the samples in OpenNI. 
+Go to OpenNI's folder and browse to /Samples/Bin/Release (use terminal). 
+Run ./NiViewer. You should now be looking at a window with the RGB and Depth feed coming from the kinect
 
 	
 Linux:
-	Check Avin2's SensorKinect repo for more information.
+	Check Avin2's SensorKinect repo (@github) for more information.
 	
 	
 
