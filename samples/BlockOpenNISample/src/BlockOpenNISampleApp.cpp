@@ -135,19 +135,21 @@ void BlockOpenNISampleAppApp::setup()
 #if defined(CINDER_MSW) || defined(CINDER_LINUX)
 	string xmlpath = "resources/configIR.xml";
 #elif defined(CINDER_MAC) || defined(CINDER_COCOA) || defined(CINDER_COCOA_TOUCH)				
-	string xmlpath = getAppPath() + "/Contents/Resources/configIR.xml";
+	string xmlpath = getResourcePath() + "/configIR.xml";
 #endif
 	
 	// console() << "Loading config xml:" << xmlpath << std::endl;
-	_device0 = _manager->createDevice( xmlpath, true );
+	_device0 = _manager->createDevice( xmlpath );
 	
 	//_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );	// Create manually.
 	
 	if( !_device0 ) 
 	{
-		DEBUG_MESSAGE( "(App)  Couldn't init device0\n" );
-		exit( 0 );
+		DEBUG_MESSAGE( "(App)  Can't find a kinect device\n" );
+        this->quit();
+        this->shutdown();
 	}
+    
 	//_device0->setPrimaryBuffer( V::NODE_TYPE_DEPTH );	// Broken!! TODO: Will be available with new version. Still a way to do it is as below
 	//_manager->mPrimaryBuffer = _device0->getDepthGenerator();	// Hack on generator wait update
 	_device0->setHistogram( true );	// Enable histogram depth map (RGB8bit bitmap)
@@ -190,13 +192,11 @@ void BlockOpenNISampleAppApp::draw()
 
 void BlockOpenNISampleAppApp::keyDown( KeyEvent event )
 {
-#ifdef WIN32
 	if( event.getCode() == KeyEvent::KEY_ESCAPE )
 	{
 		this->quit();
 		this->shutdown();
 	}
-#endif
 }
 
 CINDER_APP_BASIC( BlockOpenNISampleAppApp, RendererGl )

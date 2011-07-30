@@ -15,11 +15,11 @@
 		00B784B60FF439BC000DE1D7 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B20FF439BC000DE1D7 /* CoreAudio.framework */; };
 		00BAE65A0E7ED9C10018A608 /* BlockOpenNISampleApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00BAE6590E7ED9C10018A608 /* BlockOpenNISampleApp.cpp */; };
 		00CCAF15116A9FEE008396D5 /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 00CCAF14116A9FEE008396D5 /* CinderApp.icns */; };
+		1C9C1A1D13E48EAF00C23E77 /* VOpenNIDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C9C1A1813E48EAF00C23E77 /* VOpenNIDevice.cpp */; };
+		1C9C1A1E13E48EAF00C23E77 /* VOpenNIDeviceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C9C1A1913E48EAF00C23E77 /* VOpenNIDeviceManager.cpp */; };
+		1C9C1A1F13E48EAF00C23E77 /* VOpenNINetwork.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C9C1A1A13E48EAF00C23E77 /* VOpenNINetwork.cpp */; };
+		1C9C1A2013E48EAF00C23E77 /* VOpenNIUser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C9C1A1B13E48EAF00C23E77 /* VOpenNIUser.cpp */; };
 		2042DF4013C764500062DCE9 /* configIR.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2042DF3F13C764500062DCE9 /* configIR.xml */; };
-		472B10B71349789200637FB8 /* OpenNIRecorder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 472B10B31349789200637FB8 /* OpenNIRecorder.cpp */; };
-		472B10B81349789200637FB8 /* VOpenNIDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 472B10B41349789200637FB8 /* VOpenNIDevice.cpp */; };
-		472B10B91349789200637FB8 /* VOpenNIDeviceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 472B10B51349789200637FB8 /* VOpenNIDeviceManager.cpp */; };
-		472B10BA1349789200637FB8 /* VOpenNIUser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 472B10B61349789200637FB8 /* VOpenNIUser.cpp */; };
 		5323E6B20EAFCA74003A9687 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B10EAFCA74003A9687 /* CoreVideo.framework */; };
 		5323E6B60EAFCA7E003A9687 /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B50EAFCA7E003A9687 /* QTKit.framework */; };
 		53E3CDFC0E86099300238D2B /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53E3CDFB0E86099300238D2B /* Carbon.framework */; };
@@ -37,14 +37,24 @@
 		00CCAF14116A9FEE008396D5 /* CinderApp.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = CinderApp.icns; sourceTree = SOURCE_ROOT; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		1C9C1A0C13E48EA500C23E77 /* SkeletonPoseDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkeletonPoseDetector.h; sourceTree = "<group>"; };
+		1C9C1A0D13E48EA500C23E77 /* VOpenNIBone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOpenNIBone.h; sourceTree = "<group>"; };
+		1C9C1A0E13E48EA500C23E77 /* VOpenNICallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOpenNICallback.h; sourceTree = "<group>"; };
+		1C9C1A0F13E48EA500C23E77 /* VOpenNICommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOpenNICommon.h; sourceTree = "<group>"; };
+		1C9C1A1013E48EA500C23E77 /* VOpenNIDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOpenNIDevice.h; sourceTree = "<group>"; };
+		1C9C1A1113E48EA500C23E77 /* VOpenNIDeviceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOpenNIDeviceManager.h; sourceTree = "<group>"; };
+		1C9C1A1213E48EA500C23E77 /* VOpenNIHeaders.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOpenNIHeaders.h; sourceTree = "<group>"; };
+		1C9C1A1313E48EA500C23E77 /* VOpenNINetwork.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOpenNINetwork.h; sourceTree = "<group>"; };
+		1C9C1A1413E48EA500C23E77 /* VOpenNISurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOpenNISurface.h; sourceTree = "<group>"; };
+		1C9C1A1513E48EA500C23E77 /* VOpenNIUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOpenNIUser.h; sourceTree = "<group>"; };
+		1C9C1A1813E48EAF00C23E77 /* VOpenNIDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VOpenNIDevice.cpp; sourceTree = "<group>"; };
+		1C9C1A1913E48EAF00C23E77 /* VOpenNIDeviceManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VOpenNIDeviceManager.cpp; sourceTree = "<group>"; };
+		1C9C1A1A13E48EAF00C23E77 /* VOpenNINetwork.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VOpenNINetwork.cpp; sourceTree = "<group>"; };
+		1C9C1A1B13E48EAF00C23E77 /* VOpenNIUser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VOpenNIUser.cpp; sourceTree = "<group>"; };
 		2042DF3F13C764500062DCE9 /* configIR.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = configIR.xml; path = ../resources/configIR.xml; sourceTree = SOURCE_ROOT; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* BlockOpenNISample_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockOpenNISample_Prefix.pch; sourceTree = "<group>"; };
-		472B10B31349789200637FB8 /* OpenNIRecorder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OpenNIRecorder.cpp; path = ../../../src/OpenNIRecorder.cpp; sourceTree = "<group>"; };
-		472B10B41349789200637FB8 /* VOpenNIDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VOpenNIDevice.cpp; path = ../../../src/VOpenNIDevice.cpp; sourceTree = "<group>"; };
-		472B10B51349789200637FB8 /* VOpenNIDeviceManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VOpenNIDeviceManager.cpp; path = ../../../src/VOpenNIDeviceManager.cpp; sourceTree = "<group>"; };
-		472B10B61349789200637FB8 /* VOpenNIUser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VOpenNIUser.cpp; path = ../../../src/VOpenNIUser.cpp; sourceTree = "<group>"; };
 		5323E6B10EAFCA74003A9687 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
 		5323E6B50EAFCA7E003A9687 /* QTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QTKit.framework; path = /System/Library/Frameworks/QTKit.framework; sourceTree = "<absolute>"; };
 		53E3CDFB0E86099300238D2B /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
@@ -76,10 +86,6 @@
 		080E96DDFE201D6D7F000001 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				472B10B31349789200637FB8 /* OpenNIRecorder.cpp */,
-				472B10B41349789200637FB8 /* VOpenNIDevice.cpp */,
-				472B10B51349789200637FB8 /* VOpenNIDeviceManager.cpp */,
-				472B10B61349789200637FB8 /* VOpenNIUser.cpp */,
 				00BAE6590E7ED9C10018A608 /* BlockOpenNISampleApp.cpp */,
 			);
 			name = Source;
@@ -120,9 +126,57 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		1C9C19C113E48E7000C23E77 /* Addons */ = {
+			isa = PBXGroup;
+			children = (
+				1C9C19C313E48E8000C23E77 /* openni */,
+			);
+			name = Addons;
+			sourceTree = "<group>";
+		};
+		1C9C19C313E48E8000C23E77 /* openni */ = {
+			isa = PBXGroup;
+			children = (
+				1C9C1A1613E48EAF00C23E77 /* src */,
+				1C9C19C413E48EA500C23E77 /* include */,
+			);
+			name = openni;
+			sourceTree = "<group>";
+		};
+		1C9C19C413E48EA500C23E77 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				1C9C1A0C13E48EA500C23E77 /* SkeletonPoseDetector.h */,
+				1C9C1A0D13E48EA500C23E77 /* VOpenNIBone.h */,
+				1C9C1A0E13E48EA500C23E77 /* VOpenNICallback.h */,
+				1C9C1A0F13E48EA500C23E77 /* VOpenNICommon.h */,
+				1C9C1A1013E48EA500C23E77 /* VOpenNIDevice.h */,
+				1C9C1A1113E48EA500C23E77 /* VOpenNIDeviceManager.h */,
+				1C9C1A1213E48EA500C23E77 /* VOpenNIHeaders.h */,
+				1C9C1A1313E48EA500C23E77 /* VOpenNINetwork.h */,
+				1C9C1A1413E48EA500C23E77 /* VOpenNISurface.h */,
+				1C9C1A1513E48EA500C23E77 /* VOpenNIUser.h */,
+			);
+			name = include;
+			path = ../../../include;
+			sourceTree = "<group>";
+		};
+		1C9C1A1613E48EAF00C23E77 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				1C9C1A1813E48EAF00C23E77 /* VOpenNIDevice.cpp */,
+				1C9C1A1913E48EAF00C23E77 /* VOpenNIDeviceManager.cpp */,
+				1C9C1A1A13E48EAF00C23E77 /* VOpenNINetwork.cpp */,
+				1C9C1A1B13E48EAF00C23E77 /* VOpenNIUser.cpp */,
+			);
+			name = src;
+			path = ../../../src;
+			sourceTree = "<group>";
+		};
 		29B97314FDCFA39411CA2CEA /* BlockOpenNISample */ = {
 			isa = PBXGroup;
 			children = (
+				1C9C19C113E48E7000C23E77 /* Addons */,
 				29B97315FDCFA39411CA2CEA /* Headers */,
 				080E96DDFE201D6D7F000001 /* Source */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -219,10 +273,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				00BAE65A0E7ED9C10018A608 /* BlockOpenNISampleApp.cpp in Sources */,
-				472B10B71349789200637FB8 /* OpenNIRecorder.cpp in Sources */,
-				472B10B81349789200637FB8 /* VOpenNIDevice.cpp in Sources */,
-				472B10B91349789200637FB8 /* VOpenNIDeviceManager.cpp in Sources */,
-				472B10BA1349789200637FB8 /* VOpenNIUser.cpp in Sources */,
+				1C9C1A1D13E48EAF00C23E77 /* VOpenNIDevice.cpp in Sources */,
+				1C9C1A1E13E48EAF00C23E77 /* VOpenNIDeviceManager.cpp in Sources */,
+				1C9C1A1F13E48EAF00C23E77 /* VOpenNINetwork.cpp in Sources */,
+				1C9C1A2013E48EAF00C23E77 /* VOpenNIUser.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,7 +286,7 @@
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CINDER_PATH = ../../../../..;
+				CINDER_PATH = /Volumes/Development/Development/Cinder;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
@@ -243,18 +297,20 @@
 				GCC_PREFIX_HEADER = BlockOpenNISample_Prefix.pch;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
+					"\"$(OPENNI_PATH)/Include\"",
 					"\"$(CINDER_PATH)/boost\"",
-					"\"$(CINDER_PATH)/blocks/BlockOpenNI/include/OpenNI\"",
+					"\"$(CINDER_PATH)/include\"",
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				OPENNI_PATH = /Volumes/Development/Development/OpenNI;
 				OTHER_LDFLAGS = (
 					"\"$(CINDER_PATH)/lib/libcinder_d.a\"",
 					"-lcurl",
-					"\"$(CINDER_PATH)/blocks/BlockOpenNI/lib/macosx/libOpenNI.dylib\"",
+					"\"$(OPENNI_PATH)/Lib/libOpenNI.dylib\"",
 				);
 				PRODUCT_NAME = BlockOpenNISample;
-				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/include\" ../include \"$(CINDER_PATH)/blocks/BlockOpenNI/include\"";
+				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/boost\" \"$(OPENNI_PATH)/Include\"";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -262,7 +318,7 @@
 		C01FCF4C08A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CINDER_PATH = ../../../../..;
+				CINDER_PATH = /Volumes/Development/Development/Cinder;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_FAST_MATH = YES;
@@ -274,19 +330,21 @@
 				GCC_PREFIX_HEADER = BlockOpenNISample_Prefix.pch;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
+					"\"$(OPENNI_PATH)/Include\"",
 					"\"$(CINDER_PATH)/boost\"",
-					"\"$(CINDER_PATH)/blocks/BlockOpenNI/include/OpenNI\"",
+					"\"$(CINDER_PATH)/include\"",
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				OPENNI_PATH = /Volumes/Development/Development/OpenNI;
 				OTHER_LDFLAGS = (
 					"\"$(CINDER_PATH)/lib/libcinder.a\"",
 					"-lcurl",
-					"\"$(CINDER_PATH)/blocks/BlockOpenNI/lib/macosx/libOpenNI.dylib\"",
+					"\"$(OPENNI_PATH)/Lib/libOpenNI.dylib\"",
 				);
 				PRODUCT_NAME = BlockOpenNISample;
 				STRIP_INSTALLED_PRODUCT = YES;
-				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/include\" ../include \"$(CINDER_PATH)/blocks/BlockOpenNI/include\"";
+				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/boost\" \"$(OPENNI_PATH)/Include\"";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -300,7 +358,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/boost\"";
-				LIBRARY_SEARCH_PATHS = ../../../lib/macos;
+				LIBRARY_SEARCH_PATHS = "\"$(OPENNI_PATH)/Lib\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PREBINDING = NO;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";
@@ -317,7 +375,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/boost\"";
-				LIBRARY_SEARCH_PATHS = ../../../lib/macos;
+				LIBRARY_SEARCH_PATHS = "\"$(OPENNI_PATH)/Lib\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PREBINDING = NO;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";

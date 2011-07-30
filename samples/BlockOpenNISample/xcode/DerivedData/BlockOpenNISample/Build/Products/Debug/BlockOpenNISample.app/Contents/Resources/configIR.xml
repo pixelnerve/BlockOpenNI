@@ -39,7 +39,9 @@
 			</Configuration>
 		</Node>
 		
-		<Node type="User" name="User1"></Node>
-		<Node type="Scene" name="Scene1"></Node>
+		<!--
+		<Node type="Audio" name="Audio1">
+		</Node>
+		-->
 	</ProductionNodes>
 </OpenNI>

@@ -184,7 +184,7 @@ void BlockOpenNISampleAppApp::setup()
 #if defined(CINDER_MSW) || defined(CINDER_LINUX)
 	string xmlpath = "resources/configIR.xml";
 #elif defined(CINDER_MAC) || defined(CINDER_COCOA) || defined(CINDER_COCOA_TOUCH)				
-	string xmlpath = getAppPath() + "/Contents/Resources/configIR.xml";
+	string xmlpath = getResourcePath() + "/configIR.xml";
 #endif
 	
 	// console() << "Loading config xml:" << xmlpath << std::endl;
@@ -192,8 +192,9 @@ void BlockOpenNISampleAppApp::setup()
 	//_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_USER );	// Create manually.
 	if( !_device0 ) 
 	{
-		DEBUG_MESSAGE( "(App)  Couldn't init device0\n" );
-		exit( 0 );
+		DEBUG_MESSAGE( "(App)  Can't find a kinect device\n" );
+        quit();
+        shutdown();
 	}
 	_device0->setHistogram( true );	// Enable histogram depth map (RGB8bit bitmap)
 	_manager->start();
