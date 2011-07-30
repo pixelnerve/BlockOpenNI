@@ -113,6 +113,7 @@
     <ClCompile Include="..\..\..\src\OpenNIRecorder.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNIDevice.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNIDeviceManager.cpp" />
+    <ClCompile Include="..\..\..\src\VOpenNINetwork.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNIUser.cpp" />
     <ClCompile Include="..\src\MultipleKinectsApp.cpp" />
   </ItemGroup>
@@ -125,6 +126,7 @@
     <ClInclude Include="..\..\..\include\VOpenNIDevice.h" />
     <ClInclude Include="..\..\..\include\VOpenNIDeviceManager.h" />
     <ClInclude Include="..\..\..\include\VOpenNIHeaders.h" />
+    <ClInclude Include="..\..\..\include\VOpenNINetwork.h" />
     <ClInclude Include="..\..\..\include\VOpenNISurface.h" />
     <ClInclude Include="..\..\..\include\VOpenNIUser.h" />
     <ClInclude Include="..\include\Resources.h" />

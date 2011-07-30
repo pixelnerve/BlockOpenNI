@@ -473,7 +473,7 @@ namespace V
 				//
 				// Update *ALL* positions
 				//
-				skelCap.GetSkeletonJointPosition( mId, (XnSkeletonJoint)(g_UsedBoneIndexArray[index]), jointPos );
+				skelCap.GetSkeletonJointPosition( mId, (XnSkeletonJoint)(g_BoneIndexArray[index]), jointPos );
 				skelCap.GetSkeletonJointOrientation( mId, (XnSkeletonJoint)(g_BoneIndexArray[index]), jointOri );
 
 				//if( jointOri.fConfidence >= 0.25f || jointPos.fConfidence >= 0.25f )
@@ -601,12 +601,11 @@ namespace V
 			renderBone( SKEL_RIGHT_HIP, SKEL_RIGHT_KNEE, width, height, depth, true, renderDepth );
 			renderBone( SKEL_RIGHT_KNEE, SKEL_RIGHT_FOOT, width, height, depth, true, renderDepth );
 
-			renderBone( SKEL_WAIST, SKEL_RIGHT_HIP, width, height, depth, true, renderDepth );
-			renderBone( SKEL_WAIST, SKEL_LEFT_HIP, width, height, depth, true, renderDepth );
+			renderBone( SKEL_TORSO, SKEL_RIGHT_HIP, width, height, depth, true, renderDepth );
+			renderBone( SKEL_TORSO, SKEL_LEFT_HIP, width, height, depth, true, renderDepth );
 //			renderBone( SKEL_LEFT_HIP, SKEL_RIGHT_HIP, width, height, depth, true, renderDepth );
 
-			renderBone( SKEL_WAIST, SKEL_TORSO, width, height, depth, true, renderDepth );
-			renderBone( SKEL_WAIST, SKEL_NECK, width, height, depth, true, renderDepth );
+			renderBone( SKEL_TORSO, SKEL_NECK, width, height, depth, true, renderDepth );
 
 			// Restore texture
 			//glEnable( GL_TEXTURE_2D );
@@ -679,12 +678,11 @@ namespace V
 			renderBone( SKEL_RIGHT_HIP, SKEL_RIGHT_KNEE, false );
 			renderBone( SKEL_RIGHT_KNEE, SKEL_RIGHT_FOOT, false );
             
-			renderBone( SKEL_WAIST, SKEL_RIGHT_HIP, false );
-			renderBone( SKEL_WAIST, SKEL_LEFT_HIP, false );
+			renderBone( SKEL_TORSO, SKEL_RIGHT_HIP, false );
+			renderBone( SKEL_TORSO, SKEL_LEFT_HIP, false );
 //            renderBone( SKEL_LEFT_HIP, SKEL_RIGHT_HIP, width, height, depth, true, renderDepth );
             
-			renderBone( SKEL_WAIST, SKEL_TORSO, false );
-			renderBone( SKEL_WAIST, SKEL_NECK, false );
+			renderBone( SKEL_TORSO, SKEL_NECK, false );
 
 			// Restore texture
 			//glEnable( GL_TEXTURE_2D );
