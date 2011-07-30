@@ -23,11 +23,11 @@ How to use
 ----------
 
 You need to install the sensor drivers, OpenNI and NITE.
-Note! PrimeSense drivers do not work with the Kinect (works with Xtion from Asus). 
+Note! PrimeSense drivers do not work with the Kinect. 
 
 
 So here's a step-by-step installationg guide:
-(The versions used below are the latest unstable at the time of writing)
+(The links you'll find here are the latest unstable at the time of writing)
 OpenNI 1.3.2.3
 Nite 1.4.1.2
 SensorKinect 5.0.3.4
