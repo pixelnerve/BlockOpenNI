@@ -96,7 +96,7 @@ namespace V
 
 		void calcDepthImageRealWorld();
 		void calcDepthImageRealWorld( uint16_t* pixelData, XnPoint3D* worldData );
-		void getLabelMap( uint32_t labelId, uint16_t* labelMap );
+		void getLabelMap( uint32_t labelId, uint16_t* labelMap, bool recordAllUsers=false );
 		void calculateHistogram();
 
 		void setLimits( int nearClip, int farClip );

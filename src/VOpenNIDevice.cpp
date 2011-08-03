@@ -1160,7 +1160,12 @@ namespace V
 	}
 
 
-	void OpenNIDevice::getLabelMap( uint32_t userId, uint16_t* labelMap )
+
+	//
+	// recordAllUsers: Allows to get a buffer with all users, instead of a specific one
+	// User ids start with 1, not 0. 0 would do the same as recordAllUsers=true
+	//
+	void OpenNIDevice::getLabelMap( uint32_t userId, uint16_t* labelMap, bool recordAllUsers )
 	{
 		if( !_sceneAnalyzer.IsValid() ) return;
 
@@ -1188,8 +1193,42 @@ namespace V
 			uint16_t* pDepth = _depthData;
 			uint16_t* map = labelMap;
 
-			//int index = 0;
-			for( int j=0; j<depthHeight; j++ )
+
+			if( userId == 0 || recordAllUsers )
+			{
+				for( int i=0; i<depthWidth*depthHeight; i++ )
+				{
+					XnLabel label = *labels;
+
+					if( label > 0 )
+					{
+						// If a user pixel, take depth value from our depthmap
+						*map = *pDepth;
+					}
+
+					pDepth++;
+					map++;
+					labels++;
+				}
+			}
+			else
+			{
+				for( int i=0; i<depthWidth*depthHeight; i++ )
+				{
+					XnLabel label = *labels;
+
+					if( label == userId )
+					{
+						// If a user pixel, take depth value from our depthmap
+						*map = *pDepth;
+					}
+
+					pDepth++;
+					map++;
+					labels++;
+				}
+			}
+			/*for( int j=0; j<depthHeight; j++ )
 			{
 				for( int i=0; i<depthWidth; i++ )
 				{
@@ -1200,17 +1239,12 @@ namespace V
 						// If a user pixel, take depth value from our depthmap
 						*map = *pDepth;
 					}
-					//else
-					//{
-					//	// If pixel is null, set color to black
-					//	*map = 0;
-					//}
 
 					pDepth++;
 					map++;
 					labels++;
 				}
-			}
+			}*/
 		}
 	}
 
