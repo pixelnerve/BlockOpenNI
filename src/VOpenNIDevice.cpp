@@ -253,6 +253,25 @@ namespace V
 				DEBUG_MESSAGE( ss2.str().c_str() );
 				device->_isFirstCalibrationComplete = true;
 			}
+            
+			for( UserListenerList::iterator it=device->mListeners.begin(); it!=device->mListeners.end(); ++it )
+			{
+				UserListener* listener = *it;
+				//UserListener* listener = listeners[i];
+				//if( listener )
+				{
+					UserEvent event;
+					event.mId = nId;
+					//event.mUser = OpenNIDeviceManager::Instance().getUser( nId );
+                    
+					std::stringstream ss2;
+					ss2 << "Send calibration-end event: '" << nId << std::endl;
+					DEBUG_MESSAGE( ss2.str().c_str() );
+                    
+					listener->onCalibrationEnd( event );
+				}
+			}
+            
 
 			// Start tracking
 			device->getUserGenerator()->GetSkeletonCap().StartTracking( nId );

@@ -61,6 +61,8 @@ namespace V
 	public:
 		virtual void onNewUser( UserEvent event ) {};
 		virtual void onLostUser( UserEvent event ) {};
+		virtual void onCalibrationStart( UserEvent event ) {};
+		virtual void onCalibrationEnd( UserEvent event ) {};
 	};
 
 

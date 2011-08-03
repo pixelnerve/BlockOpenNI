@@ -14,11 +14,11 @@
 		00B784B50FF439BC000DE1D7 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B10FF439BC000DE1D7 /* AudioUnit.framework */; };
 		00B784B60FF439BC000DE1D7 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B20FF439BC000DE1D7 /* CoreAudio.framework */; };
 		00BAE65A0E7ED9C10018A608 /* BlockOpenNISampleApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00BAE6590E7ED9C10018A608 /* BlockOpenNISampleApp.cpp */; };
-		00CCAF15116A9FEE008396D5 /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 00CCAF14116A9FEE008396D5 /* CinderApp.icns */; };
 		1C9C1A1D13E48EAF00C23E77 /* VOpenNIDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C9C1A1813E48EAF00C23E77 /* VOpenNIDevice.cpp */; };
 		1C9C1A1E13E48EAF00C23E77 /* VOpenNIDeviceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C9C1A1913E48EAF00C23E77 /* VOpenNIDeviceManager.cpp */; };
 		1C9C1A1F13E48EAF00C23E77 /* VOpenNINetwork.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C9C1A1A13E48EAF00C23E77 /* VOpenNINetwork.cpp */; };
 		1C9C1A2013E48EAF00C23E77 /* VOpenNIUser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C9C1A1B13E48EAF00C23E77 /* VOpenNIUser.cpp */; };
+		1CE3002D13E5D95E00B6CB1A /* Atlantis.icns in Resources */ = {isa = PBXBuildFile; fileRef = 1CE3002C13E5D95E00B6CB1A /* Atlantis.icns */; };
 		2042DF4013C764500062DCE9 /* configIR.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2042DF3F13C764500062DCE9 /* configIR.xml */; };
 		5323E6B20EAFCA74003A9687 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B10EAFCA74003A9687 /* CoreVideo.framework */; };
 		5323E6B60EAFCA7E003A9687 /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B50EAFCA7E003A9687 /* QTKit.framework */; };
@@ -34,7 +34,6 @@
 		00B784B10FF439BC000DE1D7 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
 		00B784B20FF439BC000DE1D7 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		00BAE6590E7ED9C10018A608 /* BlockOpenNISampleApp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BlockOpenNISampleApp.cpp; path = ../src/BlockOpenNISampleApp.cpp; sourceTree = SOURCE_ROOT; };
-		00CCAF14116A9FEE008396D5 /* CinderApp.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = CinderApp.icns; sourceTree = SOURCE_ROOT; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		1C9C1A0C13E48EA500C23E77 /* SkeletonPoseDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkeletonPoseDetector.h; sourceTree = "<group>"; };
@@ -51,6 +50,7 @@
 		1C9C1A1913E48EAF00C23E77 /* VOpenNIDeviceManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VOpenNIDeviceManager.cpp; sourceTree = "<group>"; };
 		1C9C1A1A13E48EAF00C23E77 /* VOpenNINetwork.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VOpenNINetwork.cpp; sourceTree = "<group>"; };
 		1C9C1A1B13E48EAF00C23E77 /* VOpenNIUser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VOpenNIUser.cpp; sourceTree = "<group>"; };
+		1CE3002C13E5D95E00B6CB1A /* Atlantis.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Atlantis.icns; path = ../../../../../../HeinekenLightStreaks/xcode/Atlantis.icns; sourceTree = "<group>"; };
 		2042DF3F13C764500062DCE9 /* configIR.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = configIR.xml; path = ../resources/configIR.xml; sourceTree = SOURCE_ROOT; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
@@ -198,8 +198,8 @@
 			isa = PBXGroup;
 			children = (
 				2042DF3F13C764500062DCE9 /* configIR.xml */,
+				1CE3002C13E5D95E00B6CB1A /* Atlantis.icns */,
 				8D1107310486CEB800E47090 /* Info.plist */,
-				00CCAF14116A9FEE008396D5 /* CinderApp.icns */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -260,8 +260,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00CCAF15116A9FEE008396D5 /* CinderApp.icns in Resources */,
 				2042DF4013C764500062DCE9 /* configIR.xml in Resources */,
+				1CE3002D13E5D95E00B6CB1A /* Atlantis.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
