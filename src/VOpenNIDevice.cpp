@@ -24,8 +24,10 @@
 
 
 // Make sure we link libraries
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #pragma comment( lib, "openni.lib" )	// 32bit version
 //#pragma comment( lib, "openNI64.lib" )	// 64bit version
+#endif
 
 
 namespace V
@@ -55,62 +57,66 @@ namespace V
 			return;
 		}
 
+        
 		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
 
 		// Add new user if not available already
-		if( !OpenNIDeviceManager::Instance().hasUser(nId) )
+//		if( !OpenNIDeviceManager::Instance().hasUser(nId) )
 		{
+            // Add new user
 			OpenNIDeviceManager::Instance().addUser( &generator, nId );
-			//std::stringstream ss;
-			//ss << "New User: '" << nId << "'     Total: " << OpenNIDeviceManager::Instance().getNumOfUsers() << std::endl;
-			//DEBUG_MESSAGE( ss.str().c_str() );
+
+            XnUInt32 epochTime = 0;
+            xnOSGetEpochTime( &epochTime );
+            std::stringstream ss;
+            ss << epochTime << " " << "New User '" << nId << "' / '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
+            DEBUG_MESSAGE( ss.str().c_str() );
 
 
-			// TODO! Enable slot change. For now only slot 0 is used
-			int slot = 0;
-
-			if( device->isOneTimeCalibration() && device->_isFirstCalibrationComplete )
-			{
-				// Load Data For Each User
-				if( device->getUserGenerator()->GetSkeletonCap().IsCalibrationData(slot) )
-				{
-					device->getUserGenerator()->GetSkeletonCap().LoadCalibrationData( nId, slot );
-					device->getUserGenerator()->GetSkeletonCap().StartTracking( nId );
-
-					std::stringstream ss2;
-					ss2 << "Loaded Calibration Data For User: '" << nId << "'  Slot: " << slot << std::endl;
-					DEBUG_MESSAGE( ss2.str().c_str() );
-				}
-			}
-			else
-			{
-				std::stringstream ss2;
-				ss2 << "Start Pose Detection For User: '" << nId << "'  Slot: " << slot << std::endl;
-				DEBUG_MESSAGE( ss2.str().c_str() );
-				generator.GetPoseDetectionCap().StartPoseDetection( g_strPose, nId );
-			}
+            // Only use calibration is asked for it. 
+            // Usually it is set to TRUE by default
+            if( device->_enableUserCalibration )
+            {
+                // TODO! Enable slot change. For now only slot 0 is used
+                int slot = 0;
+                
+                if( device->isOneTimeCalibration() && device->_isFirstCalibrationComplete )
+                {
+                    // Load Data For Each User
+                    if( device->getUserGenerator()->GetSkeletonCap().IsCalibrationData(slot) )
+                    {
+                        device->getUserGenerator()->GetSkeletonCap().LoadCalibrationData( nId, slot );
+                        device->getUserGenerator()->GetSkeletonCap().StartTracking( nId );
+                        
+                        std::stringstream ss2;
+                        ss2 << "Loaded Calibration Data For User: '" << nId << "'  Slot: " << slot << std::endl;
+                        DEBUG_MESSAGE( ss2.str().c_str() );
+                    }
+                }
+                else
+                {
+                    std::stringstream ss2;
+                    ss2 << "Start Pose Detection For User: '" << nId << "'  Slot: " << slot << std::endl;
+                    DEBUG_MESSAGE( ss2.str().c_str() );
+                    generator.GetPoseDetectionCap().StartPoseDetection( g_strPose, nId );
+                }                
+            }
 
 
 			// Send events to all listeners
-			//UserListenerList listeners = device->getListeners();
-			//for( uint32_t i=0; i<listeners.size(); i++ )
-			//if( !device->mListeners.empty() )
 			for( UserListenerList::iterator it=device->mListeners.begin(); it!=device->mListeners.end(); ++it )
 			{
-				UserListener* listener = *it;
-				//UserListener* listener = listeners[i];
 				//if( listener )
 				{
 					UserEvent event;
 					event.mId = nId;
 					//event.mUser = OpenNIDeviceManager::Instance().getUser( nId );
 
+					(*it)->onNewUser( event );
+
 					std::stringstream ss2;
 					ss2 << "Send new user event: '" << nId << std::endl;
 					DEBUG_MESSAGE( ss2.str().c_str() );
-
-					listener->onNewUser( event );
-					//(*it)->onNewUser( event );
 				}
 			}
 		}
@@ -122,34 +128,28 @@ namespace V
 		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
 
 		// Remove user
-		//if( device->getUser(nId) )
-				//device->removeUser( nId );
-		//OpenNIDeviceManager::Instance().setText( ss.str() );
-		if( OpenNIDeviceManager::Instance().hasUser(nId) )
+//		if( OpenNIDeviceManager::Instance().hasUser(nId) )
 		{
-			//std::stringstream ss;
-			//ss << "Lost User: '" << nId << "'    Total: " << OpenNIDeviceManager::Instance().getNumOfUsers() << std::endl;
-			//DEBUG_MESSAGE( ss.str().c_str() );
-
 			OpenNIDeviceManager::Instance().removeUser( nId );
 
 			for( UserListenerList::iterator it=device->mListeners.begin(); it!=device->mListeners.end(); ++it )
 			{
-				UserListener* listener = *it;
-				//if( listener )
-				{
-					UserEvent event;
-					event.mId = nId;
-					//event.mUser = OpenNIUserRef();
+                UserEvent event;
+                event.mId = nId;
+                //event.mUser = OpenNIUserRef();
 
-					std::stringstream ss2;
-					ss2 << "Send lost user event: '" << nId << std::endl;
-					DEBUG_MESSAGE( ss2.str().c_str() );
+                std::stringstream ss2;
+                ss2 << "Send lost user event: '" << nId << std::endl;
+                DEBUG_MESSAGE( ss2.str().c_str() );
 
-					listener->onLostUser( event );
-					//(*it)->onLostUser( event );
-				}
+                (*it)->onLostUser( event );
 			}
+            
+            XnUInt32 epochTime = 0;
+            xnOSGetEpochTime( &epochTime );
+            std::stringstream ss;
+            ss << epochTime << " " << "Lost User '" << nId << "'.     Total: '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
+            DEBUG_MESSAGE( ss.str().c_str() );
 		}
 	}
 
@@ -162,10 +162,6 @@ namespace V
 
 		OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
 		
-		// If calibration done, skip this
-		//if( device->_isFirstCalibrationComplete )
-		//	return;
-
 		//if( OpenNIDeviceManager::Instance().hasUser(nId) ) 
 		{
 			OpenNIDeviceManager::Instance().setText( ss.str() );
@@ -175,6 +171,8 @@ namespace V
 			device->getUserGenerator()->GetSkeletonCap().RequestCalibration( nId, TRUE );
 		}
 	}
+    
+    
 	// Callback: pose detection in progress
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_PoseInProgress( xn::PoseDetectionCapability& pose, const XnChar* strPose, XnUserID nId, XnPoseDetectionStatus poseError, void* pCookie )
 	{
@@ -184,6 +182,8 @@ namespace V
 // 
 // 		OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
 	}
+    
+    
 	// Callback: When the user is out of pose
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_PoseDetectionEnd( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie )
 	{
@@ -193,6 +193,7 @@ namespace V
 // 
 // 		OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
+    
 
 	// Callback: Started calibration
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationStart( xn::SkeletonCapability& capability, XnUserID nId, void* pCookie )
@@ -204,6 +205,7 @@ namespace V
 // 		OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 
+    
 	// Callback: Started calibration
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationInProgress( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie )
 	{
@@ -214,6 +216,7 @@ namespace V
 // 		OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 
+    
 	// Callback: Finished calibration
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationEnd( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie )
 	{
@@ -268,7 +271,7 @@ namespace V
 					ss2 << "Send calibration-end event: '" << nId << std::endl;
 					DEBUG_MESSAGE( ss2.str().c_str() );
                     
-					listener->onCalibrationEnd( event );
+					listener->onCalibrationComplete( event );
 				}
 			}
             
@@ -334,6 +337,7 @@ namespace V
 
 		_isDepthInverted = false;
 		_enableHistogram = false;
+        _enableUserCalibration = true;
 
 		_primaryGen	= NULL;
 		_imageGen	= NULL;
@@ -779,13 +783,17 @@ namespace V
 			DEBUG_MESSAGE( "Supplied user generator doesn't support skeleton\n" );
 			return false;
 		}
-		_userGen.RegisterUserCallbacks( &V::OpenNIDevice::Callback_NewUser, &V::OpenNIDevice::Callback_LostUser, this, hUserCallbacks );
-	
+		_status = _userGen.RegisterUserCallbacks( &V::OpenNIDevice::Callback_NewUser, &V::OpenNIDevice::Callback_LostUser, this, hUserCallbacks );
+        CHECK_RC( _status, "Register User Callbacks" );
 
 		// New version for NITE 1.4.*.*
-		_userGen.GetSkeletonCap().RegisterToCalibrationStart( &V::OpenNIDevice::Callback_CalibrationStart, this, hCalibrationStartCallback );
-		_userGen.GetSkeletonCap().RegisterToCalibrationInProgress( &V::OpenNIDevice::Callback_CalibrationInProgress, this, hCalibrationInProgressCallback );
-		_userGen.GetSkeletonCap().RegisterToCalibrationComplete( &V::OpenNIDevice::Callback_CalibrationEnd, this, hCalibrationEndCallback );
+		_status = _userGen.GetSkeletonCap().RegisterToCalibrationStart( &V::OpenNIDevice::Callback_CalibrationStart, this, hCalibrationStartCallback );
+        CHECK_RC( _status, "Register Calibration Start" );
+		_status = _userGen.GetSkeletonCap().RegisterToCalibrationInProgress( &V::OpenNIDevice::Callback_CalibrationInProgress, this, hCalibrationInProgressCallback );
+        CHECK_RC( _status, "Register Calibration InProgress" );
+		_status = _userGen.GetSkeletonCap().RegisterToCalibrationComplete( &V::OpenNIDevice::Callback_CalibrationEnd, this, hCalibrationEndCallback );
+        CHECK_RC( _status, "Register Calibration Complete" );
+        
 		// Old version
 		//_userGen.GetSkeletonCap().RegisterCalibrationCallbacks( &V::OpenNIDevice::Callback_CalibrationStart, &V::OpenNIDevice::Callback_CalibrationEnd, this, hCalibrationCallbacks );
 		if( _userGen.GetSkeletonCap().NeedPoseForCalibration() )
@@ -802,8 +810,10 @@ namespace V
 			//XnCallbackHandle hPoseCallbacks = 0;
 
 			// New version for NITE 1.4.*.*
-			_userGen.GetPoseDetectionCap().RegisterToPoseDetected( &V::OpenNIDevice::Callback_PoseDetected, this, hPoseDetectedCallback );
-			_userGen.GetPoseDetectionCap().RegisterToPoseInProgress( &V::OpenNIDevice::Callback_PoseInProgress, this, hPoseInProgressCallback );
+			_status = _userGen.GetPoseDetectionCap().RegisterToPoseDetected( &V::OpenNIDevice::Callback_PoseDetected, this, hPoseDetectedCallback );
+            CHECK_RC( _status, "Register Pose Detected" );
+			_status = _userGen.GetPoseDetectionCap().RegisterToPoseInProgress( &V::OpenNIDevice::Callback_PoseInProgress, this, hPoseInProgressCallback );
+            CHECK_RC( _status, "Register Pose InProgress" );
 			// Old version
 			//_userGen.GetPoseDetectionCap().RegisterToPoseCallbacks( &V::OpenNIDevice::Callback_PoseDetected, &V::OpenNIDevice::Callback_PoseDetectionEnd, this, hPoseCallbacks );
 			_userGen.GetSkeletonCap().GetCalibrationPose( g_strPose );
@@ -1179,12 +1189,7 @@ namespace V
 	}
 
 
-
-	//
-	// recordAllUsers: Allows to get a buffer with all users, instead of a specific one
-	// User ids start with 1, not 0. 0 would do the same as recordAllUsers=true
-	//
-	void OpenNIDevice::getLabelMap( uint32_t userId, uint16_t* labelMap, bool recordAllUsers )
+	void OpenNIDevice::getLabelMap( uint32_t userId, uint16_t* labelMap )
 	{
 		if( !_sceneAnalyzer.IsValid() ) return;
 
@@ -1212,42 +1217,8 @@ namespace V
 			uint16_t* pDepth = _depthData;
 			uint16_t* map = labelMap;
 
-
-			if( userId == 0 || recordAllUsers )
-			{
-				for( int i=0; i<depthWidth*depthHeight; i++ )
-				{
-					XnLabel label = *labels;
-
-					if( label > 0 )
-					{
-						// If a user pixel, take depth value from our depthmap
-						*map = *pDepth;
-					}
-
-					pDepth++;
-					map++;
-					labels++;
-				}
-			}
-			else
-			{
-				for( int i=0; i<depthWidth*depthHeight; i++ )
-				{
-					XnLabel label = *labels;
-
-					if( label == userId )
-					{
-						// If a user pixel, take depth value from our depthmap
-						*map = *pDepth;
-					}
-
-					pDepth++;
-					map++;
-					labels++;
-				}
-			}
-			/*for( int j=0; j<depthHeight; j++ )
+			//int index = 0;
+			for( int j=0; j<depthHeight; j++ )
 			{
 				for( int i=0; i<depthWidth; i++ )
 				{
@@ -1258,12 +1229,17 @@ namespace V
 						// If a user pixel, take depth value from our depthmap
 						*map = *pDepth;
 					}
+					//else
+					//{
+					//	// If pixel is null, set color to black
+					//	*map = 0;
+					//}
 
 					pDepth++;
 					map++;
 					labels++;
 				}
-			}*/
+			}
 		}
 	}
 
@@ -1550,7 +1526,8 @@ namespace V
 		mIsContextInit = false;
 
 		_idCount = 0;
-		mMaxNumOfUsers = 2;
+		mMaxNumOfUsers = 20;
+        mNumOfUsers = 0;
 		mDebugInfo = "No debug information\n";
 #ifdef WIN32
 		mNetworkMsg = NULL;
@@ -1572,7 +1549,7 @@ namespace V
 
 	OpenNIDeviceManager::~OpenNIDeviceManager()
 	{
-		destroyAll();
+		Release();
 	}
 
 	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( const std::string& xmlFile/*=""*/, bool allocUserIfNoNode/*=false */ )
@@ -1991,16 +1968,22 @@ namespace V
 	}
 
 
-	void OpenNIDeviceManager::destroyAll( void )
+	void OpenNIDeviceManager::Release( void )
 	{
+        this->stop();
+        
 		// Stop thread
-		if( USE_THREAD && _isRunning )
+		if( USE_THREAD )
 		{
-			_isRunning = false;
-			DEBUG_MESSAGE( "Stop running thread on device manager\n" );
-			assert( _thread );
-			_thread->join();
-			_thread.reset();
+            if( _thread )
+            {
+                DEBUG_MESSAGE( "Stop running thread on device manager\n" );
+                assert( _thread );
+                DEBUG_MESSAGE( "Wait for thread to be done\n" );
+                _thread->join();
+                DEBUG_MESSAGE( "Delete thread's memory\n" );
+                _thread.reset();                
+            }
 		}
 
 		mPrimaryGen = NULL;
@@ -2053,25 +2036,60 @@ namespace V
 
 	OpenNIUserRef OpenNIDeviceManager::addUser( xn::UserGenerator* userGen, uint32_t id )
 	{
+        
+        if( USE_THREAD ) 
+		{
+            _mutex.lock();
+			//boost::mutex::scoped_lock lock( _mutex );
+		}
+         
+        
 		// Currently works with first device only.
 		OpenNIDeviceList::iterator it = mDevices.begin();
 
 		OpenNIUserRef newUser = OpenNIUserRef( new OpenNIUser(id, it->get()) );
 		mUserList.push_back( newUser );
+        mNumOfUsers ++;
+        
+        
+        if( USE_THREAD ) 
+		{
+            _mutex.unlock();
+		}
+         
+        
 		return newUser;
 	}
 
 	void OpenNIDeviceManager::removeUser( uint32_t id )
 	{
+        if( USE_THREAD ) 
+		{
+            _mutex.lock();
+			//boost::mutex::scoped_lock lock( _mutex );
+		}
+
+        // bail out is no users left
 		if( mUserList.empty() ) return;
+        
+        // Remove user with id
 		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); ++it )
 		{
 			if( id == (*it)->getId() )
 			{
 				mUserList.remove( *it );
+                mNumOfUsers --;
 				return;
 			}
 		}
+        
+        
+        if( USE_THREAD ) 
+		{
+            _mutex.unlock();
+		}
+         
+
 	}
 
 
@@ -2114,7 +2132,6 @@ namespace V
 
 	OpenNIUserRef OpenNIDeviceManager::getUser( int id )
 	{
-		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
 		//boost::lock_guard<boost::mutex> lock( _mutex );
 		//boost::mutex::scoped_lock lock( _mutex );
 
@@ -2203,23 +2220,15 @@ namespace V
 
 	void OpenNIDeviceManager::update()
 	{
-		if( USE_THREAD ) 
-		{
-			//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
-			boost::mutex::scoped_lock lock( _mutex );
-		}
-
-
-
 		XnStatus rc = XN_STATUS_OK;
-		if( mPrimaryGen != NULL )
+		if( mPrimaryGen )
 		{
 			rc = _context.WaitOneUpdateAll( *mPrimaryGen );
 		}
 		else
 		{
-			rc = _context.WaitNoneUpdateAll();	// Make sure we are not blocking the application to the refresh-rate of a camera/generator (usually 30fps)
-			//rc = _context.WaitAndUpdateAll();
+			//rc = _context.WaitNoneUpdateAll();
+			rc = _context.WaitAndUpdateAll();
 			//rc = _context.WaitAnyUpdateAll();
 		}
 		//if( rc != XN_STATUS_OK )
@@ -2231,6 +2240,13 @@ namespace V
 		//}
 
 
+        if( USE_THREAD ) 
+		{
+            _mutex.lock();
+			//boost::mutex::scoped_lock lock( _mutex );
+		}
+
+        
 		if( !USE_NEW_WRAPPER_CODE )
 		{
 			// Handle device update
@@ -2245,12 +2261,17 @@ namespace V
 				(*it)->update();
 			}
 		}
+        
 
-
-
-		// Sleep
 		if( USE_THREAD ) 
-			boost::this_thread::sleep( boost::posix_time::millisec(1) ); 
+		{
+            _mutex.unlock();
+		}
+
+        
+        // Sleep
+//		if( USE_THREAD ) 
+//          boost::this_thread::sleep( boost::posix_time::millisec(1) ); 
 	}
 
 

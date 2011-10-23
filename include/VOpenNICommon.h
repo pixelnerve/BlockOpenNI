@@ -6,15 +6,21 @@
 #undef min
 #undef max
 #include <gl/gl.h>
-#define DEBUG_MESSAGE( x ) OutputDebugStringA( x )
+#ifndef DEBUG_MESSAGE
+    #define DEBUG_MESSAGE( x ) OutputDebugStringA( x )
+#endif
 #elif defined(linux) || defined(__linux) || defined(__linux__)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
-#define DEBUG_MESSAGE( x ) printf( "%s", x )
+#ifndef DEBUG_MESSAGE
+    #define DEBUG_MESSAGE( x ) printf( "%s", x )
+#endif
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
-#define DEBUG_MESSAGE( x ) printf( "%s", x )
+#ifndef DEBUG_MESSAGE
+    #define DEBUG_MESSAGE( x ) printf( "%s", x )
+#endif
 #else
 #error "Unknown platform"
 #endif
@@ -27,7 +33,7 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/thread.hpp>
 
-// Std∫
+// Std
 //#define _HAS_ITERATOR_DEBUGGING 0
 //#define _SECURE_SCL 0
 #include <string>

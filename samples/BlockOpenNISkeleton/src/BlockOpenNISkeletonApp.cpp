@@ -10,7 +10,7 @@
 
 
 #include "cinder/app/AppBasic.h"
-#include "cinder/imageio.h"
+#include "cinder/ImageIo.h"
 #include "cinder/gl/gl.h"
 #include "cinder/gl/Texture.h"
 #include "VOpenNIHeaders.h"
@@ -149,6 +149,7 @@ public:	// Members
 
 	gl::Texture				mColorTex;
 	gl::Texture				mDepthTex;
+    std::map< int, gl::Texture> mUsersTexMap;
 	gl::Texture				mOneUserTex;	 
 	
 	uint16_t*				pixels;
@@ -168,10 +169,10 @@ BlockOpenNISampleAppApp::~BlockOpenNISampleAppApp()
 
 void BlockOpenNISampleAppApp::prepareSettings( Settings *settings )
 {
-	settings->setFrameRate( 120 );
+	settings->setFrameRate( 60 );
 	settings->setWindowSize( WIDTH, HEIGHT );
 	settings->setFullScreenSize( WIDTH, HEIGHT );
-	settings->setTitle( "Heineken Streaks" );
+	settings->setTitle( "BlockOpenNI Skeleton Sample" );
 	//settings->setShouldQuit( true );
 	//settings->setFullScreen( true );
 }
@@ -179,23 +180,26 @@ void BlockOpenNISampleAppApp::prepareSettings( Settings *settings )
 
 void BlockOpenNISampleAppApp::setup()
 {
+    V::OpenNIDeviceManager::USE_THREAD = false;
 	_manager = V::OpenNIDeviceManager::InstancePtr();
 
-#if defined(CINDER_MSW) || defined(CINDER_LINUX)
-	string xmlpath = "resources/configIR.xml";
-#elif defined(CINDER_MAC) || defined(CINDER_COCOA) || defined(CINDER_COCOA_TOUCH)				
-	string xmlpath = getResourcePath() + "/configIR.xml";
-#endif
+    
+//#if defined(CINDER_MSW) || defined(CINDER_LINUX)
+//    std::string xmlpath = "resources/configIR.xml";
+//#elif defined(CINDER_MAC) || defined(CINDER_COCOA) || defined(CINDER_COCOA_TOUCH)				
+//    std::string xmlpath = getResourcePath() + "/configIR.xml";
+//#endif
 	
 	// console() << "Loading config xml:" << xmlpath << std::endl;
-	_device0 = _manager->createDevice( xmlpath, true );
-	//_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_USER );	// Create manually.
+	//_device0 = _manager->createDevice( xmlpath, true );
+	_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_USER | V::NODE_TYPE_SCENE );	// Create manually.
 	if( !_device0 ) 
 	{
 		DEBUG_MESSAGE( "(App)  Can't find a kinect device\n" );
         quit();
         shutdown();
 	}
+    _device0->addListener( this );
 	_device0->setHistogram( true );	// Enable histogram depth map (RGB8bit bitmap)
 	_manager->start();
 
@@ -210,20 +214,34 @@ void BlockOpenNISampleAppApp::setup()
 	mOneUserTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT, format );
 }
 
+
 void BlockOpenNISampleAppApp::mouseDown( MouseEvent event )
 {
 }
 
+
 void BlockOpenNISampleAppApp::update()
 {	
+    if( !V::OpenNIDeviceManager::USE_THREAD )
+    {
+        _manager->update();
+    }
+    
 	// Update textures
 	mColorTex.update( getColorImage() );
 	mDepthTex.update( getDepthImage24() );	// Histogram
 
 	// Uses manager to handle users.
-	if( _manager->hasUser(1) ) 
-		mOneUserTex.update( getUserImage(1) );
+//	if( _manager->hasUser(1) ) 
+//		mOneUserTex.update( getUserImage(1) );
+    for( std::map<int, gl::Texture>::iterator it=mUsersTexMap.begin();
+        it != mUsersTexMap.end();
+        ++it )
+    {
+        it->second.update( getUserImage( it->first ) );
+    }
 }
+
 
 void BlockOpenNISampleAppApp::draw()
 {
@@ -242,12 +260,34 @@ void BlockOpenNISampleAppApp::draw()
 	float yoff = 10;
 	glEnable( GL_TEXTURE_2D );
 	gl::color( cinder::ColorA(1, 1, 1, 1) );
-	if( _manager->hasUsers() && _manager->hasUser(1) ) gl::draw( mOneUserTex, Rectf( 0, 0, WIDTH, HEIGHT) );
+//	if( _manager->hasUsers() && _manager->hasUser(1) ) 
+//        gl::draw( mOneUserTex, Rectf( 0, 0, WIDTH, HEIGHT) );
 	gl::draw( mDepthTex, Rectf( xoff, yoff, xoff+sx, yoff+sy) );
 	gl::draw( mColorTex, Rectf( xoff+sx*1, yoff, xoff+sx*2, yoff+sy) );
 
+    
+    // Render all user textures
+    
+    int xpos = 5;
+    int ypos = sy+10;
+    for( std::map<int, gl::Texture>::iterator it=mUsersTexMap.begin();
+            it != mUsersTexMap.end();
+            ++it )
+    {
+        //int id = it->first;
+        gl::Texture tex = it->second;
+    
+        gl::draw( tex, Rectf(xpos, ypos, xpos+sx, ypos+sy) );
+        xpos += sx;
+        if( xpos > (sx+10) )
+        {
+            xpos = 5;
+            ypos += sy+10;
+        }
+    }
+    
 
-	if( _manager->hasUser(1) )
+	if( _manager->hasUsers() )
 	{
 		gl::disable( GL_TEXTURE_2D );
 		// Render skeleton if available
@@ -274,11 +314,15 @@ void BlockOpenNISampleAppApp::keyDown( KeyEvent event )
 void BlockOpenNISampleAppApp::onNewUser( V::UserEvent event )
 {
 	app::console() << "New User Added With ID: " << event.mId << std::endl;
+    mUsersTexMap.insert( std::make_pair( event.mId, gl::Texture(KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT) ) );
 }
+
 
 void BlockOpenNISampleAppApp::onLostUser( V::UserEvent event )
 {
 	app::console() << "User Lost With ID: " << event.mId << std::endl;
+    mUsersTexMap.erase( event.mId );
 }
 
-CINDER_APP_BASIC( BlockOpenNISampleAppApp, RendererGl )
+
+CINDER_APP_BASIC( BlockOpenNISampleAppApp, RendererGl(4) )

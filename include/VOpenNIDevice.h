@@ -62,7 +62,7 @@ namespace V
 		virtual void onNewUser( UserEvent event ) {};
 		virtual void onLostUser( UserEvent event ) {};
 		virtual void onCalibrationStart( UserEvent event ) {};
-		virtual void onCalibrationEnd( UserEvent event ) {};
+		virtual void onCalibrationComplete( UserEvent event ) {};
 	};
 
 
@@ -98,7 +98,7 @@ namespace V
 
 		void calcDepthImageRealWorld();
 		void calcDepthImageRealWorld( uint16_t* pixelData, XnPoint3D* worldData );
-		void getLabelMap( uint32_t labelId, uint16_t* labelMap, bool recordAllUsers=false );
+		void getLabelMap( uint32_t labelId, uint16_t* labelMap );
 		void calculateHistogram();
 
 		void setLimits( int nearClip, int farClip );
@@ -154,6 +154,9 @@ namespace V
 
 		void setHistogram( bool flag )				{ _enableHistogram = flag;	}
 		bool getHistogram()							{ return _enableHistogram;	}
+
+        void setUserCalibration( bool flag )		{ _enableUserCalibration = flag;	}
+		bool getUserCalibration()					{ return _enableUserCalibration;	}
 
 		boost::uint8_t* getColorMap();
 		boost::uint16_t* getIRMap();
@@ -235,6 +238,7 @@ namespace V
 
 		bool					_isDepthInverted;
 		bool					_enableHistogram;
+        bool                    _enableUserCalibration;
 
 		//std::string				_configFile;
 
@@ -473,7 +477,7 @@ namespace V
 		//OpenNIDevice* createDevice__( const std::string& xmlFile, bool allocUserIfNoNode=false );
 		//OpenNIDevice* createDevice__( int nodeTypeFlags );
 		//void destroyDevice( OpenNIDevice* device );
-		void destroyAll( void );
+		void            Release();
 
 		void			Init();
 
@@ -514,6 +518,9 @@ namespace V
 		}
 
 		void update();
+        
+        
+        void stop() { _isRunning = false; }
 
 	private:
 		// Copy constructor
@@ -534,7 +541,7 @@ namespace V
 
 		boost::shared_ptr<boost::thread> _thread;
 		boost::mutex					 _mutex;
-		//boost::recursive_mutex			 _rmutex;
+
 		bool							_isRunning;
 
 		xn::Context						_context;
