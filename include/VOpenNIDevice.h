@@ -105,7 +105,7 @@ namespace V
 
 		void setPrimaryBuffer( int type );
 		void setMirrorMode( int type, bool flag );
-
+        
 		/*
 			Get Horizontal FOV
 		*/
@@ -157,6 +157,9 @@ namespace V
 
         void setUserCalibration( bool flag )		{ _enableUserCalibration = flag;	}
 		bool getUserCalibration()					{ return _enableUserCalibration;	}
+        
+        void setConfidenceThreshold( float value )  { _confidenceThreshold = value;     }
+        float getConfidenceThreshold()              { return _confidenceThreshold;      } 
 
 		boost::uint8_t* getColorMap();
 		boost::uint16_t* getIRMap();
@@ -186,6 +189,8 @@ namespace V
 		float getMaxDistance()						{ return mMaxDistance; }
 
 		void setAlignWithDepthGenerator();
+
+        void resetUser( int userId );
 
 		//const std::string& getDebugInfo()			{ return mDebugInfo;}
 
@@ -298,6 +303,9 @@ namespace V
 		// User Calibrations
 		bool					_isOneTimeCalibration;
 		bool					_isFirstCalibrationComplete;
+        
+        // User confidence threshold (below this value, user is not computed. Still it remains active until openni removes it)
+        float                   _confidenceThreshold;
 
 		xn::Generator*			_primaryGen;
 		xn::DepthGenerator		_depthGen;

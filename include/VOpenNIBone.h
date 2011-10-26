@@ -38,8 +38,8 @@ namespace V
 		float orientation[9];
 
 		// The confidence in the orientation 
-		//float positionConfidence;
+		float positionConfidence;
 		// The confidence in the orientation 
-		//float orientationConfidence;
+		float orientationConfidence;
 	};
 }

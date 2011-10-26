@@ -118,6 +118,8 @@ namespace V
 
 			mBoneList.push_back( bone );
 		}
+        
+        mAvgPosConfidence = 0.0f;
 
 
 		// TODO: Fix this. Remove hardcoded values
@@ -423,6 +425,9 @@ namespace V
 			XnPoint3D projectivePos;
 			xn::SkeletonCapability skelCap = user->GetSkeletonCap();
 
+            
+            mAvgPosConfidence = 0.0f;
+            
 			int index = 0;
 			for( OpenNIBoneList::iterator it = mBoneList.begin(); it != mBoneList.end(); ++it )
 			//for( int i=0; i<BONE_COUNT; i++ )
@@ -476,37 +481,39 @@ namespace V
 				skelCap.GetSkeletonJointPosition( mId, (XnSkeletonJoint)(g_BoneIndexArray[index]), jointPos );
 				skelCap.GetSkeletonJointOrientation( mId, (XnSkeletonJoint)(g_BoneIndexArray[index]), jointOri );
 
-				//if( jointOri.fConfidence >= 0.25f || jointPos.fConfidence >= 0.25f )
-				{
-					OpenNIBone* bone = *it;
-					//OpenNIBone* bone = mBoneList[i];
+                OpenNIBone* bone = *it;
 
-					//bone->id = g_BoneIndexArray[i];
-					// Is active?
-					bone->active = true;
+                //bone->id = g_BoneIndexArray[i];
+                // Is active?
+                bone->active = true;
 
-					// Position (actual position in world coordinates)
-					bone->position[0] = jointPos.position.X;
-					bone->position[1] = jointPos.position.Y;
-					bone->position[2] = jointPos.position.Z;
-					//memcpy( bone->position, (float*)&jointPos.position.X, 3*sizeof(float) );
+                // Position (actual position in world coordinates)
+                bone->position[0] = jointPos.position.X;
+                bone->position[1] = jointPos.position.Y;
+                bone->position[2] = jointPos.position.Z;
+                //memcpy( bone->position, (float*)&jointPos.position.X, 3*sizeof(float) );
 
-					// Compute Projective position coordinates
-					mDepthGen->ConvertRealWorldToProjective( 1, &jointPos.position, &projectivePos );
-					bone->positionProjective[0] = (projectivePos.X > 0) ? projectivePos.X : 0;
-					bone->positionProjective[1] = (projectivePos.Y > 0) ? projectivePos.Y : 0;
-					bone->positionProjective[2] = (projectivePos.Z > 0) ? projectivePos.Z : 0;
+                // Compute Projective position coordinates
+                mDepthGen->ConvertRealWorldToProjective( 1, &jointPos.position, &projectivePos );
+                bone->positionProjective[0] = (projectivePos.X > 0) ? projectivePos.X : 0;
+                bone->positionProjective[1] = (projectivePos.Y > 0) ? projectivePos.Y : 0;
+                bone->positionProjective[2] = (projectivePos.Z > 0) ? projectivePos.Z : 0;
 
-					// Orientation
-					memcpy( bone->orientation, jointOri.orientation.elements, 9*sizeof(float) );
+                // Orientation
+                memcpy( bone->orientation, jointOri.orientation.elements, 9*sizeof(float) );
 
-					// Confidence
-					//bone->positionConfidence = jointPos.fConfidence;
-					//bone->orientationConfidence = jointOri.fConfidence;
-				}
+                // Confidence
+                bone->positionConfidence = jointPos.fConfidence;
+                bone->orientationConfidence = jointOri.fConfidence;
+                
+                mAvgPosConfidence += jointPos.fConfidence;
 
 				index++;
 			}
+            
+            // Compute average position confidence.
+            mAvgPosConfidence /= (float)mBoneList.size();
+            
 
 			mUserState = USER_TRACKING;
 		}
@@ -525,13 +532,27 @@ namespace V
 				DEBUG_MESSAGE( ss.str().c_str() );
 				return;
 			}
+            
+            
+            // Low confidence, bail out!
+            if( mAvgPosConfidence < _device->getConfidenceThreshold() )
+                return;
 
+            
+            
+            //
 			// Old OpenGL rendering method. it's fine for now.
+            //
 			glBegin( GL_QUADS );
 			int index = 1;
 			for( std::vector<OpenNIBone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); ++it, index++ )
 			{
 				OpenNIBone* bone = *it;
+
+
+                // Bail out in case any bone is not confident
+                if( bone->positionConfidence < 0.5f || bone->orientationConfidence < 0.5f )
+                    break;
 
 				XnPoint3D point;
 				point.X = bone->positionProjective[0];
@@ -625,6 +646,11 @@ namespace V
 				DEBUG_MESSAGE( ss.str().c_str() );
 				return;
 			}
+            
+            // Low confidence, bail out!
+            if( mAvgPosConfidence < _device->getConfidenceThreshold() )
+                return;
+
 
 			// Old OpenGL rendering method. it's fine for now.
 			glBegin( GL_QUADS );

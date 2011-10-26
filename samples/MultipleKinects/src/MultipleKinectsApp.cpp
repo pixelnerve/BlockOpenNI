@@ -52,6 +52,8 @@ public:
 	double					mPrevTime, mCurrTime, mFrameTime;
 };
 
+
+
 void MultipleKinectsApp::setup()
 {
 	// Init openni and devices
@@ -61,6 +63,7 @@ void MultipleKinectsApp::setup()
 	// Init 2 devices with image/depth generators. TODO: User generator not working properly.
 	mManager->createDevices( 2, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );
 
+    
 	// Create device 0 is available
 	try 
 	{
@@ -70,7 +73,7 @@ void MultipleKinectsApp::setup()
 		mDevice0->setMirrorMode( V::NODE_TYPE_DEPTH, true );
 	} catch( std::exception e )
 	{
-		app::console() << e.what() << std::endl;
+		app::console() << "Device 0 : " << e.what() << std::endl;
 	}
 
 
@@ -83,7 +86,7 @@ void MultipleKinectsApp::setup()
 		mDevice1->setMirrorMode( V::NODE_TYPE_DEPTH, true );
 	} catch( std::exception e )
 	{
-		app::console() << e.what() << std::endl;
+		app::console() << "Device 1  " << e.what() << std::endl;
 	}
 
 	// Create textures
@@ -104,6 +107,11 @@ void MultipleKinectsApp::mouseDown( MouseEvent event )
 
 void MultipleKinectsApp::update()
 {
+    if( !V::OpenNIDeviceManager::USE_THREAD )
+    {
+        mManager->update();
+    }
+    
 	// Update textures
 	if( mDevice0 )
 	{

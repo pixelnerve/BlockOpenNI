@@ -309,7 +309,18 @@ void BlockOpenNISampleAppApp::keyDown( KeyEvent event )
 		this->quit();
 		this->shutdown();
 	}
+
+
+    int key = (int)event.getChar();    
+    app::console() << "Key: " << key << std::endl;
+    if( key >= 49 && key <= 57 )
+    {
+        app::console() << "Reset: " << (key-48) << std::endl;
+        _device0->resetUser( key-48 ); // Abort calibration. the user still remains active.
+    }
+//    app::console() << "Org User Count: " << _device0->getUserGenerator()->GetNumberOfUsers() << std::endl;
 }
+
 
 void BlockOpenNISampleAppApp::onNewUser( V::UserEvent event )
 {
@@ -325,4 +336,4 @@ void BlockOpenNISampleAppApp::onLostUser( V::UserEvent event )
 }
 
 
-CINDER_APP_BASIC( BlockOpenNISampleAppApp, RendererGl(4) )
+CINDER_APP_BASIC( BlockOpenNISampleAppApp, RendererGl )

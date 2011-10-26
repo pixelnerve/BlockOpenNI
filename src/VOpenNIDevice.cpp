@@ -379,6 +379,8 @@ namespace V
 
 		_isOneTimeCalibration = false;
 		_isFirstCalibrationComplete = false;
+        
+        _confidenceThreshold = 0.3f;
 
 		mNearClipPlane = 0;
 		mFarClipPlane = 6000;
@@ -693,6 +695,17 @@ namespace V
 		}
 
 	}
+    
+    
+    void OpenNIDevice::resetUser( int userId )
+    {
+        if( _userGen )
+        {
+            _status = _userGen.GetSkeletonCap().Reset( userId );
+            CHECK_RC( _status, "Resetting user" );
+        }
+    }
+
 
 	void OpenNIDevice::release()
 	{
@@ -1105,18 +1118,6 @@ namespace V
 							//_backDepthData[index] = *pDepth;
 						}
 					}
-					/*else
-					{
-						if( _enableHistogram )
-						{
-							pTex->nRed = 0;
-							pTex->nGreen = 0;
-							pTex->nBlue = 0;
-						}
-
-						*backDepthPtr = 0;
-						//_depthData[index] = 0;
-					}*/
 
 					*backDepthPtr = (*backDepthPtr << mDepthShiftValue);
 					//_backDepthData[index] = _backDepthData[index] << mDepthShiftValue;
@@ -1200,46 +1201,42 @@ namespace V
 		if( labels )
 		{
 			int depthWidth = _sceneMetaData->XRes();
-			int depthHeight = _sceneMetaData->YRes();
-
-			
+			int depthHeight = _sceneMetaData->YRes();			
 			//std::cout << "depth width:" << depthWidth << ", height:" << depthHeight << std::endl;
 			
-			//if( !labelMap )
-				//labelMap = new uint16_t[depthWidth * depthHeight];
-
-
-			// Same as below but no label checking
-			//memcpy( labelMap, pDepth, depthWidth*depthHeight*sizeof(uint16_t) );
-
-			// Copy label map
-			memset( labelMap, 0, depthWidth*depthHeight*sizeof(uint16_t) );
-			uint16_t* pDepth = _depthData;
-			uint16_t* map = labelMap;
-
-			//int index = 0;
-			for( int j=0; j<depthHeight; j++ )
-			{
-				for( int i=0; i<depthWidth; i++ )
-				{
-					XnLabel label = *labels;
-
-					if( label == userId )
-					{
-						// If a user pixel, take depth value from our depthmap
-						*map = *pDepth;
-					}
-					//else
-					//{
-					//	// If pixel is null, set color to black
-					//	*map = 0;
-					//}
-
-					pDepth++;
-					map++;
-					labels++;
-				}
-			}
+            
+            // If userId is 0, return the common users map
+            if( userId <= 0 )
+            {
+                // Same as below but no label checking
+                memcpy( labelMap, pDepth, depthWidth*depthHeight*sizeof(uint16_t) );   
+            }
+            else
+            {
+                // Copy label map
+                memset( labelMap, 0, depthWidth*depthHeight*sizeof(uint16_t) );
+                uint16_t* pDepth = _depthData;
+                uint16_t* map = labelMap;
+                
+                //int index = 0;
+                for( int j=0; j<depthHeight; j++ )
+                {
+                    for( int i=0; i<depthWidth; i++ )
+                    {
+                        XnLabel label = *labels;
+                        
+                        if( label == userId )
+                        {
+                            // If a user pixel, take depth value from our depthmap
+                            *map = *pDepth;
+                        }
+                        
+                        pDepth++;
+                        map++;
+                        labels++;
+                    }
+                }                
+            }
 		}
 	}
 
@@ -1605,6 +1602,21 @@ namespace V
 		return dev;
 	}
 
+    
+    
+    void OpenNIDeviceManager::Init()
+	{
+		_context.Init();
+        
+		XnCallbackHandle hDummy;
+		_context.RegisterToErrorStateChange( onErrorStateChanged, NULL, hDummy );
+        
+		mIsContextInit = true;
+	}
+    
+    
+    
+    
 	
 	/* ORIGINAL VERSION **
 	 
@@ -1921,17 +1933,6 @@ namespace V
 	}
 
 
-	void OpenNIDeviceManager::Init()
-	{
-		_context.Init();
-
-		XnCallbackHandle hDummy;
-		_context.RegisterToErrorStateChange( onErrorStateChanged, NULL, hDummy );
-
-		mIsContextInit = true;
-	}
-
-
 
 	void OpenNIDeviceManager::AllocateMem( uint32_t width, uint32_t height )
 	{
@@ -1952,6 +1953,9 @@ namespace V
 			return OpenNIDevice::Ref();
 		}
 
+//        OpenNIDeviceList::iterator currDevice;
+//        currDevice = std::find( mDevices.begin(), mDevices.end(), deviceIdx );
+//        return *currDevice;        
 		int count = 0;
 		OpenNIDeviceList::iterator currDevice = mDevices.begin();
 		while( 1 )
@@ -2096,7 +2100,6 @@ namespace V
 
 	V::OpenNIUserRef OpenNIDeviceManager::getFirstUser()
 	{
-		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
 		//boost::mutex::scoped_lock lock( _mutex );
 
 		if( mUserList.empty() ) return OpenNIUserRef();
@@ -2105,7 +2108,6 @@ namespace V
 
 	V::OpenNIUserRef OpenNIDeviceManager::getSecondUser()
 	{
-		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
 		//boost::mutex::scoped_lock lock( _mutex );
 
 		if( mUserList.size() < 2 ) return OpenNIUserRef();
@@ -2121,10 +2123,8 @@ namespace V
 		return OpenNIUserRef();
 	}
 
-
 	V::OpenNIUserRef OpenNIDeviceManager::getLastUser()
 	{
-		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
 		//boost::mutex::scoped_lock lock( _mutex );
 
 		return ( mUserList.empty() ) ? OpenNIUserRef() : (*mUserList.end());
@@ -2132,10 +2132,8 @@ namespace V
 
 	OpenNIUserRef OpenNIDeviceManager::getUser( int id )
 	{
-		//boost::lock_guard<boost::mutex> lock( _mutex );
 		//boost::mutex::scoped_lock lock( _mutex );
 
-		//if( mUserList.empty() ) return OpenNIUserRef();
 		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); ++it )
 		{
 			if( id == (*it)->getId() )
@@ -2148,7 +2146,6 @@ namespace V
 
 	bool OpenNIDeviceManager::hasUser( int32_t id )
 	{
-		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
 		//boost::mutex::scoped_lock lock( _mutex );
 
 		if( mUserList.empty() ) return false;
@@ -2163,7 +2160,6 @@ namespace V
 
 	bool OpenNIDeviceManager::hasUsers()
 	{ 
-		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
 		//boost::mutex::scoped_lock lock( _mutex );
 
 		return !mUserList.empty(); 
@@ -2172,15 +2168,13 @@ namespace V
 
 	const uint32_t OpenNIDeviceManager::getNumOfUsers()
 	{ 
-		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
-		///boost::mutex::scoped_lock lock( _mutex );
+		//boost::mutex::scoped_lock lock( _mutex );
 
 		return (uint32_t)mUserList.size();	
 	}
 	
 	OpenNIUserList OpenNIDeviceManager::getUserList()
 	{ 
-		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
 		//boost::mutex::scoped_lock lock( _mutex );
 
 		return mUserList;	
@@ -2206,11 +2200,6 @@ namespace V
 			_isRunning = true;
 		}
 
-/*		// Start all devices
-		for( OpenNIDeviceList::iterator it = mDevices.begin(); it != mDevices.end(); it++ )
-		{
-			(*it)->start();
-		}*/
 
 		// Start generators
 		_context.StartGeneratingAll();
@@ -2275,6 +2264,7 @@ namespace V
 	}
 
 
+	
 	void OpenNIDeviceManager::renderJoints( float width, float height, float depth, float pointSize, bool renderDepth )
 	{
 		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
@@ -2707,10 +2697,10 @@ namespace V
 								(float)bone->position[0], 
 								(float)bone->position[1], 
 								(float)bone->position[2], 
-								(float)-1, 
-								(float)-1, 
-								(float)-1, 
-								(float)-1
+								(float)-1.0f, 
+								(float)-1.0f, 
+								(float)-1.0f, 
+								(float)-1.0f
 							};
 			int result = mNetworkMsg->Send<float>( buff, 10 );
 

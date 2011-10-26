@@ -115,6 +115,8 @@ namespace V
 		uint32_t		mWidth;		//
 		uint32_t		mHeight;	// Current dimensions of depthmap
 
+        float           mAvgPosConfidence;
+        
 		OpenNIBoneList	mBoneList;
 
 		XnBoundingBox3D mBoundingBox;
