@@ -1797,8 +1797,9 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				//status = _context.CreateProductionTree( nodeInfo, dev->_depthGen ); 
+				// Old version
 				//status = _context.CreateProductionTree( nodeInfo ); 
-				//status = nodeInfo.GetInstance( dev->_depthGen );
+				//status = nodeInfo.GetInstance( dev->_userGen );
 
 				UserGenerator gen;
 				status = nodeInfo.GetInstance( gen );
@@ -1822,8 +1823,6 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				//status = _context.CreateProductionTree( nodeInfo, dev->_sceneAnalyzer ); 
-				//status = _context.CreateProductionTree( nodeInfo ); 
-				//status = nodeInfo.GetInstance( gen );
 
 				SceneAnalyzer gen;
 				status = nodeInfo.GetInstance( gen );
@@ -1857,6 +1856,14 @@ namespace V
 			}
 		}
 
+        
+        
+        // Initialize devices
+        for( uint32_t i=0; i<mDeviceCount; i++ )
+		{
+			OpenNIDeviceRef dev = OpenNIDeviceRef( new OpenNIDevice( i, this) );
+            dev->init( nodeTypeFlags );
+        }
 	}
 
 

@@ -813,7 +813,7 @@
 				</dict>
 			</array>
 		</dict>
-		<real>341336526.93752599</real>
+		<real>341336970.99146098</real>
 		<string>{6596, 3901}</string>
 		<string>{9498, 0}</string>
 		<dict>
@@ -909,9 +909,9 @@
 				</dict>
 			</array>
 		</dict>
-		<real>341336526.93743098</real>
-		<string>{56009, 2554}</string>
-		<string>{55657, 9}</string>
+		<real>341336970.99136502</real>
+		<string>{49024, 3553}</string>
+		<string>{51845, 0}</string>
 		<dict>
 			<key>$class</key>
 			<dict>
@@ -1634,7 +1634,7 @@
 				<integer>154</integer>
 			</dict>
 			<key>NS.time</key>
-			<real>341336524.33207297</real>
+			<real>341336968.30584002</real>
 		</dict>
 		<dict>
 			<key>$classes</key>
@@ -1645,7 +1645,7 @@
 			<key>$classname</key>
 			<string>NSDate</string>
 		</dict>
-		<string>Today at 5:42 PM</string>
+		<string>Today at 5:49 PM</string>
 		<integer>234</integer>
 		<string>MultipleKinects</string>
 		<dict>
@@ -2546,10 +2546,10 @@
 				</dict>
 			</array>
 		</dict>
-		<real>341336526.93802601</real>
-		<string>{56009, 2554}</string>
-		<string>{55657, 9}</string>
-		<string>OpenNIDeviceManager::removeUser( uint32_t id )</string>
+		<real>341336970.99195498</real>
+		<string>{49024, 3553}</string>
+		<string>{51845, 0}</string>
+		<string>OpenNIDeviceManager::createDevices( uint32_t deviceCount, int nodeTypeFlags )</string>
 		<string>Xcode.IDEKit.EditorDocument.SourceCode</string>
 		<dict>
 			<key>$class</key>
@@ -5339,7 +5339,7 @@
 				</dict>
 			</array>
 		</dict>
-		<real>341336526.93848002</real>
+		<real>341336970.99234498</real>
 		<string>{6596, 3901}</string>
 		<string>{9498, 0}</string>
 		<string>class OpenNIDevice</string>
