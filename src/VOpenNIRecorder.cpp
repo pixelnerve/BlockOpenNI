@@ -24,7 +24,7 @@ namespace V
 		mIsRecording = false;
 		mIsPaused = false;
 		mNodeFlags = NODE_TYPE_NONE;
-		mDevice = OpenNIDeviceRef();
+		mDevice = device;
 	}
 
 

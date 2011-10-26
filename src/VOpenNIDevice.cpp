@@ -308,16 +308,22 @@ namespace V
 	/* OpenNI Device Class
 	*/
 	/************************************************************************/
-	OpenNIDevice::OpenNIDevice( xn::Context* context ) : mBitsPerPixel( 3 )
+	OpenNIDevice::OpenNIDevice( int index, OpenNIDeviceManager* mgr ) 
+        : mBitsPerPixel( 3 )
 	{
-		_context = context;
+        _index = index;
+        _mgr = mgr;
+		_context = mgr->getContext();
 
 		privateInit();
 	}
 
-	OpenNIDevice::OpenNIDevice( xn::Context* context, xn::Device* device ) : mBitsPerPixel( 3 )
+	OpenNIDevice::OpenNIDevice( int index, OpenNIDeviceManager* mgr, xn::Device* device ) 
+        : mBitsPerPixel( 3 )
 	{
-		_context = context;
+        _index = index;
+        _mgr = mgr;
+		_context = mgr->getContext();
 		_device = *device;
 
 		privateInit();
@@ -343,7 +349,7 @@ namespace V
 		_imageGen	= NULL;
 		//_irGen		= NULL;
 		//_depthGen	= NULL;
-		_audioGen	= NULL;
+		//_audioGen	= NULL;
 		//_userGen	= NULL;
 		_handsGen	= NULL;
 
@@ -403,16 +409,18 @@ namespace V
 		{
 			//_imageGen = new xn::ImageGenerator();
 			_imageMetaData = new xn::ImageMetaData();
-			_status = _imageGen.Create( *_context );	//, NULL, &_errors );
-			CHECK_RC( _status, "Create image generator" );
+            _imageGen = &_mgr->mImageGenList[_index];
+			//_status = _imageGen->Create( *_context );	//, NULL, &_errors );
+			//CHECK_RC( _status, "Create image generator" );
 			_isImageOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_IR )
 		{
 			//_irGen = new xn::IRGenerator();
 			_irMetaData = new xn::IRMetaData();
-			_status = _irGen.Create( *_context );	//, NULL, &_errors );
-			CHECK_RC( _status, "Create IR generator" );
+            _irGen = &_mgr->mIRGenList[_index];
+			//_status = _irGen->Create( *_context );	//, NULL, &_errors );
+			//CHECK_RC( _status, "Create IR generator" );
 			_isIROn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_DEPTH )
@@ -420,25 +428,28 @@ namespace V
 			// Depth map
 			//_depthGen = new xn::DepthGenerator();
 			_depthMetaData = new xn::DepthMetaData();
-			_status = _depthGen.Create( *_context );	//, NULL, &_errors );
-			CHECK_RC( _status, "Create depth generator" );
+            _depthGen = &_mgr->mDepthGenList[_index];
+			//_status = _depthGen->Create( *_context );	//, NULL, &_errors );
+			//CHECK_RC( _status, "Create depth generator" );
 			_isDepthOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_USER )
 		{
 			// User
-			//_userGen = new xn::UserGenerator();
 			_sceneMetaData = new xn::SceneMetaData();
-			_status = _userGen.Create( *_context );	//, NULL, &_errors );
-			CHECK_RC( _status, "Create user generator" );
+            _userGen = &_mgr->mUserGenList[_index];
+			//_status = _userGen->Create( *_context );	//, NULL, &_errors );
+			//CHECK_RC( _status, "Create user generator" );
 			_isUserOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_SCENE )
 		{
 			// Make sure we do not re-allocate
-			if( !_sceneMetaData ) _sceneMetaData = new xn::SceneMetaData();
-			_status = _sceneAnalyzer.Create( *_context );
-			CHECK_RC( _status, "Create scene analyzer" );
+			if( !_sceneMetaData ) 
+                _sceneMetaData = new xn::SceneMetaData();
+            _sceneAnalyzer = &_mgr->mSceneAnalyzerList[_index];
+			//_status = _sceneAnalyzer.Create( *_context );
+			//CHECK_RC( _status, "Create scene analyzer" );
 			_isSceneOn = true;
 		}
 
@@ -451,33 +462,33 @@ namespace V
 		//	CHECK_RC( _status, "Create audio generator" );
 		//	_isAudioOn = true;
 		//}
-		//if( nodeTypeFlags & NODE_TYPE_HANDS )
-		//{
-		//	// Hand Gestures
-		//	//_handsGen = new HandsGenerator();
-		//	_status = _handsGen.Create( *_context );	//, NULL, &_errors );
-		//	CHECK_RC( _status, "Create hands generator" );
-		//	_isHandsOn = true;
-		//}
+		if( nodeTypeFlags & NODE_TYPE_HANDS )
+		{
+			// Hand Gestures
+            _handsGen = &_mgr->mHandsGenList[_index];
+			//_status = _handsGen.Create( *_context );	//, NULL, &_errors );
+			//CHECK_RC( _status, "Create hands generator" );
+			_isHandsOn = true;
+		}
 
 
 		if( _isImageOn ) {
 			setResolution( NODE_TYPE_IMAGE, XN_RES_VGA, 30 );
-			_imageGen.GetMetaData( *_imageMetaData );
+			_imageGen->GetMetaData( *_imageMetaData );
 		}
 		if( _isIROn )	{
 			setResolution( NODE_TYPE_IR, XN_RES_VGA, 30 );
-			_irGen.GetMetaData( *_irMetaData );
+			_irGen->GetMetaData( *_irMetaData );
 		}
 		if( _isDepthOn )
 		{
 			setResolution( NODE_TYPE_DEPTH, XN_RES_VGA, 30 );
-			_depthGen.GetMetaData( *_depthMetaData );
+			_depthGen->GetMetaData( *_depthMetaData );
 		}
 		if( _isSceneOn )
 		{
 			setResolution( NODE_TYPE_SCENE, XN_RES_VGA, 30 );
-			_sceneAnalyzer.GetMetaData( *_sceneMetaData );
+			_sceneAnalyzer->GetMetaData( *_sceneMetaData );
 		}
 
 		//if( _userGen ) {
@@ -540,39 +551,39 @@ namespace V
 				case XN_NODE_TYPE_IMAGE:
 					//_imageGen = new ImageGenerator();
 					_imageMetaData = new ImageMetaData();
-					(*it).GetInstance( _imageGen );
-					ss << "Image: " << _imageGen.GetName() << std::endl;
+					(*it).GetInstance( *_imageGen );
+					ss << "Image: " << _imageGen->GetName() << std::endl;
 					DEBUG_MESSAGE( ss.str().c_str() );
 					_isImageOn = true;
 					break;
 				case XN_NODE_TYPE_IR:
 					//_irGen = new IRGenerator();
 					_irMetaData = new IRMetaData();
-					(*it).GetInstance( _irGen );
-					ss << "IR: " << _irGen.GetName() << std::endl;
+					(*it).GetInstance( *_irGen );
+					ss << "IR: " << _irGen->GetName() << std::endl;
 					DEBUG_MESSAGE( ss.str().c_str() );
 					_isIROn = true;
 					break;
 				case XN_NODE_TYPE_DEPTH:
 					//_depthGen = new DepthGenerator();
 					_depthMetaData = new DepthMetaData();
-					(*it).GetInstance( _depthGen );
-					ss << "Depth: " << _depthGen.GetName() << std::endl;
+					(*it).GetInstance( *_depthGen );
+					ss << "Depth: " << _depthGen->GetName() << std::endl;
 					DEBUG_MESSAGE( ss.str().c_str() );
 					_isDepthOn = true;
 					break;
 				case XN_NODE_TYPE_USER:
 					//_userGen = new UserGenerator();
 					_sceneMetaData = new xn::SceneMetaData();
-					(*it).GetInstance( _userGen );
-					ss << "User: " << _userGen.GetName() << std::endl;
+					(*it).GetInstance( *_userGen );
+					ss << "User: " << _userGen->GetName() << std::endl;
 					DEBUG_MESSAGE( ss.str().c_str() );
 					_isUserOn = true;
 					break;
 				case XN_NODE_TYPE_SCENE:
 					if( !_sceneMetaData ) _sceneMetaData = new xn::SceneMetaData();
-					(*it).GetInstance( _sceneAnalyzer );
-					ss << "Scene: " << _sceneAnalyzer.GetName() << std::endl;
+					(*it).GetInstance( *_sceneAnalyzer );
+					ss << "Scene: " << _sceneAnalyzer->GetName() << std::endl;
 					DEBUG_MESSAGE( ss.str().c_str() );
 					_isSceneOn = true;
 					break;
@@ -586,8 +597,8 @@ namespace V
 				//	break;
 				case XN_NODE_TYPE_HANDS:
 					//_handsGen = new HandsGenerator();
-					(*it).GetInstance( _handsGen );
-					ss << "Hands: " << _handsGen.GetName() << std::endl;
+					(*it).GetInstance( *_handsGen );
+					ss << "Hands: " << _handsGen->GetName() << std::endl;
 					DEBUG_MESSAGE( ss.str().c_str() );
 					_isHandsOn = true;
 					break;
@@ -603,7 +614,7 @@ namespace V
 		{
 			//_userGen = new UserGenerator();
 			_sceneMetaData = new xn::SceneMetaData();
-			_status = _userGen.Create( *_context );
+			_status = _userGen->Create( *_context );
 			CHECK_RC( _status, "Create user generator" );
 			_isUserOn = true;
 		}
@@ -633,13 +644,13 @@ namespace V
 		XnMapOutputMode mode;
 		if( flags & NODE_TYPE_IMAGE )
 		{
-			_imageGen.GetMapOutputMode( mode );
+			_imageGen->GetMapOutputMode( mode );
 			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, mode.nXRes, mode.nYRes );
 		}
 		if( flags & NODE_TYPE_IR )
 		{
-			_irGen.GetMapOutputMode( mode );
+			_irGen->GetMapOutputMode( mode );
 			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, mode.nXRes, mode.nYRes );
 			_irData = new uint16_t[mode.nXRes*mode.nYRes];
@@ -647,7 +658,7 @@ namespace V
 		}
 		if( flags & NODE_TYPE_DEPTH )
 		{
-			_depthGen.GetMapOutputMode( mode );
+			_depthGen->GetMapOutputMode( mode );
 			_backDepthData = new uint16_t[mode.nXRes*mode.nYRes];
 			_depthData = new uint16_t[mode.nXRes*mode.nYRes];
 			//_depthData8 = new uint8_t[mode.nXRes*mode.nYRes];
@@ -663,11 +674,11 @@ namespace V
 		//
 		// First time get meta data
 		//
-		if( _isImageOn ) _imageGen.GetMetaData( *_imageMetaData );
-		if( _isIROn )	_irGen.GetMetaData( *_irMetaData );
-		if( _isDepthOn ) _depthGen.GetMetaData( *_depthMetaData );
-		if( _isSceneOn ) _sceneAnalyzer.GetMetaData( *_sceneMetaData );
-		if( _isAudioOn) _audioGen.GetMetaData( *_audioMetaData );
+		if( _isImageOn ) _imageGen->GetMetaData( *_imageMetaData );
+		if( _isIROn )	_irGen->GetMetaData( *_irMetaData );
+		if( _isDepthOn ) _depthGen->GetMetaData( *_depthMetaData );
+		if( _isSceneOn ) _sceneAnalyzer->GetMetaData( *_sceneMetaData );
+//		if( _isAudioOn) _audioGen->GetMetaData( *_audioMetaData );
 
 
 		//
@@ -681,17 +692,17 @@ namespace V
 
 	void OpenNIDevice::setAlignWithDepthGenerator()
 	{
-		//if( _depthGen.IsCapabilitySupported(XN_CAPABILITY_FRAME_SYNC) )
+		//if( _depthGen->IsCapabilitySupported(XN_CAPABILITY_FRAME_SYNC) )
 		//{
-		//	_status = _depthGen.GetFrameSyncCap().FrameSyncWith( _imageGen );
+		//	_status = _depthGen->GetFrameSyncCap().FrameSyncWith( _imageGen );
 		//	CHECK_RC( _status, "FrameSync" );
 		//}
 
 		// Align depth and image generators
-		if( _depthGen.IsCapabilitySupported(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT) )
+		if( _depthGen->IsCapabilitySupported(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT) )
 		{
-			_depthGen.GetAlternativeViewPointCap().ResetViewPoint();
-			if( _imageGen ) _depthGen.GetAlternativeViewPointCap().SetViewPoint( _imageGen );
+			_depthGen->GetAlternativeViewPointCap().ResetViewPoint();
+			if( _imageGen ) _depthGen->GetAlternativeViewPointCap().SetViewPoint( *_imageGen );
 		}
 
 	}
@@ -701,7 +712,7 @@ namespace V
     {
         if( _userGen )
         {
-            _status = _userGen.GetSkeletonCap().Reset( userId );
+            _status = _userGen->GetSkeletonCap().Reset( userId );
             CHECK_RC( _status, "Resetting user" );
         }
     }
@@ -791,28 +802,28 @@ namespace V
 		XnCallbackHandle hCalibrationStartCallback = 0;
 		XnCallbackHandle hCalibrationInProgressCallback = 0;
 		XnCallbackHandle hCalibrationEndCallback = 0;
-		if( !_userGen.IsCapabilitySupported(XN_CAPABILITY_SKELETON) )
+		if( !_userGen->IsCapabilitySupported(XN_CAPABILITY_SKELETON) )
 		{
 			DEBUG_MESSAGE( "Supplied user generator doesn't support skeleton\n" );
 			return false;
 		}
-		_status = _userGen.RegisterUserCallbacks( &V::OpenNIDevice::Callback_NewUser, &V::OpenNIDevice::Callback_LostUser, this, hUserCallbacks );
+		_status = _userGen->RegisterUserCallbacks( &V::OpenNIDevice::Callback_NewUser, &V::OpenNIDevice::Callback_LostUser, this, hUserCallbacks );
         CHECK_RC( _status, "Register User Callbacks" );
 
 		// New version for NITE 1.4.*.*
-		_status = _userGen.GetSkeletonCap().RegisterToCalibrationStart( &V::OpenNIDevice::Callback_CalibrationStart, this, hCalibrationStartCallback );
+		_status = _userGen->GetSkeletonCap().RegisterToCalibrationStart( &V::OpenNIDevice::Callback_CalibrationStart, this, hCalibrationStartCallback );
         CHECK_RC( _status, "Register Calibration Start" );
-		_status = _userGen.GetSkeletonCap().RegisterToCalibrationInProgress( &V::OpenNIDevice::Callback_CalibrationInProgress, this, hCalibrationInProgressCallback );
+		_status = _userGen->GetSkeletonCap().RegisterToCalibrationInProgress( &V::OpenNIDevice::Callback_CalibrationInProgress, this, hCalibrationInProgressCallback );
         CHECK_RC( _status, "Register Calibration InProgress" );
-		_status = _userGen.GetSkeletonCap().RegisterToCalibrationComplete( &V::OpenNIDevice::Callback_CalibrationEnd, this, hCalibrationEndCallback );
+		_status = _userGen->GetSkeletonCap().RegisterToCalibrationComplete( &V::OpenNIDevice::Callback_CalibrationEnd, this, hCalibrationEndCallback );
         CHECK_RC( _status, "Register Calibration Complete" );
         
 		// Old version
-		//_userGen.GetSkeletonCap().RegisterCalibrationCallbacks( &V::OpenNIDevice::Callback_CalibrationStart, &V::OpenNIDevice::Callback_CalibrationEnd, this, hCalibrationCallbacks );
-		if( _userGen.GetSkeletonCap().NeedPoseForCalibration() )
+		//_userGen->GetSkeletonCap().RegisterCalibrationCallbacks( &V::OpenNIDevice::Callback_CalibrationStart, &V::OpenNIDevice::Callback_CalibrationEnd, this, hCalibrationCallbacks );
+		if( _userGen->GetSkeletonCap().NeedPoseForCalibration() )
 		{
 			g_bNeedPose = TRUE;
-			if( !_userGen.IsCapabilitySupported(XN_CAPABILITY_POSE_DETECTION) )
+			if( !_userGen->IsCapabilitySupported(XN_CAPABILITY_POSE_DETECTION) )
 			{
 				DEBUG_MESSAGE( "Pose required, but not supported\n" );
 				return false;
@@ -823,18 +834,18 @@ namespace V
 			//XnCallbackHandle hPoseCallbacks = 0;
 
 			// New version for NITE 1.4.*.*
-			_status = _userGen.GetPoseDetectionCap().RegisterToPoseDetected( &V::OpenNIDevice::Callback_PoseDetected, this, hPoseDetectedCallback );
+			_status = _userGen->GetPoseDetectionCap().RegisterToPoseDetected( &V::OpenNIDevice::Callback_PoseDetected, this, hPoseDetectedCallback );
             CHECK_RC( _status, "Register Pose Detected" );
-			_status = _userGen.GetPoseDetectionCap().RegisterToPoseInProgress( &V::OpenNIDevice::Callback_PoseInProgress, this, hPoseInProgressCallback );
+			_status = _userGen->GetPoseDetectionCap().RegisterToPoseInProgress( &V::OpenNIDevice::Callback_PoseInProgress, this, hPoseInProgressCallback );
             CHECK_RC( _status, "Register Pose InProgress" );
 			// Old version
-			//_userGen.GetPoseDetectionCap().RegisterToPoseCallbacks( &V::OpenNIDevice::Callback_PoseDetected, &V::OpenNIDevice::Callback_PoseDetectionEnd, this, hPoseCallbacks );
-			_userGen.GetSkeletonCap().GetCalibrationPose( g_strPose );
+			//_userGen->GetPoseDetectionCap().RegisterToPoseCallbacks( &V::OpenNIDevice::Callback_PoseDetected, &V::OpenNIDevice::Callback_PoseDetectionEnd, this, hPoseCallbacks );
+			_userGen->GetSkeletonCap().GetCalibrationPose( g_strPose );
 			std::stringstream ss;
 			ss << "--> User pose name: '" << g_strPose << "'" << std::endl;
 			DEBUG_MESSAGE( ss.str().c_str() );
 		}
-		_userGen.GetSkeletonCap().SetSkeletonProfile( mSkeletonProfile );
+		_userGen->GetSkeletonCap().SetSkeletonProfile( mSkeletonProfile );
 
 		return true;
 	}
@@ -862,16 +873,16 @@ namespace V
 		switch( nodeType )
 		{
 		case NODE_TYPE_IMAGE:
-			gen = &_imageGen;
+			gen = _imageGen;
 			break;
 		case NODE_TYPE_IR:
-			gen = &_irGen;
+			gen = _irGen;
 			break;
 		case NODE_TYPE_DEPTH:
-			gen = &_depthGen;
+			gen = _depthGen;
 			break;
 		case NODE_TYPE_SCENE:
-			gen = &_sceneAnalyzer;
+			gen = _sceneAnalyzer;
 			break;
 		default:
 			DEBUG_MESSAGE( "Can't change resolution. Not a valid generator" );
@@ -942,13 +953,13 @@ namespace V
 		switch( nodeType )
 		{
 		case NODE_TYPE_IMAGE:
-			gen = &_imageGen;
+			gen = _imageGen;
 			break;
 		case NODE_TYPE_IR:
-			gen = &_irGen;
+			gen = _irGen;
 			break;
 		case NODE_TYPE_DEPTH:
-			gen = &_depthGen;
+			gen = _depthGen;
 			break;
 		default:
 			DEBUG_MESSAGE( "Can't change resolution. Not a valid generator" );
@@ -974,13 +985,13 @@ namespace V
 		switch( nodeType )
 		{
 		case NODE_TYPE_IMAGE:
-			gen = &_imageGen;
+			gen = _imageGen;
 			break;
 		case NODE_TYPE_IR:
-			gen = &_irGen;
+			gen = _irGen;
 			break;
 		case NODE_TYPE_DEPTH:
-			gen = &_depthGen;
+			gen = _depthGen;
 			break;
 		default:
 			DEBUG_MESSAGE( "Can't change resolution. Not a valid generator" );
@@ -1040,10 +1051,10 @@ namespace V
 		//
 		// Handle depth map
 		//
-		if( _isDepthOn && _depthGen.IsValid() )
+		if( _isDepthOn && _depthGen->IsValid() )
 		{
-			_depthGen.GetMetaData( *_depthMetaData );
-			pDepth = _depthGen.GetDepthMap();
+			_depthGen->GetMetaData( *_depthMetaData );
+			pDepth = _depthGen->GetDepthMap();
 
 			// Compute bitmap buffers
 			int w = _depthMetaData->XRes();
@@ -1140,10 +1151,10 @@ namespace V
 		}
 
 
-		if( _imageGen.IsValid() )
+		if( _imageGen->IsValid() )
 		{
-			_imageGen.GetMetaData( *_imageMetaData );
-			pImage = _imageGen.GetImageMap();
+			_imageGen->GetMetaData( *_imageMetaData );
+			pImage = _imageGen->GetImageMap();
 			// Compute bitmap buffers
 			mColorSurface->update( (uint8_t*)(pImage) );
 			//int w = _depthMetaData->XRes();
@@ -1152,13 +1163,13 @@ namespace V
 		}
 
 
-		if( _irGen.IsValid() )
+		if( _irGen->IsValid() )
 		{
-			_irGen.GetMetaData( *_irMetaData );
+			_irGen->GetMetaData( *_irMetaData );
 			pIR = _irMetaData->Data();	//_irGen->GetIRMap();
 
 			// Save original data
-			XnUInt32 nDataSize = _irGen.GetDataSize();
+			XnUInt32 nDataSize = _irGen->GetDataSize();
 			memcpy( _irData, pIR, nDataSize );
 
 			// Compute 8bit and RGB color bitmap
@@ -1192,9 +1203,9 @@ namespace V
 
 	void OpenNIDevice::getLabelMap( uint32_t userId, uint16_t* labelMap )
 	{
-		if( !_sceneAnalyzer.IsValid() ) return;
+		if( !_sceneAnalyzer->IsValid() ) return;
 
-		_sceneAnalyzer.GetMetaData( *_sceneMetaData );
+		_sceneAnalyzer->GetMetaData( *_sceneMetaData );
 		//CHECK_RC( _status, "calcLabelMap()" );
 
 		const XnLabel* labels = _sceneMetaData->Data();
@@ -1271,7 +1282,7 @@ namespace V
 		}
 
 		// Convert all point into real world coordinates
-		_status = _depthGen.ConvertProjectiveToRealWorld( bufSize, _backDepthMapRealWorld, _depthMapRealWorld );
+		_status = _depthGen->ConvertProjectiveToRealWorld( bufSize, _backDepthMapRealWorld, _depthMapRealWorld );
 		//CHECK_RC( _status, "calcDepthImageRealWorld()" );
 	}
 
@@ -1306,7 +1317,7 @@ namespace V
 		}
 
 		// Convert all point into real world coordinates
-		_status = _depthGen.ConvertProjectiveToRealWorld( bufSize, worldData, worldData );
+		_status = _depthGen->ConvertProjectiveToRealWorld( bufSize, worldData, worldData );
 	}
 
 
@@ -1320,8 +1331,8 @@ namespace V
 		xnOSMemSet( g_pDepthHist, 0, MAX_DEPTH*sizeof(float) );
 		int nNumberOfPoints = 0;
 
-		XnUInt32 nDataSize = _depthGen.GetDataSize();
-		const XnDepthPixel* pDepth = _depthGen.GetDepthMap();
+		XnUInt32 nDataSize = _depthGen->GetDataSize();
+		const XnDepthPixel* pDepth = _depthGen->GetDepthMap();
 		const XnDepthPixel* pDepthEnd = pDepth + (nDataSize / sizeof(XnDepthPixel));
 
 		XnDepthPixel nValue;
@@ -1367,15 +1378,15 @@ namespace V
 	void OpenNIDevice::setPrimaryBuffer( int type )
 	{ 
 		if( _isImageOn && (type & NODE_TYPE_IMAGE) )	
-			_primaryGen = &_imageGen;
+			_primaryGen = _imageGen;
 		else if( _irGen && (type & NODE_TYPE_IR) )	
-			_primaryGen = &_irGen;
+			_primaryGen = _irGen;
 		else if( _isDepthOn && (type & NODE_TYPE_DEPTH) )	
-			_primaryGen = &_depthGen;
+			_primaryGen = _depthGen;
 		else if( _userGen && (type & NODE_TYPE_USER) )	
-			_primaryGen = &_userGen;
-		else if( _audioGen && (type & NODE_TYPE_AUDIO) )	
-			_primaryGen = &_audioGen;
+			_primaryGen = _userGen;
+		//else if( _audioGen && (type & NODE_TYPE_AUDIO) )	
+			//_primaryGen = _audioGen;
 		else 
 			_primaryGen = NULL;
 	}
@@ -1384,11 +1395,11 @@ namespace V
 	void OpenNIDevice::setMirrorMode( int type, bool flag )
 	{ 
 		if( _isImageOn && (type & NODE_TYPE_IMAGE) )	
-			_imageGen.GetMirrorCap().SetMirror( flag ); 
+			_imageGen->GetMirrorCap().SetMirror( flag ); 
 		else if( _irGen && (type & NODE_TYPE_IR) )	
-			_irGen.GetMirrorCap().SetMirror( flag ); 
+			_irGen->GetMirrorCap().SetMirror( flag ); 
 		else if( _isDepthOn && (type & NODE_TYPE_DEPTH) )	
-			_depthGen.GetMirrorCap().SetMirror( flag ); 
+			_depthGen->GetMirrorCap().SetMirror( flag ); 
 	}
 
 
@@ -1549,7 +1560,20 @@ namespace V
 		Release();
 	}
 
-	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( const std::string& xmlFile/*=""*/, bool allocUserIfNoNode/*=false */ )
+    
+    void OpenNIDeviceManager::Init()
+	{
+		_context.Init();
+        
+		XnCallbackHandle hDummy;
+		_context.RegisterToErrorStateChange( onErrorStateChanged, NULL, hDummy );
+        
+		mIsContextInit = true;
+	}
+
+    
+/***
+	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( const std::string& xmlFile, bool allocUserIfNoNode )
 	{
 		if( mDevices.size() >= MAX_DEVICES ) return boost::shared_ptr<OpenNIDevice>();
 		
@@ -1579,7 +1603,7 @@ namespace V
 		std::string path = xmlFile;
 		
 		// Initialize device
-		boost::shared_ptr<OpenNIDevice> dev = boost::shared_ptr<OpenNIDevice>( new OpenNIDevice(&_context) );
+		boost::shared_ptr<OpenNIDevice> dev = boost::shared_ptr<OpenNIDevice>( new OpenNIDevice( 0, this) );
 		if( !dev->initFromXmlFile( path, allocUserIfNoNode ) ) 
 		{
 			DEBUG_MESSAGE( "[OpenNIDeviceManager]  Couldn't create device from xml\n" );
@@ -1591,83 +1615,8 @@ namespace V
 		// Save device to our list
 		mDevices.push_back( dev );
 		
-		/* DEBUG STUFF *
-		char msg[255];
-
-		sprintf(msg, "Now there are %d OpenNI devices", mDevices.size());
-		
-		DEBUG_MESSAGE ( msg );
-		*/
-		
 		return dev;
 	}
-
-    
-    
-    void OpenNIDeviceManager::Init()
-	{
-		_context.Init();
-        
-		XnCallbackHandle hDummy;
-		_context.RegisterToErrorStateChange( onErrorStateChanged, NULL, hDummy );
-        
-		mIsContextInit = true;
-	}
-    
-    
-    
-    
-	
-	/* ORIGINAL VERSION **
-	 
-	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( const std::string& xmlFile, bool allocUserIfNoNode //=false 
-														)
-	{
-		if( mDevices.size() >= MAX_DEVICES ) return boost::shared_ptr<OpenNIDevice>();
-
-		// Make sure we initialize our context
-		if( !mIsContextInit ) 
-			Init();
-
-		// Bail out if its an empty filename
-		if( xmlFile == "" )
-		{
-			DEBUG_MESSAGE( "not implemented" );
-			return OpenNIDeviceRef();
-		}
-
-
-		// Local copy of the filename
-		std::string path = xmlFile;
-
-		#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-		char AppAbsPath[1024];
-		path = "/" + path;
-		path = _getcwd( AppAbsPath, 1024 ) + path;
-		//DEBUG_MESSAGE( path.c_str() );
-		#else
-		char AppAbsPath[1024];
-		path = "/" + path;
-		path = getcwd( AppAbsPath, 1024 ) + path;
-		//DEBUG_MESSAGE( path.c_str() );
-		#endif
-
-		// Initialize device
-		OpenNIDeviceRef dev = OpenNIDeviceRef( new OpenNIDevice(&_context) );
-
-		if( !dev->initFromXmlFile( path, allocUserIfNoNode ) ) 
-		{
-			DEBUG_MESSAGE( "[OpenNIDeviceManager]  Couldn't create device from xml\n" );
-			return OpenNIDeviceRef();
-		}
-		// By default set depth as primary generator
-		//dev->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
-
-		// Save device to our list
-		mDevices.push_back( dev );
-		return dev;
-	}
-*/
 
 	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( int nodeTypeFlags )
 	{
@@ -1689,7 +1638,7 @@ namespace V
         }
 
         
-		OpenNIDeviceRef dev = OpenNIDeviceRef( new OpenNIDevice(&_context) );
+		OpenNIDeviceRef dev = OpenNIDeviceRef( new OpenNIDevice( 0, this) );
 		if( !dev->init( nodeTypeFlags ) ) 
 		{
 			DEBUG_MESSAGE( "[OpenNIDeviceManager]  Couldn't create device manually\n" );
@@ -1700,11 +1649,12 @@ namespace V
 		mDevices.push_back( dev );
 		return dev;
 	}
+***/
 
 
 	void OpenNIDeviceManager::createDevices( uint32_t deviceCount, int nodeTypeFlags )
 	{
-		if( mDevices.size() >= MAX_DEVICES ) 
+		if( deviceCount <= 0 || !mDevices.empty() >= MAX_DEVICES ) 
 			return;
 
 		// Make sure we initialize our context
@@ -1714,28 +1664,28 @@ namespace V
 		XnStatus status;
 
 		// Count max devices connected to this machine
-		uint32_t devicesCount = 0;
 		xn::NodeInfoList device_nodes; 
 		status = _context.EnumerateProductionTrees( XN_NODE_TYPE_DEVICE, NULL, device_nodes, NULL );
 		for( xn::NodeInfoList::Iterator nodeIt=device_nodes.Begin(); nodeIt!=device_nodes.End(); ++nodeIt ) 
 		{
-			devicesCount++;
+            const xn::NodeInfo& info = *nodeIt;
+            const XnProductionNodeDescription& description = info.GetDescription(); 
+        
+            std::cout << "Device Name: " << description.strName << 
+                "  Vendor: " << description.strVendor << 
+                info.GetInstanceName() << std::endl;
+            
 			mDeviceCount++;
 		}
         
-        // No device is connected. Abort!
-        if( deviceCount == 0 ) 
-            return;
-
 		// Make sure we do not allocate more than the ones connected
-		if( deviceCount > devicesCount ) deviceCount = devicesCount;
-		mDeviceCount = deviceCount;
+		if( mDeviceCount > deviceCount ) mDeviceCount = deviceCount;
 
 
 		// Allocate devices
-		for( uint32_t i=0; i<deviceCount; i++ )
+		for( uint32_t i=0; i<mDeviceCount; i++ )
 		{
-			OpenNIDeviceRef dev = OpenNIDeviceRef( new OpenNIDevice(&_context) );
+			OpenNIDeviceRef dev = OpenNIDeviceRef( new OpenNIDevice( i, this) );
 			mDevices.push_back( dev );
 
 			SDevice::Ref sdev = SDevice::Ref( new SDevice() );
@@ -1744,11 +1694,6 @@ namespace V
 
 
 		// Allocate all generators we ask for
-		int imageCount = 0;
-		int irCount = 0;
-		int depthCount = 0;
-		int userCount = 0;
-		//int audioCount = 0;
 		xn::NodeInfoList image_nodes; 
 		xn::NodeInfoList ir_nodes; 
 		xn::NodeInfoList depth_nodes;
@@ -1765,23 +1710,18 @@ namespace V
 		//_status = _context.EnumerateProductionTrees( XN_NODE_TYPE_AUDIO, NULL, audio_nodes, NULL );
 
 
-		// Temporary counter
-		uint32_t count = 0;
-
-
-		count = 0;
 		if( nodeTypeFlags & NODE_TYPE_DEPTH )
 		{
 			OpenNIDeviceList::iterator devIt = mDevices.begin();
 			for( xn::NodeInfoList::Iterator nodeIt=depth_nodes.Begin(); nodeIt!=depth_nodes.End(); nodeIt++ ) 
 			{
-				if( count >= deviceCount )	
+				if( mDepthGenCount >= mDeviceCount )	
 					break;
 
 				OpenNIDevice::Ref dev = *devIt;
 				xn::NodeInfo nodeInfo = *nodeIt;
 
-				status = _context.CreateProductionTree( nodeInfo, dev->_depthGen ); 
+				//status = _context.CreateProductionTree( nodeInfo, dev->_depthGen ); 
 				//status = nodeInfo.GetInstance( dev->_depthGen );
 
 				DepthGenerator gen;
@@ -1790,25 +1730,22 @@ namespace V
 
 
 				++devIt;
-				depthCount++;
 				mDepthGenCount++;
-				count++;
 			}
 		}
 
-		count = 0;
 		if( nodeTypeFlags & NODE_TYPE_IR )
 		{
 			OpenNIDeviceList::iterator devIt = mDevices.begin();
-			for( xn::NodeInfoList::Iterator nodeIt=ir_nodes.Begin(); nodeIt!=ir_nodes.End(); nodeIt++ ) 
+			for( xn::NodeInfoList::Iterator nodeIt=ir_nodes.Begin(); nodeIt!=ir_nodes.End(); ++nodeIt )
 			{
-				if( count >= deviceCount )	
+				if( mIRGenCount >= mDeviceCount )	
 					break;
 
 				OpenNIDevice::Ref dev = *devIt;
 				xn::NodeInfo nodeInfo = *nodeIt;
 
-				status = _context.CreateProductionTree( nodeInfo, dev->_irGen ); 
+				//status = _context.CreateProductionTree( nodeInfo, dev->_irGen ); 
 				// Old version
 				//status = _context.CreateProductionTree( nodeInfo ); 
 				//status = nodeInfo.GetInstance( dev->_irGen );
@@ -1818,25 +1755,22 @@ namespace V
 				mIRGenList.push_back( gen );
 
 				++devIt;
-				irCount++;
 				mIRGenCount++;
-				count++;
 			}
 		}
 
-		count = 0;
 		if( nodeTypeFlags & NODE_TYPE_IMAGE )
 		{
 			OpenNIDeviceList::iterator devIt = mDevices.begin();
-			for( xn::NodeInfoList::Iterator nodeIt=image_nodes.Begin(); nodeIt!=image_nodes.End(); nodeIt++ ) 
+			for( xn::NodeInfoList::Iterator nodeIt=image_nodes.Begin(); nodeIt!=image_nodes.End(); ++nodeIt ) 
 			{
-				if( count >= deviceCount )	
+				if( mImageGenCount >= mDeviceCount )	
 					break;
 
 				OpenNIDevice::Ref dev = *devIt;
 				xn::NodeInfo nodeInfo = *nodeIt;
 
-				status = _context.CreateProductionTree( nodeInfo, dev->_imageGen ); 
+				//status = _context.CreateProductionTree( nodeInfo, dev->_imageGen ); 
 				// Old version
 				//status = _context.CreateProductionTree( nodeInfo ); 
 				//status = nodeInfo.GetInstance( dev->_imageGen );
@@ -1846,26 +1780,23 @@ namespace V
 				mImageGenList.push_back( gen );
 
 				++devIt;
-				imageCount++;
 				mImageGenCount++;
-				count++;
 			}
 		}
 
 
-		count = 0;
 		if( nodeTypeFlags & NODE_TYPE_USER )
 		{
 			OpenNIDeviceList::iterator devIt = mDevices.begin();
-			for( xn::NodeInfoList::Iterator nodeIt=user_nodes.Begin(); nodeIt!=user_nodes.End(); nodeIt++ ) 
+			for( xn::NodeInfoList::Iterator nodeIt=user_nodes.Begin(); nodeIt!=user_nodes.End(); ++nodeIt ) 
 			{
-				if( count >= deviceCount )	
+				if( mUserGenCount >= mDeviceCount )	
 					break;
 
 				OpenNIDevice::Ref dev = *devIt;
 				xn::NodeInfo nodeInfo = *nodeIt;
 
-				status = _context.CreateProductionTree( nodeInfo, dev->_depthGen ); 
+				//status = _context.CreateProductionTree( nodeInfo, dev->_depthGen ); 
 				//status = _context.CreateProductionTree( nodeInfo ); 
 				//status = nodeInfo.GetInstance( dev->_depthGen );
 
@@ -1874,26 +1805,23 @@ namespace V
 				mUserGenList.push_back( gen );
 
 				++devIt;
-				userCount++;
 				mUserGenCount++;
-				count++;
 			}
 		}
 
 
-		count = 0;
 		if( nodeTypeFlags & NODE_TYPE_SCENE )
 		{
 			OpenNIDeviceList::iterator devIt = mDevices.begin();
-			for( xn::NodeInfoList::Iterator nodeIt=scene_nodes.Begin(); nodeIt!=scene_nodes.End(); nodeIt++ ) 
+			for( xn::NodeInfoList::Iterator nodeIt=scene_nodes.Begin(); nodeIt!=scene_nodes.End(); ++nodeIt ) 
 			{
-				if( count >= deviceCount )	
+				if( mSceneAnalyzerCount >= mDeviceCount )	
 					break;
 
 				OpenNIDevice::Ref dev = *devIt;
 				xn::NodeInfo nodeInfo = *nodeIt;
 
-				status = _context.CreateProductionTree( nodeInfo, dev->_sceneAnalyzer ); 
+				//status = _context.CreateProductionTree( nodeInfo, dev->_sceneAnalyzer ); 
 				//status = _context.CreateProductionTree( nodeInfo ); 
 				//status = nodeInfo.GetInstance( gen );
 
@@ -1901,32 +1829,31 @@ namespace V
 				status = nodeInfo.GetInstance( gen );
 				mSceneAnalyzerList.push_back( gen );
 
+				++devIt;
 				mSceneAnalyzerCount++;
-				count++;
 			}
 		}
 
-		count = 0;
 		if( nodeTypeFlags & NODE_TYPE_HANDS )
 		{
 			OpenNIDeviceList::iterator devIt = mDevices.begin();
-			for( xn::NodeInfoList::Iterator nodeIt=hands_nodes.Begin(); nodeIt!=hands_nodes.End(); nodeIt++ ) 
+			for( xn::NodeInfoList::Iterator nodeIt=hands_nodes.Begin(); nodeIt!=hands_nodes.End(); ++nodeIt ) 
 			{
-				if( count >= deviceCount )	
+				if( mHandsGenCount >= mDeviceCount )	
 					break;
 
 				OpenNIDevice::Ref dev = *devIt;
 				xn::NodeInfo nodeInfo = *nodeIt;
 
-				status = _context.CreateProductionTree( nodeInfo, dev->_handsGen ); 
+				//status = _context.CreateProductionTree( nodeInfo, dev->_handsGen ); 
 				//status = _context.CreateProductionTree( nodeInfo ); 
 
 				HandsGenerator gen;
 				status = nodeInfo.GetInstance( gen );
 				mHandsGenList.push_back( gen );
 
+				++devIt;
 				mHandsGenCount++;
-				count++;
 			}
 		}
 
@@ -1947,9 +1874,7 @@ namespace V
 		{
 			std::stringstream ss;
 			ss << "[OpenNIDeviceManager]  Device '" << deviceIdx << "' is not available" << std::endl;
-			
 			//throw std::exception( ss.str().c_str() );
-			
 			return OpenNIDevice::Ref();
 		}
 
@@ -2436,7 +2361,7 @@ namespace V
 	}
 
 
-	void OpenNIDeviceManager::GetSceneLabelMap( uint32_t deviceIdx, uint32_t labelId, uint16_t* labelMap )
+	void OpenNIDeviceManager::GetUserMap( uint32_t deviceIdx, uint32_t labelId, uint16_t* labelMap )
 	{
 		//boost::mutex::scoped_lock lock( _mutex );
 
@@ -2445,9 +2370,6 @@ namespace V
 		if( !scene.IsValid() ) return;
 
 		scene.GetMetaData( mSceneMD );
-
-		mDepthGenList[deviceIdx].GetMetaData( mDepthMD );
-
 		const XnLabel* labels = mSceneMD.Data();
 
 		if( labels )
@@ -2457,78 +2379,38 @@ namespace V
 
 			memset( labelMap, 0, depthWidth*depthHeight*sizeof(uint16_t) );
 
-			//std::stringstream ss;
-			//ss << " + " << *labels << " - " << _sceneMetaData->FrameID() << std::endl;
-			//DEBUG_MESSAGE( ss.str().c_str() );
-
+            mDepthGenList[deviceIdx].GetMetaData( mDepthMD );
 			const XnDepthPixel* pDepth = mDepthMD.Data();	//getDepthMap( deviceIdx );
 			uint16_t* map = labelMap;
 
-			//int index = 0;
-			for( int j=0; j<depthHeight; j++ )
-			{
-				for( int i=0; i<depthWidth; i++ )
-				{
-					XnLabel label = *labels;
-
-					if( label == labelId )
-					{
-						*map = *pDepth;
-					}
-
-					pDepth++;
-					map++;
-					labels++;
-				}
-			}
+            if( labelId > 0 )
+            {
+                //int index = 0;
+                for( int j=0; j<depthHeight; j++ )
+                {
+                    for( int i=0; i<depthWidth; i++ )
+                    {
+                        XnLabel label = *labels;
+                        
+                        if( label == labelId )
+                        {
+                            *map = *pDepth;
+                        }
+                        
+                        pDepth++;
+                        map++;
+                        labels++;
+                    }
+                }                
+            }
+            else
+            {
+                memcpy( labelMap, pDepth, depthWidth*depthHeight*sizeof(uint16_t) );
+            }
 		}
 	}
 
-
-
-	void OpenNIDeviceManager::GetUserPixels( uint32_t deviceIdx, uint32_t userId, uint16_t* labelMap )
-	{
-		XnStatus status;
-		status = mUserGenList[deviceIdx].GetUserPixels( userId, mSceneMD );
-
-		mDepthGenList[deviceIdx].GetMetaData( mDepthMD );
-
-		const XnLabel* labels = mSceneMD.Data();
-
-		if( labels )
-		{
-			int depthWidth = mSceneMD.XRes();
-			int depthHeight = mSceneMD.YRes();
-
-			memset( labelMap, 0, depthWidth*depthHeight*sizeof(uint16_t) );
-
-			//std::stringstream ss;
-			//ss << " + " << *labels << " - " << _sceneMetaData->FrameID() << std::endl;
-			//DEBUG_MESSAGE( ss.str().c_str() );
-
-			const XnDepthPixel* pDepth = mDepthMD.Data();	//getDepthMap( deviceIdx );
-			uint16_t* map = labelMap;
-
-			//int index = 0;
-			for( int j=0; j<depthHeight; j++ )
-			{
-				for( int i=0; i<depthWidth; i++ )
-				{
-					XnLabel label = *labels;
-
-					if( label == userId )
-					{
-						*map = *pDepth;
-					}
-
-					pDepth++;
-					map++;
-					labels++;
-				}
-			}
-		}
-	}
-
+    
 
 	void OpenNIDeviceManager::SetFrameSync( uint32_t deviceIdx, uint32_t index1 )
 	{

@@ -21,6 +21,7 @@ namespace V
 {
 
 	// Forward declarations
+    class OpenNIDeviceManager;
 	class OpenNINetwork;
 	struct OpenNIBone;
 	class OpenNIUser;
@@ -78,8 +79,8 @@ namespace V
 		typedef boost::shared_ptr<OpenNIDevice> Ref;
 
 	public:
-		OpenNIDevice( xn::Context* context );
-		OpenNIDevice( xn::Context* context, xn::Device* device );
+		OpenNIDevice( int index, OpenNIDeviceManager* mgr );
+		OpenNIDevice( int index, OpenNIDeviceManager* mgr, xn::Device* device );
 		~OpenNIDevice();
 		bool init( boost::uint64_t nodeTypeFlags );
 		bool initFromXmlFile( const std::string& xmlFile, bool allocUserIfNoNode=false );
@@ -112,7 +113,7 @@ namespace V
 		float FieldOfViewHorz()
 		{
 			XnFieldOfView fieldOfView;
-			_depthGen.GetFieldOfView( fieldOfView );
+			_depthGen->GetFieldOfView( fieldOfView );
 			return (float)fieldOfView.fHFOV;
 		}
 
@@ -122,7 +123,7 @@ namespace V
 		float FieldOfViewVert()
 		{
 			XnFieldOfView fieldOfView;
-			_depthGen.GetFieldOfView( fieldOfView );
+			_depthGen->GetFieldOfView( fieldOfView );
 			return (float)fieldOfView.fVFOV;
 		}
 
@@ -134,7 +135,7 @@ namespace V
 		XnPlane3D GetFloor() const
 		{
 			XnPlane3D plane; 
-			XnStatus st = _sceneAnalyzer.GetFloor( plane );
+			XnStatus st = _sceneAnalyzer->GetFloor( plane );
 			if( st != XN_STATUS_OK )
 			{
 				DEBUG_MESSAGE( "Failed to find floor plane\n" );
@@ -165,18 +166,17 @@ namespace V
 		boost::uint16_t* getIRMap();
 		boost::uint8_t* getIRMap8i();
 		boost::uint16_t* getDepthMap();
-		//boost::uint8_t* getDepthMap8i();
 		boost::uint8_t* getDepthMap24();
 		XnPoint3D* getDepthMapRealWorld();
 		boost::uint16_t* getRawDepthMap();
 
 		xn::DepthMetaData* getDepthMetaData()		{ return _depthMetaData; }
 		xn::SceneMetaData* getSceneMetaData()		{ return _sceneMetaData; }
-		xn::ImageGenerator*	getImageGenerator()		{ return &_imageGen;	}
-		xn::IRGenerator* getIRGenerator()			{ return &_irGen;	}
-		xn::DepthGenerator*	getDepthGenerator()		{ return &_depthGen;	}
-		xn::UserGenerator* getUserGenerator()		{ return &_userGen;	}
-		xn::HandsGenerator* getHandsGenerator()		{ return &_handsGen;	}
+		xn::ImageGenerator*	getImageGenerator()		{ return _imageGen;	}
+		xn::IRGenerator* getIRGenerator()			{ return _irGen;	}
+		xn::DepthGenerator*	getDepthGenerator()		{ return _depthGen;	}
+		xn::UserGenerator* getUserGenerator()		{ return _userGen;	}
+		xn::HandsGenerator* getHandsGenerator()		{ return _handsGen;	}
 		xn::Context*	getContext()				{ return _context;	}
 
 		bool isOneTimeCalibration()					{ return _isOneTimeCalibration;	}
@@ -205,9 +205,9 @@ namespace V
 		void setSkeletonProfile( XnSkeletonProfile profile ) 
 		{ 
 			mSkeletonProfile = profile; 
-			if( _isUserOn && _userGen.IsCapabilitySupported(XN_CAPABILITY_SKELETON) )
+			if( _isUserOn && _userGen->IsCapabilitySupported(XN_CAPABILITY_SKELETON) )
 			{
-				_userGen.GetSkeletonCap().SetSkeletonProfile( mSkeletonProfile );
+				_userGen->GetSkeletonCap().SetSkeletonProfile( mSkeletonProfile );
 			}
 		}
 
@@ -238,9 +238,11 @@ namespace V
 		uint32_t enumDevices( void );
 		void privateInit();
 	public:
+        int                     _index;
 		std::string				mDeviceName;
-		//std::string				mDebugInfo;
 
+        OpenNIDeviceManager*    _mgr;
+        
 		bool					_isDepthInverted;
 		bool					_enableHistogram;
         bool                    _enableUserCalibration;
@@ -267,12 +269,10 @@ namespace V
 		OpenNISurface16*		mDepthSurface;
 
 		const int				mBitsPerPixel;
-		//boost::uint8_t*			_colorData;
 		boost::uint16_t*		_irData;
 		boost::uint8_t*			_irData8;
 		boost::uint16_t*		_depthData;
 		boost::uint16_t*		_backDepthData;
-		//boost::uint8_t*			_depthData8;
 		boost::uint8_t*			_depthDataRGB;
 		XnPoint3D*				_depthMapRealWorld;
 		XnPoint3D*				_backDepthMapRealWorld;
@@ -308,15 +308,15 @@ namespace V
         float                   _confidenceThreshold;
 
 		xn::Generator*			_primaryGen;
-		xn::DepthGenerator		_depthGen;
-		xn::ImageGenerator		_imageGen;
-		xn::IRGenerator			_irGen;
-		xn::UserGenerator		_userGen;
-		xn::AudioGenerator		_audioGen;
-		xn::HandsGenerator		_handsGen;
+		xn::DepthGenerator*		_depthGen;
+		xn::ImageGenerator*		_imageGen;
+		xn::IRGenerator*		_irGen;
+		xn::UserGenerator*		_userGen;
+		xn::HandsGenerator*		_handsGen;
+		//xn::AudioGenerator*		_audioGen;
 
 		// scene
-		xn::SceneAnalyzer       _sceneAnalyzer;
+		xn::SceneAnalyzer*      _sceneAnalyzer;
 		xn::ImageMetaData*		_imageMetaData;
 		xn::IRMetaData*			_irMetaData;
 		xn::DepthMetaData*		_depthMetaData;
@@ -512,6 +512,8 @@ namespace V
 		const uint32_t getMaxNumOfUsers()			{ return mMaxNumOfUsers; }
 		void setMaxNumOfUsers( uint32_t count )		{ mMaxNumOfUsers = count; }
 
+        xn::Context*	getContext()				{ return &_context;	}
+
 
 		//
 		// Instance
@@ -586,8 +588,7 @@ namespace V
 		void			CalcFieldOfView( uint32_t deviceIdx=0 );
 
 		// Getters
-		void			GetSceneLabelMap( uint32_t deviceIdx, uint32_t labelId, uint16_t* labelMap );
-		void			GetUserPixels( uint32_t deviceIdx, uint32_t userId, uint16_t* labelMap );
+		void			GetUserMap( uint32_t deviceIdx, uint32_t labelId, uint16_t* labelMap );
 		float			GetFieldOfViewH( uint32_t deviceIdx=0 );
 		float			GetFieldOfViewV( uint32_t deviceIdx=0 );
 		SUser::Ref		GetUser( uint32_t deviceIdx=0, uint32_t userId=1 );
