@@ -35,7 +35,6 @@ namespace V
 
 	public:
 		OpenNIUser( boost::int32_t id, OpenNIDevice* device );
-		//OpenNIUser( boost::int32_t id, OpenNIDeviceRef device );
 		~OpenNIUser();
 		void            init();
 		void            update();
@@ -79,7 +78,8 @@ namespace V
 		// Get closest and farest z distance for current user
 		// This can be used to find a center point for local transformations
 		uint16_t		getMinZDistance()				{ return mUserMinZDistance;	}
-		uint16_t		getMaxZDistance()				{ return mUserMaxZDistance;	}
+		uint16_t	
+        getMaxZDistance()				{ return mUserMaxZDistance;	}
 
 	protected:
 		void			allocate( int width, int height );

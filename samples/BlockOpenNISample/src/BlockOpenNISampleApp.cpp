@@ -135,6 +135,7 @@ void BlockOpenNISampleAppApp::setup()
 	_manager = V::OpenNIDeviceManager::InstancePtr();
     _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );
 	_device0 = _manager->getDevice( 0 );
+    _device0->setDepthInvert( false );
 
 	if( !_device0 )
 	{
@@ -143,13 +144,11 @@ void BlockOpenNISampleAppApp::setup()
         this->quit();
 	}
 
-	gl::Texture::Format format;
-	gl::Texture::Format depthFormat;
-	mColorTex = gl::Texture( KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT, format );
-	mDepthTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT, depthFormat );
+	mColorTex = gl::Texture( KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT );
+	mDepthTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT );
 
 
-    _manager->SetPrimaryBuffer( 0, V::NODE_TYPE_DEPTH );
+    //_manager->SetPrimaryBuffer( 0, V::NODE_TYPE_DEPTH );
 	_manager->start();
 }
 

@@ -16,9 +16,8 @@ namespace V
 			for( int i=0; i<9; i++)
 				orientation[i] = 0.0f;
 
-
-			//positionConfidence = 0.0f;
-			//orientationConfidence = 0.0f;
+			positionConfidence = 0.0f;
+			orientationConfidence = 0.0f;
 		}
 
 		int id;

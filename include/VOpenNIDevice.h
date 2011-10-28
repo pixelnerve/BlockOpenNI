@@ -7,9 +7,9 @@
 
 
 	Current version:
-		OpenNI	1.3.2.3
-		NITE	1.4.1.2
-***/
+        OpenNI	1.3.4.3
+        NITE	1.4.2.4
+ ***/
 
 #pragma once
 
