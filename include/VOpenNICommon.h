@@ -96,6 +96,21 @@ namespace V
 	#define MAX_DEVICES 4
 	// Maximum depth bins for the histogram image
 	#define MAX_DEPTH 10000
+    
+    
+    
+    
+    enum NodeResolution
+    {
+        RES_320x240 = XN_RES_QVGA,
+        RES_640x480 = XN_RES_VGA,
+        RES_800x600 = XN_RES_SVGA,
+        RES_1024x768 = XN_RES_XGA,
+        RES_1280x1024 = XN_RES_SXGA,
+        RES_1600x1200 = XN_RES_UXGA
+    };
+    
+    
 
 	// Enumeration of production nodes
 	enum ProductionNodeType

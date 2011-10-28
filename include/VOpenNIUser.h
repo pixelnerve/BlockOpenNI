@@ -37,13 +37,13 @@ namespace V
 		OpenNIUser( boost::int32_t id, OpenNIDevice* device );
 		//OpenNIUser( boost::int32_t id, OpenNIDeviceRef device );
 		~OpenNIUser();
-		void init();
-		void update();
-		void updatePixels();
-		void updateBody();
-		void renderJoints( float width, float height, float depth, float pointSize=5, bool renderDepth=false );
-		void renderJointsRealWorld( float pointSize );
-		void renderBone( int joint1, int joint2, float width=640, float height=480, float depth=1, bool doProjective = true, bool renderDepthInProjective=false );
+		void            init();
+		void            update();
+		void            updatePixels();
+		void            updateBody();
+		void            renderJoints( float width, float height, float depth, float pointSize=5, bool renderDepth=false );
+		void            renderJointsRealWorld( float pointSize );
+		void            renderBone( int joint1, int joint2, float width=640, float height=480, float depth=1, bool doProjective = true, bool renderDepthInProjective=false );
 
 		//bool			isTracking()		{ return _device->getUserGenerator()->GetSkeletonCap().IsTracking(mId); }
 

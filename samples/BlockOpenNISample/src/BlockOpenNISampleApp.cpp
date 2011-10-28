@@ -131,47 +131,45 @@ public:	// Members
 
 void BlockOpenNISampleAppApp::setup()
 {
+	V::OpenNIDeviceManager::USE_THREAD = false;
 	_manager = V::OpenNIDeviceManager::InstancePtr();
-#if defined(CINDER_MSW) || defined(CINDER_LINUX)
-	string xmlpath = "resources/configIR.xml";
-#elif defined(CINDER_MAC) || defined(CINDER_COCOA) || defined(CINDER_COCOA_TOUCH)				
-	string xmlpath = getResourcePath() + "/configIR.xml";
-#endif
-	
-	// console() << "Loading config xml:" << xmlpath << std::endl;
-	_device0 = _manager->createDevice( xmlpath );
-	
-	//_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );	// Create manually.
-	
-	if( !_device0 ) 
+    _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );
+	_device0 = _manager->getDevice( 0 );
+
+	if( !_device0 )
 	{
 		DEBUG_MESSAGE( "(App)  Can't find a kinect device\n" );
-        this->quit();
         this->shutdown();
+        this->quit();
 	}
-    
-	//_device0->setPrimaryBuffer( V::NODE_TYPE_DEPTH );	// Broken!! TODO: Will be available with new version. Still a way to do it is as below
-	//_manager->mPrimaryBuffer = _device0->getDepthGenerator();	// Hack on generator wait update
-	_device0->setHistogram( true );	// Enable histogram depth map (RGB8bit bitmap)
-	_manager->start();
-
 
 	gl::Texture::Format format;
 	gl::Texture::Format depthFormat;
 	mColorTex = gl::Texture( KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT, format );
 	mDepthTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT, depthFormat );
+
+
+    _manager->SetPrimaryBuffer( 0, V::NODE_TYPE_DEPTH );
+	_manager->start();
 }
+
 
 void BlockOpenNISampleAppApp::mouseDown( MouseEvent event )
 {
 }
 
+
 void BlockOpenNISampleAppApp::update()
 {	
+    if( !V::OpenNIDeviceManager::USE_THREAD )
+    {
+        _manager->update();
+    }
+
+    
 	// Update textures
 	mColorTex.update( getColorImage() );
-	mDepthTex.update( getDepthImage24() );	// Histogram
-	//mDepthTex.update( getDepthImage() );	// Raw depthmap
+	mDepthTex.update( getDepthImage() );
 }
 
 void BlockOpenNISampleAppApp::draw()

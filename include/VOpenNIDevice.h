@@ -82,8 +82,8 @@ namespace V
 		OpenNIDevice( int index, OpenNIDeviceManager* mgr );
 		OpenNIDevice( int index, OpenNIDeviceManager* mgr, xn::Device* device );
 		~OpenNIDevice();
-		bool init( boost::uint64_t nodeTypeFlags );
-		bool initFromXmlFile( const std::string& xmlFile, bool allocUserIfNoNode=false );
+		bool init( boost::uint64_t nodeTypeFlags, int resolution );
+//		bool initFromXmlFile( const std::string& xmlFile, bool allocUserIfNoNode=false );
 
 		void release();
 
@@ -93,8 +93,8 @@ namespace V
 
 		bool requestUserCalibration();
 		void setResolution( ProductionNodeType nodeType, int res, int fps );
-		void setFPS( ProductionNodeType nodeType, int fps );
-		void setMapOutputMode( ProductionNodeType nodeType, int width, int height, int fps );
+		//void setFPS( ProductionNodeType nodeType, int fps );
+		//void setMapOutputMode( ProductionNodeType nodeType, int width, int height, int fps );
 		void readFrame();
 
 		void calcDepthImageRealWorld();
@@ -146,9 +146,9 @@ namespace V
 
 		// Shifts depth pixel (bit operator) NOTE!this fucks with the correct distance values
 		// To get correct distances, set this value to 0 (zero)
-		int getDepthShiftMul()						{ return mDepthShiftValue; }
-		void setDepthShiftMul( int value )			{ mDepthShiftValue = value; }
-		void resetDepthShiftMul()					{ mDepthShiftValue = 0; }
+		int getDepthShiftMul()						{ return mDepthShiftValue;          }
+		void setDepthShiftMul( int value )			{ mDepthShiftValue = value;         }
+		void resetDepthShiftMul()					{ mDepthShiftValue = 0;             }
 
 		void setDepthInvert( bool flag );
 		bool getDepthInvert()						{ return _isDepthInverted; }
@@ -230,7 +230,7 @@ namespace V
 		static void XN_CALLBACK_TYPE Callback_PoseDetectionEnd( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie );
 		static void XN_CALLBACK_TYPE Callback_CalibrationStart( xn::SkeletonCapability& capability, XnUserID nId, void* pCookie );
 		static void XN_CALLBACK_TYPE Callback_CalibrationInProgress( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie );
-		static void XN_CALLBACK_TYPE Callback_CalibrationEnd( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie );
+		static void XN_CALLBACK_TYPE Callback_CalibrationComplete( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie );
 
 
 	private:
@@ -242,14 +242,14 @@ namespace V
 		std::string				mDeviceName;
 
         OpenNIDeviceManager*    _mgr;
-        
+
 		bool					_isDepthInverted;
 		bool					_enableHistogram;
         bool                    _enableUserCalibration;
 
 		//std::string				_configFile;
 
-		xn::Context*			_context;	// Pointer to context in device manager
+		xn::Context*            _context;	// Pointer to context in device manager
 		xn::ScriptNode			mScriptNode;
 
 		xn::Device				_device;	// Device object
@@ -257,7 +257,7 @@ namespace V
 		xn::EnumerationErrors	_errors;
 		XnStatus				_status;
 
-		//XnFPSData				_fpsData;
+		//XnFPSData					_fpsData;
 		XnMapOutputMode			_mapMode; 
 
 
@@ -437,6 +437,7 @@ namespace V
 		uint32_t			mMaxNumOfUsers;
 	};
 
+    
 	struct SBone
 	{
 		XnPoint3D			mPos;	// Real world position
@@ -471,6 +472,7 @@ namespace V
 	};
 
 
+    
 
 	// A singleton
 	class OpenNIDeviceManager : private boost::noncopyable
@@ -479,28 +481,26 @@ namespace V
 		OpenNIDeviceManager();
 		~OpenNIDeviceManager();
 
-		OpenNIDeviceRef createDevice( int nodeTypeFlags );
-		OpenNIDeviceRef createDevice( const std::string& xmlFile, bool allocUserIfNoNode=false );
-		void createDevices( uint32_t deviceCount, int nodeTypeFlags );
-		//OpenNIDevice* createDevice__( const std::string& xmlFile, bool allocUserIfNoNode=false );
-		//OpenNIDevice* createDevice__( int nodeTypeFlags );
-		//void destroyDevice( OpenNIDevice* device );
-		void            Release();
+//        OpenNIDeviceRef         createDevice( int nodeTypeFlags );
+//        OpenNIDeviceRef         createDevice( const std::string& xmlFile, bool allocUserIfNoNode=false );
+		void                    createDevices( uint32_t deviceCount, int nodeTypeFlags, int resolution=RES_640x480 );
 
-		void			Init();
+		void                    Release();
 
-		OpenNIDevice::Ref	getDevice( uint32_t deviceIdx=0 );
+		void                    Init();
 
-		OpenNIUserRef addUser( xn::UserGenerator* userGen, uint32_t id );
-		void removeUser( uint32_t id );
-		OpenNIUserRef getFirstUser();
-		OpenNIUserRef getSecondUser();
-		OpenNIUserRef getLastUser();
-		OpenNIUserRef getUser( int id );
-		bool hasUser( int32_t id );
-		bool hasUsers();
-		const uint32_t getNumOfUsers();
-		OpenNIUserList getUserList();
+		OpenNIDevice::Ref       getDevice( uint32_t deviceIdx=0 );
+
+		OpenNIUserRef           addUser( xn::UserGenerator* userGen, uint32_t id );
+		void                    removeUser( uint32_t id );
+		OpenNIUserRef           getFirstUser();
+		OpenNIUserRef           getSecondUser();
+		OpenNIUserRef           getLastUser();
+		OpenNIUserRef           getUser( int id );
+		bool                    hasUser( int32_t id );
+		bool                    hasUsers();
+		const uint32_t          getNumOfUsers();
+		OpenNIUserList          getUserList();
 
 		void start();
 
@@ -528,10 +528,9 @@ namespace V
 		}
 
 		void update();
-        
-        
-        void stop() { _isRunning = false; }
+        void stop()                                 { _isRunning = false; }
 
+        
 	private:
 		// Copy constructor
 		OpenNIDeviceManager( const OpenNIDeviceManager& ) {};
@@ -541,7 +540,6 @@ namespace V
 		void run();
 	public:
 		static bool						USE_THREAD;
-		static bool						USE_NEW_WRAPPER_CODE;
 
 
 	protected:
@@ -581,7 +579,7 @@ namespace V
 		uint16_t*		getDepthMap( uint32_t deviceIdx=0 );
 		uint16_t*		getDepthMapShift( uint32_t deviceIdx=0, uint32_t shiftMul=3 );
 		uint8_t*		getColorMap( uint32_t deviceIdx=0 );
-		void			SetPrimaryBuffer( uint32_t type );
+		void			SetPrimaryBuffer( uint32_t deviceIdx, uint32_t type );
 		void			CalcDepthImageRealWorld( uint32_t deviceIdx, uint16_t* pixelData, XnPoint3D* worldData );
 		void			SetFrameSync( uint32_t deviceIdx, uint32_t index1 );
 		void			AlignRGBAndDepth( uint32_t deviceIdx=0 );
@@ -591,7 +589,6 @@ namespace V
 		void			GetUserMap( uint32_t deviceIdx, uint32_t labelId, uint16_t* labelMap );
 		float			GetFieldOfViewH( uint32_t deviceIdx=0 );
 		float			GetFieldOfViewV( uint32_t deviceIdx=0 );
-		SUser::Ref		GetUser( uint32_t deviceIdx=0, uint32_t userId=1 );
 
 		void			UpdateFrame( uint32_t deviceIdx=0 );
 		void			UpdateUsers( uint32_t deviceIdx=0 );
@@ -604,12 +601,11 @@ namespace V
 		void			SendNetworkUserPixels( uint32_t deviceIdx, uint32_t userId, uint32_t sendBlocksSize/*=65535*/ );
 #endif
 	public:
-		//xn::Context						mContext;
-
-		typedef boost::shared_ptr<sDevice> SDeviceRef;
-		std::vector<SDevice::Ref>		mDeviceList;
+		//typedef boost::shared_ptr<sDevice> SDeviceRef;
+		//std::vector<SDevice::Ref>		mDeviceList;
 
 		xn::Generator*					mPrimaryGen;
+		std::vector<xn::Device>         mDevicesList;
 		std::vector<xn::DepthGenerator>	mDepthGenList;
 		std::vector<xn::ImageGenerator>	mImageGenList;
 		std::vector<xn::IRGenerator>	mIRGenList;
@@ -617,10 +613,10 @@ namespace V
 		std::vector<xn::UserGenerator>	mUserGenList;
 		std::vector<xn::HandsGenerator>	mHandsGenList;
 
-		std::vector<xn::DepthMetaData>	mDepthMDList;
-		std::vector<xn::ImageMetaData>	mImageMDList;
-		std::vector<xn::IRMetaData>		mIRMDList;
-		std::vector<xn::SceneMetaData>	mSceneMDList;
+//		std::vector<xn::DepthMetaData>	mDepthMDList;
+//		std::vector<xn::ImageMetaData>	mImageMDList;
+//		std::vector<xn::IRMetaData>		mIRMDList;
+//		std::vector<xn::SceneMetaData>	mSceneMDList;
 
 		xn::DepthMetaData				mDepthMD;
 		xn::ImageMetaData				mImageMD;

@@ -20,6 +20,7 @@ public:
 	void mouseDown( MouseEvent event );	
 	void update();
 	void draw();
+    void keyDown( KeyEvent event );
 
 
 	ImageSourceRef getColorImage( V::OpenNIDeviceRef device )
@@ -58,17 +59,16 @@ void MultipleKinectsApp::setup()
 {
 	// Init openni and devices
 	V::OpenNIDeviceManager::USE_THREAD = false;
-	V::OpenNIDeviceManager::USE_NEW_WRAPPER_CODE = true;
 	mManager = V::OpenNIDeviceManager::InstancePtr();
 	// Init 2 devices with image/depth generators. TODO: User generator not working properly.
-	mManager->createDevices( 2, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );
+	mManager->createDevices( 1, V::NODE_TYPE_DEPTH | V::NODE_TYPE_IMAGE, V::RES_1280x1024 );
 
-    
+
 	// Create device 0 is available
 	try 
 	{
 		mDevice0 = mManager->getDevice( 0 );
-		mDevice0->setDepthShiftMul( 4 );	// scale depth values 
+		mDevice0->setDepthShiftMul( 3 );	// scale depth values 
 		mDevice0->setMirrorMode( V::NODE_TYPE_IMAGE, true );
 		mDevice0->setMirrorMode( V::NODE_TYPE_DEPTH, true );
 	} catch( std::exception e )
@@ -81,9 +81,12 @@ void MultipleKinectsApp::setup()
 	try 
 	{
 		mDevice1 = mManager->getDevice( 1 );
-		mDevice1->setDepthShiftMul( 4 );
-		mDevice1->setMirrorMode( V::NODE_TYPE_IMAGE, true );
-		mDevice1->setMirrorMode( V::NODE_TYPE_DEPTH, true );
+        if( mDevice1 )
+        {
+            mDevice1->setDepthShiftMul( 3 );
+            mDevice1->setMirrorMode( V::NODE_TYPE_IMAGE, true );
+            mDevice1->setMirrorMode( V::NODE_TYPE_DEPTH, true );            
+        }
 	} catch( std::exception e )
 	{
 		app::console() << "Device 1  " << e.what() << std::endl;
@@ -125,6 +128,7 @@ void MultipleKinectsApp::update()
 	}
 }
 
+
 void MultipleKinectsApp::draw()
 {
 	// Compute frametime
@@ -148,6 +152,15 @@ void MultipleKinectsApp::draw()
 	{
 		gl::draw( mColorTex1, Rectf(0, KINECT_HEIGHT/2, KINECT_WIDTH/2, KINECT_HEIGHT) );
 		gl::draw( mDepthTex1, Rectf(KINECT_WIDTH/2, KINECT_HEIGHT/2, KINECT_WIDTH, KINECT_HEIGHT) );
+	}
+}
+
+void MultipleKinectsApp::keyDown( KeyEvent event )
+{
+	if( event.getCode() == KeyEvent::KEY_ESCAPE )
+	{
+		this->quit();
+		this->shutdown();
 	}
 }
 

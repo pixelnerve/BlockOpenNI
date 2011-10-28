@@ -119,7 +119,7 @@ public:
 	ImageSourceRef getColorImage()
 	{
 		// register a reference to the active buffer
-		uint8_t *activeColor = _device0->getColorMap();
+		uint8_t *activeColor = _manager->getColorMap();
 		return ImageSourceRef( new ImageSourceKinectColor( activeColor, KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT ) );
 	}
 
@@ -132,27 +132,25 @@ public:
 	ImageSourceRef getDepthImage()
 	{
 		// register a reference to the active buffer
-		uint16_t *activeDepth = _device0->getDepthMap();
+		uint16_t *activeDepth = _manager->getDepthMap();
 		return ImageSourceRef( new ImageSourceKinectDepth( activeDepth, KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT ) );
 	} 
 
-	ImageSourceRef getDepthImage24()
-	{
-		// register a reference to the active buffer
-		uint8_t *activeDepth = _device0->getDepthMap24();
-		return ImageSourceRef( new ImageSourceKinectColor( activeDepth, KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT ) );
-	}
 	void prepareSettings( Settings *settings );
-public:	// Members
+
+
+public:	
+    // Members
 	V::OpenNIDeviceManager*	_manager;
 	V::OpenNIDevice::Ref	_device0;
 
 	gl::Texture				mColorTex;
 	gl::Texture				mDepthTex;
     std::map< int, gl::Texture> mUsersTexMap;
-	gl::Texture				mOneUserTex;	 
 	
 	uint16_t*				pixels;
+    
+    float                   startTime, endTime, frameTime;
 };
 
 
@@ -182,17 +180,8 @@ void BlockOpenNISampleAppApp::setup()
 {
     V::OpenNIDeviceManager::USE_THREAD = false;
 	_manager = V::OpenNIDeviceManager::InstancePtr();
-
-    
-//#if defined(CINDER_MSW) || defined(CINDER_LINUX)
-//    std::string xmlpath = "resources/configIR.xml";
-//#elif defined(CINDER_MAC) || defined(CINDER_COCOA) || defined(CINDER_COCOA_TOUCH)				
-//    std::string xmlpath = getResourcePath() + "/configIR.xml";
-//#endif
-	
-	// console() << "Loading config xml:" << xmlpath << std::endl;
-	//_device0 = _manager->createDevice( xmlpath, true );
-	_device0 = _manager->createDevice( V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_USER | V::NODE_TYPE_SCENE );	// Create manually.
+    _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_SCENE | V::NODE_TYPE_USER, V::RES_640x480 );	// Create manually.
+	_device0 = _manager->getDevice( 0 );
 	if( !_device0 ) 
 	{
 		DEBUG_MESSAGE( "(App)  Can't find a kinect device\n" );
@@ -200,19 +189,17 @@ void BlockOpenNISampleAppApp::setup()
         shutdown();
 	}
     _device0->addListener( this );
-	_device0->setHistogram( true );	// Enable histogram depth map (RGB8bit bitmap)
-	_manager->start();
-
 
 	pixels = NULL;
 	pixels = new uint16_t[ KINECT_DEPTH_WIDTH*KINECT_DEPTH_HEIGHT ];
 
-	gl::Texture::Format format;
-	gl::Texture::Format depthFormat;
-	mColorTex = gl::Texture( KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT, format );
-	mDepthTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT, format );
-	mOneUserTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT, format );
+	mColorTex = gl::Texture( KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT );
+	mDepthTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT );
+
+
+	_manager->start();
 }
+
 
 
 void BlockOpenNISampleAppApp::mouseDown( MouseEvent event )
@@ -229,11 +216,10 @@ void BlockOpenNISampleAppApp::update()
     
 	// Update textures
 	mColorTex.update( getColorImage() );
-	mDepthTex.update( getDepthImage24() );	// Histogram
+	mDepthTex.update( getDepthImage() );
+    
 
 	// Uses manager to handle users.
-//	if( _manager->hasUser(1) ) 
-//		mOneUserTex.update( getUserImage(1) );
     for( std::map<int, gl::Texture>::iterator it=mUsersTexMap.begin();
         it != mUsersTexMap.end();
         ++it )
@@ -245,6 +231,11 @@ void BlockOpenNISampleAppApp::update()
 
 void BlockOpenNISampleAppApp::draw()
 {
+    endTime = startTime;
+    startTime = getElapsedSeconds();
+    frameTime = startTime - endTime;
+    app::console() << frameTime << std::endl;
+    
 	// clear out the window with black
 	gl::clear( Color( 0, 0, 0 ), true ); 
 
@@ -258,16 +249,13 @@ void BlockOpenNISampleAppApp::draw()
 	float sy = 240/2;
 	float xoff = 10;
 	float yoff = 10;
-	glEnable( GL_TEXTURE_2D );
+	//glEnable( GL_TEXTURE_2D );
 	gl::color( cinder::ColorA(1, 1, 1, 1) );
-//	if( _manager->hasUsers() && _manager->hasUser(1) ) 
-//        gl::draw( mOneUserTex, Rectf( 0, 0, WIDTH, HEIGHT) );
 	gl::draw( mDepthTex, Rectf( xoff, yoff, xoff+sx, yoff+sy) );
 	gl::draw( mColorTex, Rectf( xoff+sx*1, yoff, xoff+sx*2, yoff+sy) );
 
-    
+    /*
     // Render all user textures
-    
     int xpos = 5;
     int ypos = sy+10;
     for( std::map<int, gl::Texture>::iterator it=mUsersTexMap.begin();
@@ -292,11 +280,7 @@ void BlockOpenNISampleAppApp::draw()
 		gl::disable( GL_TEXTURE_2D );
 		// Render skeleton if available
 		_manager->renderJoints( WIDTH, HEIGHT, 0, 3, false );
-
-		// Get list of available bones/joints
-		// Do whatever with it
-		//V::UserBoneList boneList = _manager->getUser(1)->getBoneList();
-	}
+	}*/
 }
 
 
@@ -309,16 +293,6 @@ void BlockOpenNISampleAppApp::keyDown( KeyEvent event )
 		this->quit();
 		this->shutdown();
 	}
-
-
-    int key = (int)event.getChar();    
-    app::console() << "Key: " << key << std::endl;
-    if( key >= 49 && key <= 57 )
-    {
-        app::console() << "Reset: " << (key-48) << std::endl;
-        _device0->resetUser( key-48 ); // Abort calibration. the user still remains active.
-    }
-//    app::console() << "Org User Count: " << _device0->getUserGenerator()->GetNumberOfUsers() << std::endl;
 }
 
 
