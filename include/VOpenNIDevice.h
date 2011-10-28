@@ -81,7 +81,7 @@ namespace V
 		OpenNIDevice( xn::Context* context );
 		OpenNIDevice( xn::Context* context, xn::Device* device );
 		~OpenNIDevice();
-		bool init( boost::uint64_t nodeTypeFlags );
+		bool init( boost::uint64_t nodeTypeFlags, int resolution=RES_640x480 );
 		bool initFromXmlFile( const std::string& xmlFile, bool allocUserIfNoNode=false );
 
 		void release();
@@ -91,9 +91,9 @@ namespace V
 		void allocate( uint64_t flags, uint32_t width, uint32_t height );
 
 		bool requestUserCalibration();
-		void setResolution( ProductionNodeType nodeType, int res, int fps );
-		void setFPS( ProductionNodeType nodeType, int fps );
-		void setMapOutputMode( ProductionNodeType nodeType, int width, int height, int fps );
+		void setResolution( ProductionNodeType nodeType, int resolution, int fps );
+		//void setFPS( ProductionNodeType nodeType, int fps );
+		//void setMapOutputMode( ProductionNodeType nodeType, int width, int height, int fps );
 		void readFrame();
 
 		void calcDepthImageRealWorld();
@@ -479,7 +479,7 @@ namespace V
 		OpenNIDeviceManager();
 		~OpenNIDeviceManager();
 
-		OpenNIDeviceRef createDevice( int nodeTypeFlags );
+		OpenNIDeviceRef createDevice( int nodeTypeFlags, int resolution=RES_640x480 );
 		OpenNIDeviceRef createDevice( const std::string& xmlFile, bool allocUserIfNoNode=false );
 		void createDevices( uint32_t deviceCount, int nodeTypeFlags );
 		//OpenNIDevice* createDevice__( const std::string& xmlFile, bool allocUserIfNoNode=false );

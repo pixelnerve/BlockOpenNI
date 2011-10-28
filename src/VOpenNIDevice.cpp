@@ -396,7 +396,7 @@ namespace V
 	}
 
 
-	bool OpenNIDevice::init( uint64_t nodeTypeFlags )
+	bool OpenNIDevice::init( uint64_t nodeTypeFlags, int resolution )
 	{      
 		// Pick image or IR map
 		if( nodeTypeFlags & NODE_TYPE_IMAGE )
@@ -462,21 +462,21 @@ namespace V
 
 
 		if( _isImageOn ) {
-			setResolution( NODE_TYPE_IMAGE, XN_RES_VGA, 30 );
+			setResolution( NODE_TYPE_IMAGE, resolution, 30 );
 			_imageGen.GetMetaData( *_imageMetaData );
 		}
 		if( _isIROn )	{
-			setResolution( NODE_TYPE_IR, XN_RES_VGA, 30 );
+			setResolution( NODE_TYPE_IR, resolution, 30 );
 			_irGen.GetMetaData( *_irMetaData );
 		}
 		if( _isDepthOn )
 		{
-			setResolution( NODE_TYPE_DEPTH, XN_RES_VGA, 30 );
+			setResolution( NODE_TYPE_DEPTH, resolution, 30 );
 			_depthGen.GetMetaData( *_depthMetaData );
 		}
 		if( _isSceneOn )
 		{
-			setResolution( NODE_TYPE_SCENE, XN_RES_VGA, 30 );
+			setResolution( NODE_TYPE_SCENE, resolution, 30 );
 			_sceneAnalyzer.GetMetaData( *_sceneMetaData );
 		}
 
@@ -494,11 +494,41 @@ namespace V
 		{
 			requestUserCalibration();
 		}
+        
+        
+        // Pick the right resolution
+        int xRes = 0, yRes = 0;
+        switch( resolution )
+        {
+            case RES_320x240:
+                xRes = 320;
+                yRes = 240;
+                break;
+            case RES_640x480:
+                xRes = 640;
+                yRes = 480;
+                break;
+            case RES_800x600:
+                xRes = 800;
+                yRes = 600;
+                break;
+            case RES_1024x768:
+                xRes = 1024;
+                yRes = 768;
+                break;
+            case RES_1280x1024:
+                xRes = 1280;
+                yRes = 1024;
+                break;
+            default:
+                xRes = 640;
+                yRes = 480;
+                break;
+        }        
 
 
-		// Allocate memory for bitmaps (fixed to 640*480)
-		// TODO: Give user a new parameter for dimensions
-		allocate( static_cast<int>(nodeTypeFlags), 640, 480 );
+		// Allocate memory for maps
+		allocate( static_cast<int>(nodeTypeFlags), xRes, yRes );
 
 
 		return true;
@@ -840,23 +870,8 @@ namespace V
 	}
 
 
-	/**
-		Change resolution of a bitmap generator.
 
-		Possible enumerations:
-			XN_RES_CUSTOM = 0,
-			XN_RES_QQVGA = 1,
-			XN_RES_CGA = 2,
-			XN_RES_QVGA = 3,
-			XN_RES_VGA = 4,
-			XN_RES_SVGA = 5,
-			XN_RES_XGA = 6,
-			XN_RES_720P = 7,
-			XN_RES_SXGA = 8,
-			XN_RES_UXGA = 9,
-			XN_RES_1080P = 10,
-	**/
-	void OpenNIDevice::setResolution( ProductionNodeType nodeType, int res, int fps )
+    void OpenNIDevice::setResolution( ProductionNodeType nodeType, int resolution, int fps )
 	{
 		MapGenerator* gen = NULL;
 		switch( nodeType )
@@ -877,11 +892,11 @@ namespace V
 			DEBUG_MESSAGE( "Can't change resolution. Not a valid generator" );
 			return;
 		}
-
+        
 		XnMapOutputMode mode;
 		gen->GetMapOutputMode( mode );
-		mode.nXRes = Resolution((XnResolution)res).GetXResolution();
-		mode.nYRes = Resolution((XnResolution)res).GetYResolution();
+		mode.nXRes = Resolution((XnResolution)resolution).GetXResolution();
+		mode.nYRes = Resolution((XnResolution)resolution).GetYResolution();
 		mode.nFPS = fps;
 		XnStatus nRetVal = gen->SetMapOutputMode( mode );
 		if( nRetVal != XN_STATUS_OK )
@@ -936,6 +951,8 @@ namespace V
 	}
 
 
+ 
+ /****
 	void OpenNIDevice::setFPS( ProductionNodeType nodeType, int fps )
 	{
 		MapGenerator* gen = NULL;
@@ -1032,7 +1049,7 @@ namespace V
 			return;
 		}
 	}
-
+***/
 
 
 	void OpenNIDevice::readFrame()
@@ -1203,40 +1220,52 @@ namespace V
 			int depthWidth = _sceneMetaData->XRes();
 			int depthHeight = _sceneMetaData->YRes();			
 			//std::cout << "depth width:" << depthWidth << ", height:" << depthHeight << std::endl;
-			
+
+            // Copy label map
+            memset( labelMap, 0, depthWidth*depthHeight*sizeof(uint16_t) );
+            uint16_t* pDepth = _depthData;
+            uint16_t* map = labelMap;
             
-            // If userId is 0, return the common users map
             if( userId <= 0 )
             {
-                // Same as below but no label checking
-                memcpy( labelMap, pDepth, depthWidth*depthHeight*sizeof(uint16_t) );   
+                uint32_t dim = depthWidth*depthHeight;
+                for( int i=0; i<dim; i++ )
+                {
+                    XnLabel label = *labels;
+                    
+                    if( label > 0 )
+                    {
+                        *map = *pDepth;
+                    }                    
+                    pDepth++;
+                    map++;
+                    labels++;
+                }   
             }
             else
             {
-                // Copy label map
-                memset( labelMap, 0, depthWidth*depthHeight*sizeof(uint16_t) );
-                uint16_t* pDepth = _depthData;
-                uint16_t* map = labelMap;
-                
                 //int index = 0;
-                for( int j=0; j<depthHeight; j++ )
+                //for( int j=0; j<depthHeight; j++ )
+                //{
+                //for( int i=0; i<depthWidth; i++ )
+                //{
+                uint32_t dim = depthWidth*depthHeight;
+                for( int i=0; i<dim; i++ )
                 {
-                    for( int i=0; i<depthWidth; i++ )
+                    XnLabel label = *labels;
+                    
+                    if( label == userId )
                     {
-                        XnLabel label = *labels;
-                        
-                        if( label == userId )
-                        {
-                            // If a user pixel, take depth value from our depthmap
-                            *map = *pDepth;
-                        }
-                        
-                        pDepth++;
-                        map++;
-                        labels++;
+                        *map = *pDepth;
                     }
-                }                
+                    
+                    pDepth++;
+                    map++;
+                    labels++;
+                }
+                //}                
             }
+
 		}
 	}
 
@@ -1617,59 +1646,8 @@ namespace V
     
     
     
-	
-	/* ORIGINAL VERSION **
-	 
-	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( const std::string& xmlFile, bool allocUserIfNoNode //=false 
-														)
-	{
-		if( mDevices.size() >= MAX_DEVICES ) return boost::shared_ptr<OpenNIDevice>();
 
-		// Make sure we initialize our context
-		if( !mIsContextInit ) 
-			Init();
-
-		// Bail out if its an empty filename
-		if( xmlFile == "" )
-		{
-			DEBUG_MESSAGE( "not implemented" );
-			return OpenNIDeviceRef();
-		}
-
-
-		// Local copy of the filename
-		std::string path = xmlFile;
-
-		#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-		char AppAbsPath[1024];
-		path = "/" + path;
-		path = _getcwd( AppAbsPath, 1024 ) + path;
-		//DEBUG_MESSAGE( path.c_str() );
-		#else
-		char AppAbsPath[1024];
-		path = "/" + path;
-		path = getcwd( AppAbsPath, 1024 ) + path;
-		//DEBUG_MESSAGE( path.c_str() );
-		#endif
-
-		// Initialize device
-		OpenNIDeviceRef dev = OpenNIDeviceRef( new OpenNIDevice(&_context) );
-
-		if( !dev->initFromXmlFile( path, allocUserIfNoNode ) ) 
-		{
-			DEBUG_MESSAGE( "[OpenNIDeviceManager]  Couldn't create device from xml\n" );
-			return OpenNIDeviceRef();
-		}
-		// By default set depth as primary generator
-		//dev->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
-
-		// Save device to our list
-		mDevices.push_back( dev );
-		return dev;
-	}
-*/
-
-	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( int nodeTypeFlags )
+	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( int nodeTypeFlags, int resolution )
 	{
 		if( mDevices.size() >= MAX_DEVICES ) 
 			return OpenNIDeviceRef();
@@ -1690,14 +1668,13 @@ namespace V
 
         
 		OpenNIDeviceRef dev = OpenNIDeviceRef( new OpenNIDevice(&_context) );
-		if( !dev->init( nodeTypeFlags ) ) 
+		if( !dev->init( nodeTypeFlags, resolution ) ) 
 		{
 			DEBUG_MESSAGE( "[OpenNIDeviceManager]  Couldn't create device manually\n" );
 			return OpenNIDeviceRef();
 		}
-		// By default set depth as primary generator
-		//dev->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
 		mDevices.push_back( dev );
+
 		return dev;
 	}
 
@@ -2464,23 +2441,45 @@ namespace V
 			const XnDepthPixel* pDepth = mDepthMD.Data();	//getDepthMap( deviceIdx );
 			uint16_t* map = labelMap;
 
-			//int index = 0;
-			for( int j=0; j<depthHeight; j++ )
-			{
-				for( int i=0; i<depthWidth; i++ )
-				{
-					XnLabel label = *labels;
-
-					if( label == labelId )
-					{
-						*map = *pDepth;
-					}
-
-					pDepth++;
-					map++;
-					labels++;
-				}
-			}
+            if( labelId <= 0 )
+            {
+                uint32_t dim = depthWidth*depthHeight;
+                for( int i=0; i<dim; i++ )
+                {
+                    XnLabel label = *labels;
+                    
+                    if( label > 0 )
+                    {
+                        *map = *pDepth;
+                    }                    
+                    pDepth++;
+                    map++;
+                    labels++;
+                }   
+            }
+            else
+            {
+                //int index = 0;
+                //for( int j=0; j<depthHeight; j++ )
+                //{
+                    //for( int i=0; i<depthWidth; i++ )
+                    //{
+                    uint32_t dim = depthWidth*depthHeight;
+                    for( int i=0; i<dim; i++ )
+                    {
+                        XnLabel label = *labels;
+                        
+                        if( label == labelId )
+                        {
+                            *map = *pDepth;
+                        }
+                        
+                        pDepth++;
+                        map++;
+                        labels++;
+                    }
+                //}                
+            }
 		}
 	}
 

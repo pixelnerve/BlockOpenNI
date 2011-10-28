@@ -150,7 +150,7 @@ public:	// Members
 	gl::Texture				mColorTex;
 	gl::Texture				mDepthTex;
     std::map< int, gl::Texture> mUsersTexMap;
-	gl::Texture				mOneUserTex;	 
+	gl::Texture				mCommonUserTex;	 
 	
 	uint16_t*				pixels;
 };
@@ -200,7 +200,6 @@ void BlockOpenNISampleAppApp::setup()
         shutdown();
 	}
     _device0->addListener( this );
-	_device0->setHistogram( true );	// Enable histogram depth map (RGB8bit bitmap)
 	_manager->start();
 
 
@@ -211,7 +210,7 @@ void BlockOpenNISampleAppApp::setup()
 	gl::Texture::Format depthFormat;
 	mColorTex = gl::Texture( KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT, format );
 	mDepthTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT, format );
-	mOneUserTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT, format );
+	mCommonUserTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT, format );
 }
 
 
@@ -229,7 +228,8 @@ void BlockOpenNISampleAppApp::update()
     
 	// Update textures
 	mColorTex.update( getColorImage() );
-	mDepthTex.update( getDepthImage24() );	// Histogram
+	mDepthTex.update( getDepthImage() );
+    mCommonUserTex.update( getUserImage(0) );
 
 	// Uses manager to handle users.
 //	if( _manager->hasUser(1) ) 
@@ -264,6 +264,7 @@ void BlockOpenNISampleAppApp::draw()
 //        gl::draw( mOneUserTex, Rectf( 0, 0, WIDTH, HEIGHT) );
 	gl::draw( mDepthTex, Rectf( xoff, yoff, xoff+sx, yoff+sy) );
 	gl::draw( mColorTex, Rectf( xoff+sx*1, yoff, xoff+sx*2, yoff+sy) );
+	gl::draw( mCommonUserTex, Rectf( xoff+sx*2, yoff, xoff+sx*3, yoff+sy) );
 
     
     // Render all user textures
