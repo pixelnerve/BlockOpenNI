@@ -61,7 +61,7 @@ void MultipleKinectsApp::setup()
 	V::OpenNIDeviceManager::USE_THREAD = false;
 	mManager = V::OpenNIDeviceManager::InstancePtr();
 	// Init 2 devices with image/depth generators. TODO: User generator not working properly.
-	mManager->createDevices( 1, V::NODE_TYPE_DEPTH | V::NODE_TYPE_IMAGE, V::RES_1280x1024 );
+	mManager->createDevices( 1, V::NODE_TYPE_DEPTH | V::NODE_TYPE_IMAGE, V::RES_640x480 );
 
 
 	// Create device 0 is available

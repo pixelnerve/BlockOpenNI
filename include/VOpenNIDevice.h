@@ -38,7 +38,7 @@ namespace V
 	typedef std::vector<UserListener*> UserListenerList;
 
 	// NEW WRAPPER
-	typedef std::list< boost::shared_ptr<sDevice> > OpenNISDeviceList;
+	//typedef std::list< boost::shared_ptr<sDevice> > OpenNISDeviceList;
 
 
 
@@ -170,8 +170,8 @@ namespace V
 		XnPoint3D* getDepthMapRealWorld();
 		boost::uint16_t* getRawDepthMap();
 
-		xn::DepthMetaData* getDepthMetaData()		{ return _depthMetaData; }
-		xn::SceneMetaData* getSceneMetaData()		{ return _sceneMetaData; }
+//		xn::DepthMetaData* getDepthMetaData()		{ return &_depthMetaData; }
+//		xn::SceneMetaData* getSceneMetaData()		{ return &_sceneMetaData; }
 		xn::ImageGenerator*	getImageGenerator()		{ return _imageGen;	}
 		xn::IRGenerator* getIRGenerator()			{ return _irGen;	}
 		xn::DepthGenerator*	getDepthGenerator()		{ return _depthGen;	}
@@ -269,6 +269,7 @@ namespace V
 		OpenNISurface16*		mDepthSurface;
 
 		const int				mBitsPerPixel;
+		boost::uint8_t*			_colorMap;
 		boost::uint16_t*		_irData;
 		boost::uint8_t*			_irData8;
 		boost::uint16_t*		_depthData;
@@ -314,14 +315,14 @@ namespace V
 		xn::UserGenerator*		_userGen;
 		xn::HandsGenerator*		_handsGen;
 		//xn::AudioGenerator*		_audioGen;
+		xn::SceneAnalyzer*      _sceneAnalyzer;
 
 		// scene
-		xn::SceneAnalyzer*      _sceneAnalyzer;
-		xn::ImageMetaData*		_imageMetaData;
-		xn::IRMetaData*			_irMetaData;
-		xn::DepthMetaData*		_depthMetaData;
-		xn::SceneMetaData*		_sceneMetaData;
-		xn::AudioMetaData*		_audioMetaData;
+		xn::ImageMetaData		_imageMetaData;
+		xn::IRMetaData			_irMetaData;
+		xn::DepthMetaData		_depthMetaData;
+		xn::SceneMetaData		_sceneMetaData;
+		xn::AudioMetaData		_audioMetaData;
 
 
 		// Internal clip planes

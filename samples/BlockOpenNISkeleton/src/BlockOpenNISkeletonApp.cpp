@@ -119,7 +119,7 @@ public:
 	ImageSourceRef getColorImage()
 	{
 		// register a reference to the active buffer
-		uint8_t *activeColor = _manager->getColorMap();
+		uint8_t *activeColor = _device0->getColorMap();
 		return ImageSourceRef( new ImageSourceKinectColor( activeColor, KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT ) );
 	}
 
@@ -132,7 +132,7 @@ public:
 	ImageSourceRef getDepthImage()
 	{
 		// register a reference to the active buffer
-		uint16_t *activeDepth = _manager->getDepthMap();
+		uint16_t *activeDepth = _device0->getDepthMap();
 		return ImageSourceRef( new ImageSourceKinectDepth( activeDepth, KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT ) );
 	} 
 
@@ -165,6 +165,7 @@ BlockOpenNISampleAppApp::~BlockOpenNISampleAppApp()
 	}
 }
 
+
 void BlockOpenNISampleAppApp::prepareSettings( Settings *settings )
 {
 	settings->setFrameRate( 60 );
@@ -180,8 +181,11 @@ void BlockOpenNISampleAppApp::setup()
 {
     V::OpenNIDeviceManager::USE_THREAD = false;
 	_manager = V::OpenNIDeviceManager::InstancePtr();
-    _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_SCENE | V::NODE_TYPE_USER, V::RES_640x480 );	// Create manually.
+    _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_SCENE );
+//    _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_SCENE | V::NODE_TYPE_USER );
 	_device0 = _manager->getDevice( 0 );
+    _device0->setDepthInvert( false );
+    _device0->setDepthShiftMul( 4 );
 	if( !_device0 ) 
 	{
 		DEBUG_MESSAGE( "(App)  Can't find a kinect device\n" );
@@ -234,10 +238,11 @@ void BlockOpenNISampleAppApp::draw()
     endTime = startTime;
     startTime = getElapsedSeconds();
     frameTime = startTime - endTime;
-    app::console() << frameTime << std::endl;
+    //app::console() << frameTime << std::endl;
+
     
 	// clear out the window with black
-	gl::clear( Color( 0, 0, 0 ), true ); 
+	gl::clear( Color( 0, 0, 0 ) ); 
 
 
 	gl::setMatricesWindow( WIDTH, HEIGHT );
@@ -254,7 +259,7 @@ void BlockOpenNISampleAppApp::draw()
 	gl::draw( mDepthTex, Rectf( xoff, yoff, xoff+sx, yoff+sy) );
 	gl::draw( mColorTex, Rectf( xoff+sx*1, yoff, xoff+sx*2, yoff+sy) );
 
-    /*
+
     // Render all user textures
     int xpos = 5;
     int ypos = sy+10;
@@ -280,7 +285,7 @@ void BlockOpenNISampleAppApp::draw()
 		gl::disable( GL_TEXTURE_2D );
 		// Render skeleton if available
 		_manager->renderJoints( WIDTH, HEIGHT, 0, 3, false );
-	}*/
+	}
 }
 
 

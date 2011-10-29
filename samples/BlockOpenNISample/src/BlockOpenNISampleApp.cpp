@@ -129,6 +129,7 @@ public:	// Members
 	 
 };
 
+
 void BlockOpenNISampleAppApp::setup()
 {
 	V::OpenNIDeviceManager::USE_THREAD = false;
@@ -136,7 +137,7 @@ void BlockOpenNISampleAppApp::setup()
     _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );
 	_device0 = _manager->getDevice( 0 );
     _device0->setDepthInvert( false );
-
+    _device0->setDepthShiftMul( 4 );
 	if( !_device0 )
 	{
 		DEBUG_MESSAGE( "(App)  Can't find a kinect device\n" );
@@ -146,7 +147,6 @@ void BlockOpenNISampleAppApp::setup()
 
 	mColorTex = gl::Texture( KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT );
 	mDepthTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT );
-
 
     //_manager->SetPrimaryBuffer( 0, V::NODE_TYPE_DEPTH );
 	_manager->start();
@@ -171,6 +171,7 @@ void BlockOpenNISampleAppApp::update()
 	mDepthTex.update( getDepthImage() );
 }
 
+
 void BlockOpenNISampleAppApp::draw()
 {
 	// clear out the window with black
@@ -187,6 +188,7 @@ void BlockOpenNISampleAppApp::draw()
 	gl::draw( mColorTex, Rectf( xoff+sx*1, yoff, xoff+sx*2, yoff+sy) );
 }
 
+
 void BlockOpenNISampleAppApp::keyDown( KeyEvent event )
 {
 	if( event.getCode() == KeyEvent::KEY_ESCAPE )
@@ -195,5 +197,6 @@ void BlockOpenNISampleAppApp::keyDown( KeyEvent event )
 		this->shutdown();
 	}
 }
+
 
 CINDER_APP_BASIC( BlockOpenNISampleAppApp, RendererGl )
