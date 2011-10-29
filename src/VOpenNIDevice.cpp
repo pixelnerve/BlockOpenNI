@@ -353,7 +353,6 @@ namespace V
 		//_userGen	= NULL;
 		_handsGen	= NULL;
 
-        _colorMap = NULL;
 		mColorSurface	= NULL;
 		mIRSurface		= NULL;
 		mDepthSurface	= NULL;
@@ -770,7 +769,6 @@ namespace V
 		SAFE_DELETE( mIRSurface );
 		SAFE_DELETE( mDepthSurface );
 
-        SAFE_DELETE_ARRAY( _colorMap );
 		SAFE_DELETE_ARRAY( _irData );
 		SAFE_DELETE_ARRAY( _irData8 );
 		SAFE_DELETE_ARRAY( _depthData );
@@ -812,7 +810,7 @@ namespace V
 			//_colorData = new boost::uint8_t[width*height*mBitsPerPixel];
 			if( !mColorSurface ) 
                 mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, width, height );
-            _colorMap = new boost::uint8_t[width*height];
+
 		}
 		if( flags & NODE_TYPE_IR )
 		{
@@ -824,7 +822,6 @@ namespace V
                 mIRSurface = new OpenNISurface8( NODE_TYPE_IR, width, height );
 			if( !mColorSurface ) 
                 mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, width, height );
-            _colorMap = new boost::uint8_t[width*height];
 		}
 		if( flags & NODE_TYPE_DEPTH )
 		{
@@ -966,8 +963,6 @@ namespace V
                 mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, mode.nXRes, mode.nYRes );
 			else 
                 mColorSurface->remap( mode.nXRes, mode.nYRes );
-                
-            _colorMap = new boost::uint8_t[mode.nXRes*mode.nYRes];
 			break;
 		case NODE_TYPE_IR:
 			if( !mColorSurface ) 
@@ -980,8 +975,6 @@ namespace V
 			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			_irData = new uint16_t[mode.nXRes*mode.nYRes];
 			_irData8 = new uint8_t[mode.nXRes*mode.nYRes];
-            _colorMap = new boost::uint8_t[mode.nXRes*mode.nYRes];
-
 			break;
 		case NODE_TYPE_DEPTH:
 			SAFE_DELETE_ARRAY( _depthData );
@@ -1233,17 +1226,6 @@ namespace V
 			pImage = _imageGen->GetImageMap();
 			// Compute bitmap buffers
 			mColorSurface->update( (uint8_t*)(pImage) );
-
-            std::cout << _imageMetaData.XRes() << "  " << _imageMetaData.YRes() << std::endl;
-            for( uint32_t i=0; i<_imageMetaData.XRes()*_imageMetaData.YRes(); i++ )
-            {
-                if( pImage[i] > 0 )
-                {
-                    std::cout << i << " - " << _colorMap[i] << std::endl;
-                }
-            }
-
-			//memcpy( _colorMap, pImage, _imageMetaData.XRes()*_imageMetaData.YRes()*mBitsPerPixel );
 		}
 
 
@@ -1504,7 +1486,6 @@ namespace V
 
 	boost::uint8_t* OpenNIDevice::getColorMap()
 	{
-        //return _colorMap;
 		return mColorSurface->getData();
 	}
 
@@ -1846,10 +1827,12 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
                 
 				DepthGenerator gen;
-				status = _context.CreateProductionTree( nodeInfo ); 
-                CHECK_RC( status, "(createDevices)  DepthGenerator" );
+				status = _context.CreateProductionTree( nodeInfo, gen ); 
+				CHECK_RC( status, "(createDevices)  DepthGenerator" );
+				/*status = _context.CreateProductionTree( nodeInfo ); 
+				CHECK_RC( status, "(createDevices)  DepthGenerator" );
 				status = nodeInfo.GetInstance( gen );
-                CHECK_RC( status, "DepthGenerator" );
+                CHECK_RC( status, "DepthGenerator" );*/
 				mDepthGenList.push_back( gen );
 
 
@@ -1873,10 +1856,12 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				IRGenerator gen;
-				status = _context.CreateProductionTree( nodeInfo ); 
+				status = _context.CreateProductionTree( nodeInfo, gen ); 
+				CHECK_RC( status, "(createDevices) IRGenerator" );
+				/*status = _context.CreateProductionTree( nodeInfo ); 
                 CHECK_RC( status, "(createDevices)  IRGenerator" );
 				status = nodeInfo.GetInstance( gen );
-                CHECK_RC( status, "IRGenerator" );
+                CHECK_RC( status, "IRGenerator" );*/
 				mIRGenList.push_back( gen );
 
 				++devIt;
@@ -1898,10 +1883,12 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				ImageGenerator gen;
-				status = _context.CreateProductionTree( nodeInfo );
+				status = _context.CreateProductionTree( nodeInfo, gen ); 
+				CHECK_RC( status, "(createDevices)  ImageGenerator" );
+				/*status = _context.CreateProductionTree( nodeInfo );
                 CHECK_RC( status, "(createDevices)  ImageGenerator" );
 				status = nodeInfo.GetInstance( gen );
-                CHECK_RC( status, "ImageGenerator" );
+                CHECK_RC( status, "ImageGenerator" );*/
 				mImageGenList.push_back( gen );
 
 				++devIt;
@@ -1923,10 +1910,12 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				UserGenerator gen;
-				status = _context.CreateProductionTree( nodeInfo ); 
+				status = _context.CreateProductionTree( nodeInfo, gen ); 
+				CHECK_RC( status, "(createDevices)  UserGenerator" );
+				/*status = _context.CreateProductionTree( nodeInfo ); 
                 CHECK_RC( status, "(createDevices)  UserGenerator" );
 				status = nodeInfo.GetInstance( gen );
-                CHECK_RC( status, "UserGenerator" );
+                CHECK_RC( status, "UserGenerator" );*/
 				mUserGenList.push_back( gen );
 
 				++devIt;
@@ -1948,10 +1937,12 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				SceneAnalyzer gen;
-				status = _context.CreateProductionTree( nodeInfo ); 
+				status = _context.CreateProductionTree( nodeInfo, gen ); 
+				CHECK_RC( status, "(createDevices)  SceneAnalyzer" );
+				/*status = _context.CreateProductionTree( nodeInfo ); 
                 CHECK_RC( status, "(createDevices)  SceneAnalyzer" );
 				status = nodeInfo.GetInstance( gen );
-                CHECK_RC( status, "SceneAnalyzer" );
+                CHECK_RC( status, "SceneAnalyzer" );*/
 				mSceneAnalyzerList.push_back( gen );
 
 				++devIt;
@@ -1973,11 +1964,13 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				HandsGenerator gen;
-				status = _context.CreateProductionTree( nodeInfo ); 
+				status = _context.CreateProductionTree( nodeInfo, gen ); 
+				CHECK_RC( status, "(createDevices)  HandsGenerator" );
+				/*status = _context.CreateProductionTree( nodeInfo ); 
                 CHECK_RC( status, "(createDevices)  HandsGenerator" );
 				status = nodeInfo.GetInstance( gen );
                 CHECK_RC( status, "HandsGenerator" );
-				mHandsGenList.push_back( gen );
+				mHandsGenList.push_back( gen );*/
 
 				++devIt;
 				mHandsGenCount++;

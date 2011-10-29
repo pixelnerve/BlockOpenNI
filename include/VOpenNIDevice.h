@@ -269,7 +269,6 @@ namespace V
 		OpenNISurface16*		mDepthSurface;
 
 		const int				mBitsPerPixel;
-		boost::uint8_t*			_colorMap;
 		boost::uint16_t*		_irData;
 		boost::uint8_t*			_irData8;
 		boost::uint16_t*		_depthData;
