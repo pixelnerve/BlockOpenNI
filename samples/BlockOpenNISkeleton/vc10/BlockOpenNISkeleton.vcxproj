@@ -104,7 +104,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\OpenNIRecorder.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNIDevice.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNIDeviceManager.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNINetwork.cpp" />
@@ -112,7 +111,6 @@
     <ClCompile Include="..\src\BlockOpenNISkeletonApp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\include\OpenNIRecorder.h" />
     <ClInclude Include="..\..\..\include\SkeletonPoseDetector.h" />
     <ClInclude Include="..\..\..\include\VOpenNIBone.h" />
     <ClInclude Include="..\..\..\include\VOpenNICallback.h" />

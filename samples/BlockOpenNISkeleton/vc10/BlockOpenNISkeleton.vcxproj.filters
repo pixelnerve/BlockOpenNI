@@ -24,9 +24,6 @@
     <ClCompile Include="..\src\BlockOpenNISkeletonApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\OpenNIRecorder.cpp">
-      <Filter>Addons\OpenNI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\VOpenNIDevice.cpp">
       <Filter>Addons\OpenNI</Filter>
     </ClCompile>
@@ -43,9 +40,6 @@
   <ItemGroup>
     <ClInclude Include="..\include\Resources.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\OpenNIRecorder.h">
-      <Filter>Addons\OpenNI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\VOpenNIBone.h">
       <Filter>Addons\OpenNI</Filter>

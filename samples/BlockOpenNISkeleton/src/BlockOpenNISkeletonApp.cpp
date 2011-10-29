@@ -181,7 +181,7 @@ void BlockOpenNISampleAppApp::setup()
 {
     V::OpenNIDeviceManager::USE_THREAD = false;
 	_manager = V::OpenNIDeviceManager::InstancePtr();
-    _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_SCENE );
+    _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_USER );
 //    _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_SCENE | V::NODE_TYPE_USER );
 	_device0 = _manager->getDevice( 0 );
     _device0->setDepthInvert( false );

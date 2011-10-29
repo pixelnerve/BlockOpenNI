@@ -410,7 +410,7 @@ namespace V
             _imageGen = &_mgr->mImageGenList[_index];
             if( !_imageGen->IsValid() )
             {
-                DEBUG_MESSAGE( "*** (OpenNIDevice)  Image generator is not valid" );
+                DEBUG_MESSAGE( "*** (OpenNIDevice)  Image generator is not valid\n" );
                 return false;
             }
 			_isImageOn = true;
@@ -923,11 +923,11 @@ namespace V
 		case NODE_TYPE_DEPTH:
 			gen = _depthGen;
 			break;
-		case NODE_TYPE_SCENE:
-			gen = _sceneAnalyzer;
-			break;
+		//case NODE_TYPE_SCENE:
+			//gen = _sceneAnalyzer;
+			//break;
 		default:
-			DEBUG_MESSAGE( "Can't change resolution. Not a valid generator\n" );
+			DEBUG_MESSAGE( "(setResolution)  Can't change resolution. Not a valid generator\n" );
 			return;
 		}
         
@@ -947,11 +947,11 @@ namespace V
 		mode.nYRes = Resolution(res).GetYResolution();
 		mode.nFPS = fps;
 		XnStatus nRetVal = gen->SetMapOutputMode( mode );
-        CHECK_RC( nRetVal, "SetResolution" );
+        CHECK_RC( nRetVal, "setResolution" );
 		if( nRetVal != XN_STATUS_OK )
 		{
 			std::stringstream ss;
-			ss << " Failed to set resolution: " << xnGetStatusString(nRetVal) << std::endl;
+			ss << "(setResolution)   Failed to set resolution: " << xnGetStatusString(nRetVal) << std::endl;
 			DEBUG_MESSAGE( ss.str().c_str() );
 			return;
 		}
@@ -996,7 +996,7 @@ namespace V
 			g_pTexMap = new XnRGB24Pixel[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			break;
 		default:
-			DEBUG_MESSAGE( "Can't change bitmap size.\n" );
+			DEBUG_MESSAGE( "(setResolution)  Can't change bitmap size.\n" );
 			return;
 		}
 	}
@@ -1113,8 +1113,8 @@ namespace V
 			pDepth = _depthGen->GetDepthMap();
 
 			// Compute bitmap buffers
-			int w = _depthMetaData.XRes();
-			int h = _depthMetaData.YRes();
+			uint32_t w = _depthMetaData.XRes();
+			uint32_t h = _depthMetaData.YRes();
 
 
 			//
@@ -1235,7 +1235,7 @@ namespace V
 			mColorSurface->update( (uint8_t*)(pImage) );
 
             std::cout << _imageMetaData.XRes() << "  " << _imageMetaData.YRes() << std::endl;
-            for( int i=0; i<_imageMetaData.XRes()*_imageMetaData.YRes(); i++ )
+            for( uint32_t i=0; i<_imageMetaData.XRes()*_imageMetaData.YRes(); i++ )
             {
                 if( pImage[i] > 0 )
                 {
@@ -1243,7 +1243,7 @@ namespace V
                 }
             }
 
-			memcpy( _colorMap, pImage, _imageMetaData.XRes()*_imageMetaData.YRes()*mBitsPerPixel*sizeof(XnUInt8) );
+			//memcpy( _colorMap, pImage, _imageMetaData.XRes()*_imageMetaData.YRes()*mBitsPerPixel );
 		}
 
 
@@ -1504,8 +1504,8 @@ namespace V
 
 	boost::uint8_t* OpenNIDevice::getColorMap()
 	{
-        return _colorMap;
-		//return mColorSurface->getData();
+        //return _colorMap;
+		return mColorSurface->getData();
 	}
 
 	boost::uint16_t* OpenNIDevice::getIRMap()
@@ -1775,7 +1775,7 @@ namespace V
         }
         
         
-        
+        /*
         //
         // List all devices present
         //
@@ -1786,14 +1786,15 @@ namespace V
             xn::Device device;
 
             xn::NodeInfo deviceNode = *nodeIt;
-            status = _context.CreateProductionTree( deviceNode );
+            status = _context.CreateProductionTree( deviceNode, device );
             CHECK_RC( status, "DeviceCreation" );
-            status = deviceNode.GetInstance( device );
-            CHECK_RC( status, "DeviceCreation" );
+            //status = deviceNode.GetInstance( device );
+            //CHECK_RC( status, "DeviceCreation" );
 
             mDevicesList.push_back( device );
-        }
-        
+        }*/
+
+
 		// Make sure we do not allocate more than the ones needed
 		if( mDeviceCount > deviceCount ) 
             mDeviceCount = deviceCount;
@@ -1830,6 +1831,8 @@ namespace V
 		status = _context.EnumerateProductionTrees( XN_NODE_TYPE_HANDS, NULL, hands_nodes, NULL );
         CHECK_RC( status, "Enumeration Tree" );
 		//_status = _context.EnumerateProductionTrees( XN_NODE_TYPE_AUDIO, NULL, audio_nodes, NULL );
+
+
         
 		if( nodeTypeFlags & NODE_TYPE_DEPTH )
 		{
@@ -1844,7 +1847,7 @@ namespace V
                 
 				DepthGenerator gen;
 				status = _context.CreateProductionTree( nodeInfo ); 
-                CHECK_RC( status, "DepthGenerator" );
+                CHECK_RC( status, "(createDevices)  DepthGenerator" );
 				status = nodeInfo.GetInstance( gen );
                 CHECK_RC( status, "DepthGenerator" );
 				mDepthGenList.push_back( gen );
@@ -1870,8 +1873,8 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				IRGenerator gen;
-				status = _context.CreateProductionTree( nodeInfo, gen ); 
-                CHECK_RC( status, "IRGenerator" );
+				status = _context.CreateProductionTree( nodeInfo ); 
+                CHECK_RC( status, "(createDevices)  IRGenerator" );
 				status = nodeInfo.GetInstance( gen );
                 CHECK_RC( status, "IRGenerator" );
 				mIRGenList.push_back( gen );
@@ -1895,8 +1898,8 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				ImageGenerator gen;
-				status = _context.CreateProductionTree( nodeInfo, gen );
-                CHECK_RC( status, "ImageGenerator" );
+				status = _context.CreateProductionTree( nodeInfo );
+                CHECK_RC( status, "(createDevices)  ImageGenerator" );
 				status = nodeInfo.GetInstance( gen );
                 CHECK_RC( status, "ImageGenerator" );
 				mImageGenList.push_back( gen );
@@ -1921,7 +1924,7 @@ namespace V
 
 				UserGenerator gen;
 				status = _context.CreateProductionTree( nodeInfo ); 
-                CHECK_RC( status, "UserGenerator" );
+                CHECK_RC( status, "(createDevices)  UserGenerator" );
 				status = nodeInfo.GetInstance( gen );
                 CHECK_RC( status, "UserGenerator" );
 				mUserGenList.push_back( gen );
@@ -1945,8 +1948,8 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				SceneAnalyzer gen;
-				status = _context.CreateProductionTree( nodeInfo, gen ); 
-                CHECK_RC( status, "SceneAnalyzer" );
+				status = _context.CreateProductionTree( nodeInfo ); 
+                CHECK_RC( status, "(createDevices)  SceneAnalyzer" );
 				status = nodeInfo.GetInstance( gen );
                 CHECK_RC( status, "SceneAnalyzer" );
 				mSceneAnalyzerList.push_back( gen );
@@ -1970,8 +1973,8 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				HandsGenerator gen;
-				status = _context.CreateProductionTree( nodeInfo, gen ); 
-                CHECK_RC( status, "HandsGenerator" );
+				status = _context.CreateProductionTree( nodeInfo ); 
+                CHECK_RC( status, "(createDevices)  HandsGenerator" );
 				status = nodeInfo.GetInstance( gen );
                 CHECK_RC( status, "HandsGenerator" );
 				mHandsGenList.push_back( gen );
