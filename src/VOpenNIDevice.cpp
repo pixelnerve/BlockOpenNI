@@ -1229,7 +1229,7 @@ namespace V
             if( userId <= 0 )
             {
                 uint32_t dim = depthWidth*depthHeight;
-                for( int i=0; i<dim; i++ )
+                for( uint32_t i=0; i<dim; i++ )
                 {
                     XnLabel label = *labels;
                     
@@ -1250,7 +1250,7 @@ namespace V
                 //for( int i=0; i<depthWidth; i++ )
                 //{
                 uint32_t dim = depthWidth*depthHeight;
-                for( int i=0; i<dim; i++ )
+                for( uint32_t i=0; i<dim; i++ )
                 {
                     XnLabel label = *labels;
                     
@@ -1954,17 +1954,11 @@ namespace V
         this->stop();
         
 		// Stop thread
-		if( USE_THREAD )
+		if( USE_THREAD && _thread )
 		{
-            if( _thread )
-            {
-                DEBUG_MESSAGE( "Stop running thread on device manager\n" );
-                assert( _thread );
-                DEBUG_MESSAGE( "Wait for thread to be done\n" );
-                _thread->join();
-                DEBUG_MESSAGE( "Delete thread's memory\n" );
-                _thread.reset();                
-            }
+			assert( _thread );
+            _thread->join();
+            _thread.reset();                
 		}
 
 		mPrimaryGen = NULL;
@@ -2020,8 +2014,7 @@ namespace V
         
         if( USE_THREAD ) 
 		{
-            _mutex.lock();
-			//boost::mutex::scoped_lock lock( _mutex );
+			boost::mutex::scoped_lock lock( _mutex );
 		}
          
         
@@ -2032,13 +2025,6 @@ namespace V
 		mUserList.push_back( newUser );
         mNumOfUsers ++;
         
-        
-        if( USE_THREAD ) 
-		{
-            _mutex.unlock();
-		}
-         
-        
 		return newUser;
 	}
 
@@ -2046,8 +2032,7 @@ namespace V
 	{
         if( USE_THREAD ) 
 		{
-            _mutex.lock();
-			//boost::mutex::scoped_lock lock( _mutex );
+			boost::mutex::scoped_lock lock( _mutex );
 		}
 
         // bail out is no users left
@@ -2063,21 +2048,13 @@ namespace V
 				return;
 			}
 		}
-        
-        
-        if( USE_THREAD ) 
-		{
-            _mutex.unlock();
-		}
-         
-
 	}
 
 
 
 	V::OpenNIUserRef OpenNIDeviceManager::getFirstUser()
 	{
-		//boost::mutex::scoped_lock lock( _mutex );
+		if( USE_THREAD ) boost::mutex::scoped_lock lock( _mutex );
 
 		if( mUserList.empty() ) return OpenNIUserRef();
 		return (*mUserList.begin());
@@ -2085,7 +2062,7 @@ namespace V
 
 	V::OpenNIUserRef OpenNIDeviceManager::getSecondUser()
 	{
-		//boost::mutex::scoped_lock lock( _mutex );
+		if( USE_THREAD ) boost::mutex::scoped_lock lock( _mutex );
 
 		if( mUserList.size() < 2 ) return OpenNIUserRef();
 
@@ -2102,14 +2079,14 @@ namespace V
 
 	V::OpenNIUserRef OpenNIDeviceManager::getLastUser()
 	{
-		//boost::mutex::scoped_lock lock( _mutex );
+		if( USE_THREAD ) boost::mutex::scoped_lock lock( _mutex );
 
 		return ( mUserList.empty() ) ? OpenNIUserRef() : (*mUserList.end());
 	}
 
 	OpenNIUserRef OpenNIDeviceManager::getUser( int id )
 	{
-		//boost::mutex::scoped_lock lock( _mutex );
+		if( USE_THREAD ) boost::mutex::scoped_lock lock( _mutex );
 
 		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); ++it )
 		{
@@ -2123,7 +2100,7 @@ namespace V
 
 	bool OpenNIDeviceManager::hasUser( int32_t id )
 	{
-		//boost::mutex::scoped_lock lock( _mutex );
+		if( USE_THREAD ) boost::mutex::scoped_lock lock( _mutex );
 
 		if( mUserList.empty() ) return false;
 		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); ++it )
@@ -2137,7 +2114,7 @@ namespace V
 
 	bool OpenNIDeviceManager::hasUsers()
 	{ 
-		//boost::mutex::scoped_lock lock( _mutex );
+		if( USE_THREAD ) boost::mutex::scoped_lock lock( _mutex );
 
 		return !mUserList.empty(); 
 	}
@@ -2145,14 +2122,14 @@ namespace V
 
 	const uint32_t OpenNIDeviceManager::getNumOfUsers()
 	{ 
-		//boost::mutex::scoped_lock lock( _mutex );
+		if( USE_THREAD ) boost::mutex::scoped_lock lock( _mutex );
 
 		return (uint32_t)mUserList.size();	
 	}
 	
 	OpenNIUserList OpenNIDeviceManager::getUserList()
 	{ 
-		//boost::mutex::scoped_lock lock( _mutex );
+		if( USE_THREAD ) boost::mutex::scoped_lock lock( _mutex );
 
 		return mUserList;	
 	}
@@ -2194,22 +2171,14 @@ namespace V
 		else
 		{
 			//rc = _context.WaitNoneUpdateAll();
-			rc = _context.WaitAndUpdateAll();
-			//rc = _context.WaitAnyUpdateAll();
+			//rc = _context.WaitAndUpdateAll();
+			rc = _context.WaitAnyUpdateAll();
 		}
-		//if( rc != XN_STATUS_OK )
-		//{
-		//	std::stringstream ss;
-		//	ss << " Error: " << xnGetStatusString(rc) << std::endl;
-		//	DEBUG_MESSAGE( ss.str().c_str() );
-		//	return;
-		//}
 
 
         if( USE_THREAD ) 
 		{
             _mutex.lock();
-			//boost::mutex::scoped_lock lock( _mutex );
 		}
 
         
@@ -2228,13 +2197,12 @@ namespace V
 			}
 		}
         
-
 		if( USE_THREAD ) 
 		{
             _mutex.unlock();
+			boost::this_thread::yield();
 		}
 
-        
         // Sleep
 //		if( USE_THREAD ) 
 //          boost::this_thread::sleep( boost::posix_time::millisec(1) ); 
@@ -2244,7 +2212,6 @@ namespace V
 	
 	void OpenNIDeviceManager::renderJoints( float width, float height, float depth, float pointSize, bool renderDepth )
 	{
-		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
 		//boost::mutex::scoped_lock lock( _mutex );
 
 		if( mUserList.empty() ) return;
@@ -2444,7 +2411,7 @@ namespace V
             if( labelId <= 0 )
             {
                 uint32_t dim = depthWidth*depthHeight;
-                for( int i=0; i<dim; i++ )
+                for( uint32_t i=0; i<dim; i++ )
                 {
                     XnLabel label = *labels;
                     
@@ -2465,7 +2432,7 @@ namespace V
                     //for( int i=0; i<depthWidth; i++ )
                     //{
                     uint32_t dim = depthWidth*depthHeight;
-                    for( int i=0; i<dim; i++ )
+                    for( uint32_t i=0; i<dim; i++ )
                     {
                         XnLabel label = *labels;
                         
