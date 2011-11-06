@@ -136,6 +136,12 @@ void BlockOpenNISampleAppApp::setup()
 	_manager = V::OpenNIDeviceManager::InstancePtr();
     _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );
 	_device0 = _manager->getDevice( 0 );
+	if( !_device0 ) 
+	{
+		shutdown();
+		quit();
+		return;
+	}
     _device0->setDepthInvert( false );
     _device0->setDepthShiftMul( 4 );
 	if( !_device0 )
