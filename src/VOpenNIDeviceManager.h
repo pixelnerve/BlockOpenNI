@@ -16,9 +16,9 @@ namespace V
 		OpenNIDeviceManager();
 		~OpenNIDeviceManager();
 
-//        OpenNIDeviceRef         createDevice( int nodeTypeFlags );
 //        OpenNIDeviceRef         createDevice( const std::string& xmlFile, bool allocUserIfNoNode=false );
-		void                    createDevices( uint32_t deviceCount, int nodeTypeFlags, int resolution=RES_640x480 );
+		V::OpenNIDeviceRef		createDevice( int nodeTypeFlags, int colorResolution=RES_640x480, int depthResolution=RES_640x480 );
+		void                    createDevices( uint32_t deviceCount, int nodeTypeFlags, int colorResolution=RES_640x480, int depthResolution=RES_640x480 );
 
 		void                    Release();
 
@@ -47,7 +47,7 @@ namespace V
 		const uint32_t getMaxNumOfUsers()			{ return mMaxNumOfUsers; }
 		void setMaxNumOfUsers( uint32_t count )		{ mMaxNumOfUsers = count; }
 
-        xn::Context*	getContext()				{ return &_context;	}
+		xn::Context*	getContext()				{ return &_context;	}
 
 
 		//
@@ -63,9 +63,9 @@ namespace V
 		}
 
 		void update();
-        void stop()                                 { _isRunning = false; }
+		void stop()                                 { _isRunning = false; }
 
-        
+		
 	private:
 		// Copy constructor
 		OpenNIDeviceManager( const OpenNIDeviceManager& ) {};

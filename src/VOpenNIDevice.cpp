@@ -416,7 +416,7 @@ namespace V
 	}
 
 
-	bool OpenNIDevice::init( uint64_t nodeTypeFlags, int resolution )
+	bool OpenNIDevice::init( uint64_t nodeTypeFlags, int colorResolution, int depthResolution )
 	{      
 		// Pick image or IR map
 		if( nodeTypeFlags & NODE_TYPE_IMAGE )
@@ -502,64 +502,92 @@ namespace V
 
 
 
-		// Pick the right resolution
-		int xRes = 640, yRes = 480;
-		int fps = 30;
-		switch( resolution )
-		{
-		case RES_320x240:
-			xRes = 320;
-			yRes = 240;
-			fps = 30;
-			break;
-		case RES_640x480:
-			xRes = 640;
-			yRes = 480;
-			fps = 30;
-			break;
-		case RES_800x600:
-			xRes = 800;
-			yRes = 600;
-			fps = 30;
-			break;
-		case RES_1024x768:
-			xRes = 1024;
-			yRes = 768;
-			fps = 30;
-			break;
-		case RES_1280x1024:
-			xRes = 1280;
-			yRes = 1024;
-			fps = 15;
-			break;
-		default:
-			xRes = 640;
-			yRes = 480;
-			fps = 30;
-			break;
-		}
-		std::stringstream ss;
-		ss << xRes << "x" << yRes << "x" << fps;
-		Log( ss.str() );
+		//// Pick the right resolution
+		//int xRes = 640, yRes = 480;
+		//int fps = 30;
+		//switch( resolution )
+		//{
+		//case RES_320x240:
+		//	xRes = 320;
+		//	yRes = 240;
+		//	fps = 30;
+		//	break;
+		//case RES_640x480:
+		//	xRes = 640;
+		//	yRes = 480;
+		//	fps = 30;
+		//	break;
+		//case RES_800x600:
+		//	xRes = 800;
+		//	yRes = 600;
+		//	fps = 30;
+		//	break;
+		//case RES_1024x768:
+		//	xRes = 1024;
+		//	yRes = 768;
+		//	fps = 30;
+		//	break;
+		//case RES_1280x1024:
+		//	xRes = 1280;
+		//	yRes = 1024;
+		//	fps = 15;
+		//	break;
+		//default:
+		//	xRes = 640;
+		//	yRes = 480;
+		//	fps = 30;
+		//	break;
+		//}
+		//std::stringstream ss;
+		//ss << xRes << "x" << yRes << "x" << fps;
+		//Log( ss.str() );
 
 		
 
 		if( _isImageOn ) {
-			setResolution( NODE_TYPE_IMAGE, resolution, fps );
+			int fps = 30;
+			switch( colorResolution )
+			{
+			case RES_1280x1024:
+				fps = 15;
+				break;
+			}
+			setResolution( NODE_TYPE_IMAGE, colorResolution, fps );
 			//_imageGen->GetMetaData( _imageMetaData );
 		}
 		if( _isIROn )	{
-			setResolution( NODE_TYPE_IR, resolution, fps );
+			int fps = 30;
+			switch( colorResolution )
+			{
+			case RES_1280x1024:
+				fps = 15;
+				break;
+			}
+			setResolution( NODE_TYPE_IR, colorResolution, fps );
 			//_irGen->GetMetaData( _irMetaData );
 		}
 		if( _isDepthOn )
 		{
-			setResolution( NODE_TYPE_DEPTH, resolution, fps );
+			int fps = 30;
+			switch( colorResolution )
+			{
+			case RES_1280x1024:
+				fps = 15;
+				break;
+			}
+			setResolution( NODE_TYPE_DEPTH, depthResolution, fps );
 			//_depthGen->GetMetaData( _depthMetaData );
 		}
 		if( _isSceneOn )
 		{
-			setResolution( NODE_TYPE_SCENE, resolution, fps );
+			int fps = 30;
+			switch( colorResolution )
+			{
+			case RES_1280x1024:
+				fps = 15;
+				break;
+			}
+			setResolution( NODE_TYPE_SCENE, depthResolution, fps );
 			//_sceneAnalyzer->GetMetaData( _sceneMetaData );
 		}
 
@@ -579,9 +607,7 @@ namespace V
 		}
 
 		
-		// Allocate memory for bitmaps (fixed to 640*480)
-		// TODO: Give user a new parameter for dimensions
-		allocate( static_cast<int>(nodeTypeFlags), xRes, yRes );
+		allocate( static_cast<int>(nodeTypeFlags) ); //, xRes, yRes );
 
 
 		return true;
@@ -836,44 +862,55 @@ namespace V
 	}
 
 
-	void OpenNIDevice::allocate( uint64_t flags, uint32_t width, uint32_t height )
+	void OpenNIDevice::allocate( uint64_t flags ) //, uint32_t width, uint32_t height )
 	{
 		if( flags & NODE_TYPE_IMAGE )
 		{
 			//_colorData = new boost::uint8_t[width*height*mBitsPerPixel];
 			if( !mColorSurface ) 
-				mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, width, height );
+			{
+				_imageGen->GetMetaData( _imageMetaData );
+				int w = _imageMetaData.XRes();
+				int h = _imageMetaData.YRes();
+				mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, w, h );
+			}
 
 		}
 		if( flags & NODE_TYPE_IR )
 		{
+			_irGen->GetMetaData( _irMetaData );
+			int w = _irMetaData.XRes();
+			int h = _irMetaData.YRes();
 			if( !_irData ) 
-				_irData = new boost::uint16_t[width*height];
+				_irData = new boost::uint16_t[w*h];
 			if( !_irData8 ) 
-				_irData8 = new boost::uint8_t[width*height];
+				_irData8 = new boost::uint8_t[w*h];
 			if( !mIRSurface ) 
-				mIRSurface = new OpenNISurface8( NODE_TYPE_IR, width, height );
+				mIRSurface = new OpenNISurface8( NODE_TYPE_IR, w, h);
 			if( !mColorSurface ) 
-				mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, width, height );
+				mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, w, h );
 		}
 		if( flags & NODE_TYPE_DEPTH )
 		{
+			_depthGen->GetMetaData( _depthMetaData );
+			int w = _depthMetaData.XRes();
+			int h = _depthMetaData.YRes();
+
 			g_MaxDepth = MAX_DEPTH;
 			if( !_backDepthData ) 
-				_backDepthData = new boost::uint16_t[width*height];
+				_backDepthData = new boost::uint16_t[w*h];
 			if( !_depthData ) 
-				_depthData = new boost::uint16_t[width*height];
-			//_depthData8 = new boost::uint8_t[width*height];
+				_depthData = new boost::uint16_t[w*h];
 			if( !_depthDataRGB ) 
-				_depthDataRGB = new boost::uint8_t[width*height*mBitsPerPixel];
+				_depthDataRGB = new boost::uint8_t[w*h*mBitsPerPixel];
 			if( !_depthMapRealWorld ) 
-				_depthMapRealWorld = new XnPoint3D[width*height];
+				_depthMapRealWorld = new XnPoint3D[w*h];
 			if( !_backDepthMapRealWorld ) 
-				_backDepthMapRealWorld = new XnPoint3D[width*height];
+				_backDepthMapRealWorld = new XnPoint3D[w*h];
 			if( !mDepthSurface ) 
-				mDepthSurface = new OpenNISurface16( NODE_TYPE_DEPTH, width, height );
+				mDepthSurface = new OpenNISurface16( NODE_TYPE_DEPTH, w, h );
 			if( !g_pTexMap ) 
-				g_pTexMap = new XnRGB24Pixel[ width * height * sizeof(XnRGB24Pixel) ];
+				g_pTexMap = new XnRGB24Pixel[ w*h*sizeof(XnRGB24Pixel) ];
 			if( !g_pDepthHist ) 
 				g_pDepthHist = new float[g_MaxDepth];
 		}

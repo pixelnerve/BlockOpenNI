@@ -82,14 +82,14 @@ namespace V
 		OpenNIDevice( int index, OpenNIDeviceManager* mgr );
 		OpenNIDevice( int index, OpenNIDeviceManager* mgr, xn::Device* device );
 		~OpenNIDevice();
-		bool init( boost::uint64_t nodeTypeFlags, int resolution );
+		bool init( boost::uint64_t nodeTypeFlags, int colorResolution, int depthResolution );
 //		bool initFromXmlFile( const std::string& xmlFile, bool allocUserIfNoNode=false );
 
 		void release();
 
 		void start();
 
-		void allocate( uint64_t flags, uint32_t width, uint32_t height );
+		void allocate( uint64_t flags ); //, uint32_t width, uint32_t height );
 
 		bool requestUserCalibration();
 		void setResolution( ProductionNodeType nodeType, int res, int fps );

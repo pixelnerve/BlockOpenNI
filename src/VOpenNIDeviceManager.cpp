@@ -165,7 +165,12 @@ namespace V
 ***/
 
 
-	void OpenNIDeviceManager::createDevices( uint32_t deviceCount, int nodeTypeFlags, int resolution )
+	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( int nodeTypeFlags, int colorResolution, int depthResolution )
+	{
+		createDevices( 1, nodeTypeFlags, colorResolution, depthResolution );
+	}
+
+	void OpenNIDeviceManager::createDevices( uint32_t deviceCount, int nodeTypeFlags, int colorResolution, int depthResolution )
 	{
 		if( deviceCount <= 0 || !mDevices.empty() ) 
 			return;
@@ -431,7 +436,7 @@ namespace V
 			it!=mDevices.end();
 			++it )
 		{
-			bool result = (*it)->init( nodeTypeFlags, resolution );
+			bool result = (*it)->init( nodeTypeFlags, colorResolution, depthResolution );
 			if( !result )
 			{
 				DEBUG_MESSAGE( "(OpenNIDeviceManager)  Failed to initialize device\n" );
