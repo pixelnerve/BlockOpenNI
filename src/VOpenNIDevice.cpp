@@ -11,7 +11,7 @@
 		NITE	1.4.2.4
 ***/
 
-#include "VOpenNICommon.h"
+//#include "VOpenNICommon.h"
 //#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 //#include <direct.h>
 //#endif
@@ -20,10 +20,20 @@
 //#include "VOpenNINetwork.h"
 #include "VOpenNIDevice.h"
 #include "VOpenNIDeviceManager.h"
-#include "VOpenNIUserListener.h"
+
 #include <iostream>
+#include <fstream>
+#include <ostream>
 
 
+std::ofstream log_;
+
+
+inline void Log( std::string msg )
+{
+	log_ << msg << std::endl;
+	log_.flush();
+}
 
 // Make sure we link libraries
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
@@ -59,50 +69,50 @@ namespace V
 			return;
 		}
 
-        
+		
 		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
 
 		// Add new user if not available already
 //		if( !OpenNIDeviceManager::Instance().hasUser(nId) )
 		{
-            // Add new user
+			// Add new user
 			OpenNIDeviceManager::Instance().addUser( &generator, nId );
 
-            XnUInt32 epochTime = 0;
-            xnOSGetEpochTime( &epochTime );
-            std::stringstream ss;
-            ss << epochTime << " " << "New User '" << nId << "' / '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
-            DEBUG_MESSAGE( ss.str().c_str() );
+			XnUInt32 epochTime = 0;
+			xnOSGetEpochTime( &epochTime );
+			std::stringstream ss;
+			ss << epochTime << " " << "New User '" << nId << "' / '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
+			DEBUG_MESSAGE( ss.str().c_str() );
 
 
-            // Only use calibration is asked for it. 
-            // Usually it is set to TRUE by default
-            if( device->_enableUserCalibration )
-            {
-                // TODO! Enable slot change. For now only slot 0 is used
-                int slot = 0;
-                
-                if( device->isOneTimeCalibration() && device->_isFirstCalibrationComplete )
-                {
-                    // Load Data For Each User
-                    if( device->getUserGenerator()->GetSkeletonCap().IsCalibrationData(slot) )
-                    {
-                        device->getUserGenerator()->GetSkeletonCap().LoadCalibrationData( nId, slot );
-                        device->getUserGenerator()->GetSkeletonCap().StartTracking( nId );
-                        
-                        std::stringstream ss2;
-                        ss2 << "Loaded Calibration Data For User: '" << nId << "'  Slot: " << slot << std::endl;
-                        DEBUG_MESSAGE( ss2.str().c_str() );
-                    }
-                }
-                else
-                {
-                    std::stringstream ss2;
-                    ss2 << "Start Pose Detection For User: '" << nId << "'  Slot: " << slot << std::endl;
-                    DEBUG_MESSAGE( ss2.str().c_str() );
-                    generator.GetPoseDetectionCap().StartPoseDetection( g_strPose, nId );
-                }                
-            }
+			// Only use calibration is asked for it. 
+			// Usually it is set to TRUE by default
+			if( device->_enableUserCalibration )
+			{
+				// TODO! Enable slot change. For now only slot 0 is used
+				int slot = 0;
+				
+				if( device->isOneTimeCalibration() && device->_isFirstCalibrationComplete )
+				{
+					// Load Data For Each User
+					if( device->getUserGenerator()->GetSkeletonCap().IsCalibrationData(slot) )
+					{
+						device->getUserGenerator()->GetSkeletonCap().LoadCalibrationData( nId, slot );
+						device->getUserGenerator()->GetSkeletonCap().StartTracking( nId );
+						
+						std::stringstream ss2;
+						ss2 << "Loaded Calibration Data For User: '" << nId << "'  Slot: " << slot << std::endl;
+						DEBUG_MESSAGE( ss2.str().c_str() );
+					}
+				}
+				else
+				{
+					std::stringstream ss2;
+					ss2 << "Start Pose Detection For User: '" << nId << "'  Slot: " << slot << std::endl;
+					DEBUG_MESSAGE( ss2.str().c_str() );
+					generator.GetPoseDetectionCap().StartPoseDetection( g_strPose, nId );
+				}                
+			}
 
 
 			// Send events to all listeners
@@ -136,22 +146,22 @@ namespace V
 
 			for( UserListenerList::iterator it=device->mListeners.begin(); it!=device->mListeners.end(); ++it )
 			{
-                UserEvent event;
-                event.mId = nId;
-                //event.mUser = OpenNIUserRef();
+				UserEvent event;
+				event.mId = nId;
+				//event.mUser = OpenNIUserRef();
 
-                std::stringstream ss2;
-                ss2 << "Send lost user event: '" << nId << std::endl;
-                DEBUG_MESSAGE( ss2.str().c_str() );
+				std::stringstream ss2;
+				ss2 << "Send lost user event: '" << nId << std::endl;
+				DEBUG_MESSAGE( ss2.str().c_str() );
 
-                (*it)->onLostUser( event );
+				(*it)->onLostUser( event );
 			}
-            
-            XnUInt32 epochTime = 0;
-            xnOSGetEpochTime( &epochTime );
-            std::stringstream ss;
-            ss << epochTime << " " << "Lost User '" << nId << "'.     Total: '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
-            DEBUG_MESSAGE( ss.str().c_str() );
+			
+			XnUInt32 epochTime = 0;
+			xnOSGetEpochTime( &epochTime );
+			std::stringstream ss;
+			ss << epochTime << " " << "Lost User '" << nId << "'.     Total: '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
+			DEBUG_MESSAGE( ss.str().c_str() );
 		}
 	}
 
@@ -173,8 +183,8 @@ namespace V
 			device->getUserGenerator()->GetSkeletonCap().RequestCalibration( nId, TRUE );
 		}
 	}
-    
-    
+	
+	
 	// Callback: pose detection in progress
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_PoseInProgress( xn::PoseDetectionCapability& pose, const XnChar* strPose, XnUserID nId, XnPoseDetectionStatus poseError, void* pCookie )
 	{
@@ -184,8 +194,8 @@ namespace V
 // 
 // 		OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
 	}
-    
-    
+	
+	
 	// Callback: When the user is out of pose
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_PoseDetectionEnd( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie )
 	{
@@ -195,7 +205,7 @@ namespace V
 // 
 // 		OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
-    
+	
 
 	// Callback: Started calibration
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationStart( xn::SkeletonCapability& capability, XnUserID nId, void* pCookie )
@@ -207,7 +217,7 @@ namespace V
 // 		OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 
-    
+	
 	// Callback: Started calibration
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationInProgress( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie )
 	{
@@ -218,7 +228,7 @@ namespace V
 // 		OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 
-    
+	
 	// Callback: Finished calibration
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationComplete( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie )
 	{
@@ -258,7 +268,7 @@ namespace V
 				DEBUG_MESSAGE( ss2.str().c_str() );
 				device->_isFirstCalibrationComplete = true;
 			}
-            
+			
 			for( UserListenerList::iterator it=device->mListeners.begin(); it!=device->mListeners.end(); ++it )
 			{
 				UserListener* listener = *it;
@@ -268,15 +278,15 @@ namespace V
 					UserEvent event;
 					event.mId = nId;
 					//event.mUser = OpenNIDeviceManager::Instance().getUser( nId );
-                    
+					
 					std::stringstream ss2;
 					ss2 << "Send calibration-end event: '" << nId << std::endl;
 					DEBUG_MESSAGE( ss2.str().c_str() );
-                    
+					
 					listener->onCalibrationComplete( event );
 				}
 			}
-            
+			
 
 			// Start tracking
 			device->getUserGenerator()->GetSkeletonCap().StartTracking( nId );
@@ -311,22 +321,24 @@ namespace V
 	*/
 	/************************************************************************/
 	OpenNIDevice::OpenNIDevice( int index, OpenNIDeviceManager* mgr ) 
-        : mBitsPerPixel( 3 )
+		: mBitsPerPixel( 3 )
 	{
-        _index = index;
-        _mgr = mgr;
+		_index = index;
+		_mgr = mgr;
 		_context = mgr->getContext();
 
 		privateInit();
 	}
 
 	OpenNIDevice::OpenNIDevice( int index, OpenNIDeviceManager* mgr, xn::Device* device ) 
-        : mBitsPerPixel( 3 )
+		: mBitsPerPixel( 3 )
 	{
-        _index = index;
-        _mgr = mgr;
+		_index = index;
+		_mgr = mgr;
 		_context = mgr->getContext();
 		_device = *device;
+
+		log_.open( "E:\\kinect_log.txt" );
 
 		privateInit();
 	}
@@ -334,6 +346,7 @@ namespace V
 
 	OpenNIDevice::~OpenNIDevice()
 	{
+		log_.close();
 		release();
 	}
 
@@ -345,7 +358,7 @@ namespace V
 
 		_isDepthInverted = false;
 		_enableHistogram = false;
-        _enableUserCalibration = true;
+		_enableUserCalibration = true;
 
 		_primaryGen	= NULL;
 		_imageGen	= NULL;
@@ -386,8 +399,8 @@ namespace V
 
 		_isOneTimeCalibration = false;
 		_isFirstCalibrationComplete = false;
-        
-        _confidenceThreshold = 0.3f;
+		
+		_confidenceThreshold = 0.3f;
 
 		mNearClipPlane = 0;
 		mFarClipPlane = 6000;
@@ -408,42 +421,46 @@ namespace V
 		// Pick image or IR map
 		if( nodeTypeFlags & NODE_TYPE_IMAGE )
 		{
-            _imageGen = &_mgr->mImageGenList[_index];
-            if( !_imageGen->IsValid() )
-            {
-                DEBUG_MESSAGE( "*** (OpenNIDevice)  Image generator is not valid\n" );
-                return false;
-            }
+			_imageGen = &_mgr->mImageGenList[_index];
+			if( !_imageGen->IsValid() )
+			{
+				Log( "*** (OpenNIDevice)  Image generator is not valid\n" );
+				DEBUG_MESSAGE( "*** (OpenNIDevice)  Image generator is not valid\n" );
+				return false;
+			}
 			_isImageOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_IR )
 		{
-            _irGen = &_mgr->mIRGenList[_index];
-            if( !_irGen->IsValid() ) 
-            {
-                DEBUG_MESSAGE( "*** (OpenNIDevice)  IR generator is not valid" );
-                return false;
-            }
+			_irGen = &_mgr->mIRGenList[_index];
+			if( !_irGen->IsValid() ) 
+			{
+				Log( "*** (OpenNIDevice)  IR generator is not valid" );
+				DEBUG_MESSAGE( "*** (OpenNIDevice)  IR generator is not valid" );
+				return false;
+			}
 			_isIROn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_DEPTH )
 		{
-            _depthGen = &_mgr->mDepthGenList[_index];
-            if( !_depthGen->IsValid() ) 
-            {
-                DEBUG_MESSAGE( "*** (OpenNIDevice)  Depth generator is not valid" );
-                return false;
-            }
+			_depthGen = &_mgr->mDepthGenList[_index];
+			if( !_depthGen->IsValid() ) 
+			{
+				Log( "*** (OpenNIDevice)  Depth generator is not valid" );
+				DEBUG_MESSAGE( "*** (OpenNIDevice)  Depth generator is not valid" );
+				return false;
+			}
 			_isDepthOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_USER )
 		{
-            _userGen = &_mgr->mUserGenList[_index];
-            if( !_userGen->IsValid() ) 
-            {
-                DEBUG_MESSAGE( "*** (OpenNIDevice)  User generator is not valid" );
-                return false;
-            }
+			_userGen = &_mgr->mUserGenList[_index];
+			if( !_userGen->IsValid() ) 
+			{
+				Log( "*** (OpenNIDevice)  User generator is not valid" );
+				DEBUG_MESSAGE( "*** (OpenNIDevice)  User generator is not valid" );
+				return false;
+			}
 			//_sceneMetaData = new xn::SceneMetaData();
 			//_status = _userGen->Create( *_context );	//, NULL, &_errors );
 			//CHECK_RC( _status, "Create user generator" );
@@ -451,23 +468,25 @@ namespace V
 		}
 		if( nodeTypeFlags & NODE_TYPE_SCENE )
 		{
-            _sceneAnalyzer = &_mgr->mSceneAnalyzerList[_index];
-            if( !_sceneAnalyzer->IsValid() ) 
-            {
-                DEBUG_MESSAGE( "*** (OpenNIDevice)  Image generator is not valid" );
-                return false;
-            }
+			_sceneAnalyzer = &_mgr->mSceneAnalyzerList[_index];
+			if( !_sceneAnalyzer->IsValid() ) 
+			{
+				Log( "*** (OpenNIDevice)  Scene generator is not valid" );
+				DEBUG_MESSAGE( "*** (OpenNIDevice)  Scene generator is not valid" );
+				return false;
+			}
 			_isSceneOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_HANDS )
 		{
 			// Hand Gestures
-            _handsGen = &_mgr->mHandsGenList[_index];
-            if( !_handsGen->IsValid() ) 
-            {
-                DEBUG_MESSAGE( "*** (OpenNIDevice)  Hands generator is not valid" );
-                return false;
-            }
+			_handsGen = &_mgr->mHandsGenList[_index];
+			if( !_handsGen->IsValid() ) 
+			{
+				Log( "*** (OpenNIDevice)  Hands generator is not valid" );
+				DEBUG_MESSAGE( "*** (OpenNIDevice)  Hands generator is not valid" );
+				return false;
+			}
 			_isHandsOn = true;
 		}
 		//if( nodeTypeFlags & NODE_TYPE_AUDIO )
@@ -480,25 +499,68 @@ namespace V
 		//	_isAudioOn = true;
 		//}
 
-        
+
+
+
+		// Pick the right resolution
+		int xRes = 640, yRes = 480;
+		int fps = 30;
+		switch( resolution )
+		{
+		case RES_320x240:
+			xRes = 320;
+			yRes = 240;
+			fps = 30;
+			break;
+		case RES_640x480:
+			xRes = 640;
+			yRes = 480;
+			fps = 30;
+			break;
+		case RES_800x600:
+			xRes = 800;
+			yRes = 600;
+			fps = 30;
+			break;
+		case RES_1024x768:
+			xRes = 1024;
+			yRes = 768;
+			fps = 30;
+			break;
+		case RES_1280x1024:
+			xRes = 1280;
+			yRes = 1024;
+			fps = 15;
+			break;
+		default:
+			xRes = 640;
+			yRes = 480;
+			fps = 30;
+			break;
+		}
+		std::stringstream ss;
+		ss << xRes << "x" << yRes << "x" << fps;
+		Log( ss.str() );
+
+		
 
 		if( _isImageOn ) {
-			setResolution( NODE_TYPE_IMAGE, resolution, 30 );
-			_imageGen->GetMetaData( _imageMetaData );
+			setResolution( NODE_TYPE_IMAGE, resolution, fps );
+			//_imageGen->GetMetaData( _imageMetaData );
 		}
 		if( _isIROn )	{
-			setResolution( NODE_TYPE_IR, resolution, 30 );
-			_irGen->GetMetaData( _irMetaData );
+			setResolution( NODE_TYPE_IR, resolution, fps );
+			//_irGen->GetMetaData( _irMetaData );
 		}
 		if( _isDepthOn )
 		{
-			setResolution( NODE_TYPE_DEPTH, resolution, 30 );
-			_depthGen->GetMetaData( _depthMetaData );
+			setResolution( NODE_TYPE_DEPTH, resolution, fps );
+			//_depthGen->GetMetaData( _depthMetaData );
 		}
 		if( _isSceneOn )
 		{
-			setResolution( NODE_TYPE_SCENE, resolution, 30 );
-			_sceneAnalyzer->GetMetaData( _sceneMetaData );
+			setResolution( NODE_TYPE_SCENE, resolution, fps );
+			//_sceneAnalyzer->GetMetaData( _sceneMetaData );
 		}
 
 		//if( _userGen ) {
@@ -516,38 +578,7 @@ namespace V
 			requestUserCalibration();
 		}
 
-        
-        
-        // Pick the right resolution
-        int xRes = 0, yRes = 0;
-        switch( resolution )
-        {
-            case RES_320x240:
-                xRes = 320;
-                yRes = 240;
-                break;
-            case RES_640x480:
-                xRes = 640;
-                yRes = 480;
-                break;
-            case RES_800x600:
-                xRes = 800;
-                yRes = 600;
-                break;
-            case RES_1024x768:
-                xRes = 1024;
-                yRes = 768;
-                break;
-            case RES_1280x1024:
-                xRes = 1280;
-                yRes = 1024;
-                break;
-            default:
-                xRes = 640;
-                yRes = 480;
-                break;
-        }        
-
+		
 		// Allocate memory for bitmaps (fixed to 640*480)
 		// TODO: Give user a new parameter for dimensions
 		allocate( static_cast<int>(nodeTypeFlags), xRes, yRes );
@@ -730,8 +761,8 @@ namespace V
 		return true;
 	}
 ***/
-    
-    
+	
+	
 
 	void OpenNIDevice::setAlignWithDepthGenerator()
 	{
@@ -749,16 +780,16 @@ namespace V
 		}
 
 	}
-    
-    
-    void OpenNIDevice::resetUser( int userId )
-    {
-        if( _userGen )
-        {
-            _status = _userGen->GetSkeletonCap().Reset( userId );
-            CHECK_RC( _status, "Resetting user" );
-        }
-    }
+	
+	
+	void OpenNIDevice::resetUser( int userId )
+	{
+		if( _userGen )
+		{
+			_status = _userGen->GetSkeletonCap().Reset( userId );
+			CHECK_RC( _status, "Resetting user" );
+		}
+	}
 
 
 	void OpenNIDevice::release()
@@ -811,40 +842,40 @@ namespace V
 		{
 			//_colorData = new boost::uint8_t[width*height*mBitsPerPixel];
 			if( !mColorSurface ) 
-                mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, width, height );
+				mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, width, height );
 
 		}
 		if( flags & NODE_TYPE_IR )
 		{
 			if( !_irData ) 
-                _irData = new boost::uint16_t[width*height];
+				_irData = new boost::uint16_t[width*height];
 			if( !_irData8 ) 
-                _irData8 = new boost::uint8_t[width*height];
+				_irData8 = new boost::uint8_t[width*height];
 			if( !mIRSurface ) 
-                mIRSurface = new OpenNISurface8( NODE_TYPE_IR, width, height );
+				mIRSurface = new OpenNISurface8( NODE_TYPE_IR, width, height );
 			if( !mColorSurface ) 
-                mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, width, height );
+				mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, width, height );
 		}
 		if( flags & NODE_TYPE_DEPTH )
 		{
 			g_MaxDepth = MAX_DEPTH;
 			if( !_backDepthData ) 
-                _backDepthData = new boost::uint16_t[width*height];
+				_backDepthData = new boost::uint16_t[width*height];
 			if( !_depthData ) 
-                _depthData = new boost::uint16_t[width*height];
+				_depthData = new boost::uint16_t[width*height];
 			//_depthData8 = new boost::uint8_t[width*height];
 			if( !_depthDataRGB ) 
-                _depthDataRGB = new boost::uint8_t[width*height*mBitsPerPixel];
+				_depthDataRGB = new boost::uint8_t[width*height*mBitsPerPixel];
 			if( !_depthMapRealWorld ) 
-                _depthMapRealWorld = new XnPoint3D[width*height];
+				_depthMapRealWorld = new XnPoint3D[width*height];
 			if( !_backDepthMapRealWorld ) 
-                _backDepthMapRealWorld = new XnPoint3D[width*height];
+				_backDepthMapRealWorld = new XnPoint3D[width*height];
 			if( !mDepthSurface ) 
-                mDepthSurface = new OpenNISurface16( NODE_TYPE_DEPTH, width, height );
+				mDepthSurface = new OpenNISurface16( NODE_TYPE_DEPTH, width, height );
 			if( !g_pTexMap ) 
-                g_pTexMap = new XnRGB24Pixel[ width * height * sizeof(XnRGB24Pixel) ];
+				g_pTexMap = new XnRGB24Pixel[ width * height * sizeof(XnRGB24Pixel) ];
 			if( !g_pDepthHist ) 
-                g_pDepthHist = new float[g_MaxDepth];
+				g_pDepthHist = new float[g_MaxDepth];
 		}
 	}
 
@@ -864,16 +895,16 @@ namespace V
 			return false;
 		}
 		_status = _userGen->RegisterUserCallbacks( &V::OpenNIDevice::Callback_NewUser, &V::OpenNIDevice::Callback_LostUser, this, hUserCallbacks );
-        CHECK_RC( _status, "Register User Callbacks" );
+		CHECK_RC( _status, "Register User Callbacks" );
 
 		// New version for NITE 1.4.*.*
 		_status = _userGen->GetSkeletonCap().RegisterToCalibrationStart( &V::OpenNIDevice::Callback_CalibrationStart, this, hCalibrationStartCallback );
-        CHECK_RC( _status, "Register Calibration Start" );
+		CHECK_RC( _status, "Register Calibration Start" );
 		_status = _userGen->GetSkeletonCap().RegisterToCalibrationInProgress( &V::OpenNIDevice::Callback_CalibrationInProgress, this, hCalibrationInProgressCallback );
-        CHECK_RC( _status, "Register Calibration InProgress" );
+		CHECK_RC( _status, "Register Calibration InProgress" );
 		_status = _userGen->GetSkeletonCap().RegisterToCalibrationComplete( &V::OpenNIDevice::Callback_CalibrationComplete, this, hCalibrationCompleteCallback );
-        CHECK_RC( _status, "Register Calibration Complete" );
-        
+		CHECK_RC( _status, "Register Calibration Complete" );
+		
 		// Old version
 		//_userGen->GetSkeletonCap().RegisterCalibrationCallbacks( &V::OpenNIDevice::Callback_CalibrationStart, &V::OpenNIDevice::Callback_CalibrationEnd, this, hCalibrationCallbacks );
 		if( _userGen->GetSkeletonCap().NeedPoseForCalibration() )
@@ -891,9 +922,9 @@ namespace V
 
 			// New version for NITE 1.4.*.*
 			_status = _userGen->GetPoseDetectionCap().RegisterToPoseDetected( &V::OpenNIDevice::Callback_PoseDetected, this, hPoseDetectedCallback );
-            CHECK_RC( _status, "Register Pose Detected" );
+			CHECK_RC( _status, "Register Pose Detected" );
 			_status = _userGen->GetPoseDetectionCap().RegisterToPoseInProgress( &V::OpenNIDevice::Callback_PoseInProgress, this, hPoseInProgressCallback );
-            CHECK_RC( _status, "Register Pose InProgress" );
+			CHECK_RC( _status, "Register Pose InProgress" );
 			// Old version
 			//_userGen->GetPoseDetectionCap().RegisterToPoseCallbacks( &V::OpenNIDevice::Callback_PoseDetected, &V::OpenNIDevice::Callback_PoseDetectionEnd, this, hPoseCallbacks );
 			_userGen->GetSkeletonCap().GetCalibrationPose( g_strPose );
@@ -929,24 +960,29 @@ namespace V
 			DEBUG_MESSAGE( "(setResolution)  Can't change resolution. Not a valid generator\n" );
 			return;
 		}
-        
-        if( !gen->IsValid() )
-        {
-            DEBUG_MESSAGE( "(setResolution)  Generator is not valid\n" );
-            return;
-        }
-        
-        
-        // convert from our enumeration to ONI's
-        XnResolution res = (XnResolution)resolution;
-        
+		
+		if( !gen->IsValid() )
+		{
+			DEBUG_MESSAGE( "(setResolution)  Generator is not valid\n" );
+			return;
+		}
+		
+		
+		// convert from our enumeration to ONI's
+		XnResolution res = (XnResolution)resolution;
+		
 		XnMapOutputMode mode;
 		gen->GetMapOutputMode( mode );
 		mode.nXRes = Resolution(res).GetXResolution();
 		mode.nYRes = Resolution(res).GetYResolution();
 		mode.nFPS = fps;
+
+		std::stringstream ss;
+		ss << "(setResolution)  " << mode.nXRes << "x" << mode.nYRes << "x" << mode.nFPS;
+		Log( ss.str() );
+
 		XnStatus nRetVal = gen->SetMapOutputMode( mode );
-        CHECK_RC( nRetVal, "setResolution" );
+		CHECK_RC( nRetVal, "setResolution" );
 		if( nRetVal != XN_STATUS_OK )
 		{
 			std::stringstream ss;
@@ -962,15 +998,15 @@ namespace V
 			//SAFE_DELETE_ARRAY( _colorData );
 			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			if( !mColorSurface ) 
-                mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, mode.nXRes, mode.nYRes );
+				mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, mode.nXRes, mode.nYRes );
 			else 
-                mColorSurface->remap( mode.nXRes, mode.nYRes );
+				mColorSurface->remap( mode.nXRes, mode.nYRes );
 			break;
 		case NODE_TYPE_IR:
 			if( !mColorSurface ) 
-                mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, mode.nXRes, mode.nYRes );
+				mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, mode.nXRes, mode.nYRes );
 			else 
-                mColorSurface->remap( mode.nXRes, mode.nYRes );
+				mColorSurface->remap( mode.nXRes, mode.nYRes );
 			//SAFE_DELETE_ARRAY( _colorData );
 			SAFE_DELETE_ARRAY( _irData );
 			SAFE_DELETE_ARRAY( _irData8 );
@@ -1105,7 +1141,12 @@ namespace V
 		if( _isDepthOn && _depthGen->IsValid() )
 		{
 			_depthGen->GetMetaData( _depthMetaData );
-			pDepth = _depthGen->GetDepthMap();
+			//pDepth = _depthGen->GetDepthMap();	//_depthMetaData.Data();
+			//if( !pDepth )
+			//{
+			//	DEBUG_MESSAGE( "Depth bitmap is not valid\n" );
+			//	return;
+			//}
 
 			// Compute bitmap buffers
 			uint32_t w = _depthMetaData.XRes();
@@ -1123,109 +1164,54 @@ namespace V
 
 
 			// First, clear bitmap data
+			xnOSMemSet( _depthData, 0, w*h*sizeof(uint16_t) );
 			xnOSMemSet( _backDepthData, 0, w*h*sizeof(uint16_t) );
 
-            
-/*
-			const XnDepthPixel* pDepthRow = _depthMetaData->Data();
-
-
-			XnRGB24Pixel* pTexRow = NULL;
-			XnRGB24Pixel* pTex = NULL;
-			if( _enableHistogram )
-				pTexRow = g_pTexMap + _depthMetaData->YOffset() * w;
-
-
-			mMinDistance = 99999;
-			mMaxDistance = -99999;
-
-
-			uint16_t* backDepthPtr = _backDepthData;
-
-			for( XnUInt y = 0; y < h; y++ )
+			/**/
+			pDepth = _depthMetaData.Data();
+			for( uint32_t i=0; i<w*h; i++ )
 			{
-				const XnDepthPixel* pDepth = pDepthRow;
-				if( _enableHistogram )
-					pTex = pTexRow + _depthMetaData->XOffset();
-
-				for( XnUInt x = 0; x < w; x++ )
+				_depthData[i] = pDepth[i] << mDepthShiftValue;
+			}                
+			/*/
+			uint16_t* backDepthPtr = _depthData;	//_backDepthData;
+			pDepth = _depthMetaData.Data();
+			if( _isDepthInverted )
+			{
+				for( uint32_t i=0; i<w*h; i++ )
 				{
-					XnDepthPixel pixel = *pDepth;
-
-					if( mMinDistance > pixel ) mMinDistance = pixel;
-					if( mMaxDistance < pixel ) mMaxDistance = pixel;
-
-					if( pixel > mNearClipPlane && pixel < mFarClipPlane )	//pixel != 0 )
-					{
-						if( _enableHistogram )
-						{
-							// Inverted or not ?
-							uint32_t nHistValue = (_isDepthInverted) ? (uint32_t)(255-g_pDepthHist[*pDepth]) : (uint32_t)(g_pDepthHist[*pDepth]);
-
-							// Fill or cyan RGB depth map
-							pTex->nRed = nHistValue;
-							pTex->nGreen = nHistValue;
-							pTex->nBlue = nHistValue;
-						}
-
-						//// 16bit depth map
-						if( _isDepthInverted )
-						{
-							*backDepthPtr = (*pDepth>0 && *pDepth<MAX_DEPTH) ? MAX_DEPTH-*pDepth : 0;
-							//_backDepthData[index] = (*pDepth>0 && *pDepth<MAX_DEPTH) ? MAX_DEPTH-*pDepth : 0;
-						}
-						else
-						{
-							*backDepthPtr = *pDepth;
-							//_backDepthData[index] = *pDepth;
-						}
-					}
-
-					*backDepthPtr = (*backDepthPtr << mDepthShiftValue);
-					//_backDepthData[index] = _backDepthData[index] << mDepthShiftValue;
-
- 					backDepthPtr++;
+					//if( *pDepth > 0 )
+						*backDepthPtr = ( 65536 - (*pDepth) ) << mDepthShiftValue;
+					backDepthPtr++;
 					pDepth++;
-					pTex++;
 				}
-
-				pDepthRow += _depthMetaData->XRes();
-				if( _enableHistogram )
-					pTexRow += w;
 			}
-*/
-			uint16_t* backDepthPtr = _backDepthData;
-            const XnDepthPixel* pDepth = _depthMetaData.Data();
-            if( _isDepthInverted )
-            {
-                for( uint32_t i=0; i<w*h; i++ )
-                {
-                    if( *pDepth > 0 )
-                        *backDepthPtr = (65536-*pDepth) << mDepthShiftValue;
-                    backDepthPtr++;
-                    pDepth++;
-                }
-            }
-            else
-            {
-                for( uint32_t i=0; i<w*h; i++ )
-                {
-                    if( *pDepth > 0 )
-                        *backDepthPtr = *pDepth << mDepthShiftValue;
-                    backDepthPtr++;
-                    pDepth++;
-                }                
-            }
-            
+			else
+			{
+				for( uint32_t i=0; i<w*h; i++ )
+				{
+					//if( *pDepth > 0 )
+						*backDepthPtr = *pDepth << mDepthShiftValue;
+					backDepthPtr++;
+					pDepth++;
+				}                
+			}
+			
 			if( _enableHistogram )	memcpy( _depthDataRGB, g_pTexMap, w*h*sizeof(XnRGB24Pixel) );
-			memcpy( _depthData, _backDepthData, w*h*sizeof(uint16_t) );
+			//memcpy( _depthData, _backDepthData, w*h*sizeof(uint16_t) );
+			/***/
 		}
 
 
 		if( _isImageOn && _imageGen->IsValid() )
 		{
 			_imageGen->GetMetaData( _imageMetaData );
-			pImage = _imageGen->GetImageMap();
+			pImage = _imageMetaData.Data(); //_imageGen->GetImageMap();
+			if( !pImage )
+			{
+				DEBUG_MESSAGE( "Image bitmap is not valid\n" );
+				return;
+			}
 			// Compute bitmap buffers
 			mColorSurface->update( (uint8_t*)(pImage) );
 		}
@@ -1243,18 +1229,20 @@ namespace V
 			// Compute 8bit and RGB color bitmap
 			//int index = 0;
 			uint8_t* pArray = mColorSurface->getData();
-			for( uint32_t i=0; i<nDataSize/sizeof(XnIRPixel); i++ )
+			uint32_t dim = nDataSize / sizeof(XnIRPixel);
+			for( uint32_t i=0; i<dim; i++ )
 			{
 				uint32_t v = _irData[i];
 				//uint16_t d = 65535 - ((v*v) >> 4);
 				int32_t d = v << 5;	// move to 16bit
 				_irData[i] = d;
 
+				v = (v>>2)&0xff; //(v<255)?v:255;
+
 				// Convert to 8bit precision (luminance)
-				_irData8[i] = (v>>3)&0xff;
+				_irData8[i] = v;
 
 				// rgb grayscale image (8bit)
-				v = (v<255)?v:255;
 				*pArray++ = v;
 				*pArray++ = v;
 				*pArray++ = v;
@@ -1272,59 +1260,59 @@ namespace V
 	void OpenNIDevice::getLabelMap( uint32_t userId, uint16_t* labelMap )
 	{
 		if( !_sceneAnalyzer->IsValid() ) 
-            return;
+			return;
 
 		_sceneAnalyzer->GetMetaData( _sceneMetaData );
 		//CHECK_RC( _status, "calcLabelMap()" );
 
 		const XnLabel* labels = _sceneMetaData.Data();
-        
+		
 		if( labels )
 		{
 			//std::cout << "depth width:" << depthWidth << ", height:" << depthHeight << std::endl;
-            int depthWidth = _sceneMetaData.XRes();
-            int depthHeight = _sceneMetaData.YRes();			
-            memset( labelMap, 0, depthWidth*depthHeight*sizeof(uint16_t) );
+			int depthWidth = _sceneMetaData.XRes();
+			int depthHeight = _sceneMetaData.YRes();			
+			memset( labelMap, 0, depthWidth*depthHeight*sizeof(uint16_t) );
 	
-            uint16_t* pDepth = _depthData;
-            uint16_t* map = labelMap;
+			uint16_t* pDepth = _depthData;
+			uint16_t* map = labelMap;
 
-            
-            if( userId > 0 )
-            {                
-                //int index = 0;
-                for( int j=0; j<depthHeight; j++ )
-                {
-                    for( int i=0; i<depthWidth; i++ )
-                    {
-                        XnLabel label = *labels;
-                        
-                        if( label == userId )
-                        {
-                            // If a user pixel, take depth value from our depthmap
-                            *map = *pDepth;
-                        }
-                        
-                        pDepth++;
-                        map++;
-                        labels++;
-                    }
-                }                
-            }
-            else
-            {
-                for( int i=0; i<depthWidth*depthHeight; i++ )
-                {
-                    XnLabel label = *labels;
-                    
-                    if( label > 0 )
-                        *map = *pDepth;
-                    
-                    pDepth++;
-                    map++;
-                    labels++;
-                }
-            }
+			
+			if( userId > 0 )
+			{                
+				//int index = 0;
+				for( int j=0; j<depthHeight; j++ )
+				{
+					for( int i=0; i<depthWidth; i++ )
+					{
+						XnLabel label = *labels;
+						
+						if( label == userId )
+						{
+							// If a user pixel, take depth value from our depthmap
+							*map = *pDepth;
+						}
+						
+						pDepth++;
+						map++;
+						labels++;
+					}
+				}                
+			}
+			else
+			{
+				for( int i=0; i<depthWidth*depthHeight; i++ )
+				{
+					XnLabel label = *labels;
+					
+					if( label > 0 )
+						*map = *pDepth;
+					
+					pDepth++;
+					map++;
+					labels++;
+				}
+			}
 		}
 	}
 
@@ -1491,15 +1479,15 @@ namespace V
 		return mColorSurface->getData();
 	}
 
-	boost::uint16_t* OpenNIDevice::getIRMap()
-	{
-		return _irData;
-	}
+	//boost::uint16_t* OpenNIDevice::getIRMap()
+	//{
+	//	return _irData;
+	//}
 
-	boost::uint8_t* OpenNIDevice::getIRMap8i()
-	{
-		return _irData8;
-	}
+	//boost::uint8_t* OpenNIDevice::getIRMap8i()
+	//{
+	//	return _irData8;
+	//}
 
 
 	boost::uint16_t* OpenNIDevice::getRawDepthMap()

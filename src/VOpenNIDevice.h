@@ -7,8 +7,8 @@
 
 
 	Current version:
-        OpenNI	1.3.4.3
-        NITE	1.4.2.4
+		OpenNI	1.3.4.3
+		NITE	1.4.2.4
  ***/
 
 #pragma once
@@ -22,7 +22,7 @@ namespace V
 
 	// Forward declarations
 	class OpenNIDevice;
-    class OpenNIDeviceManager;
+	class OpenNIDeviceManager;
 	class OpenNINetwork;
 	struct OpenNIBone;
 	class OpenNIUser;
@@ -41,6 +41,30 @@ namespace V
 
 
 
+
+
+	struct UserEvent
+	{
+		UserEvent()
+		{
+			mId = 0;
+			mDevice = OpenNIDeviceRef();
+			mUser = OpenNIUserRef();
+		}
+
+		uint32_t				mId;
+		OpenNIDeviceRef			mDevice;
+		OpenNIUserRef			mUser;
+	};
+
+	class UserListener
+	{
+	public:
+		virtual void onNewUser( UserEvent event ) {};
+		virtual void onLostUser( UserEvent event ) {};
+		virtual void onCalibrationStart( UserEvent event ) {};
+		virtual void onCalibrationComplete( UserEvent event ) {};
+	};
 
 
 
@@ -82,7 +106,7 @@ namespace V
 
 		void setPrimaryBuffer( int type );
 		void setMirrorMode( int type, bool flag );
-        
+		
 		/*
 			Get Horizontal FOV
 		*/
@@ -132,11 +156,11 @@ namespace V
 		void setHistogram( bool flag )				{ _enableHistogram = flag;	}
 		bool getHistogram()							{ return _enableHistogram;	}
 
-        void setUserCalibration( bool flag )		{ _enableUserCalibration = flag;	}
+		void setUserCalibration( bool flag )		{ _enableUserCalibration = flag;	}
 		bool getUserCalibration()					{ return _enableUserCalibration;	}
-        
-        void setConfidenceThreshold( float value )  { _confidenceThreshold = value;     }
-        float getConfidenceThreshold()              { return _confidenceThreshold;      } 
+		
+		void setConfidenceThreshold( float value )  { _confidenceThreshold = value;     }
+		float getConfidenceThreshold()              { return _confidenceThreshold;      } 
 
 		boost::uint8_t* getColorMap();
 		boost::uint16_t* getIRMap();
@@ -166,7 +190,7 @@ namespace V
 
 		void setAlignWithDepthGenerator();
 
-        void resetUser( int userId );
+		void resetUser( int userId );
 
 		//const std::string& getDebugInfo()			{ return mDebugInfo;}
 
@@ -214,14 +238,14 @@ namespace V
 		uint32_t enumDevices( void );
 		void privateInit();
 	public:
-        int                     _index;
+		int                     _index;
 		std::string				mDeviceName;
 
-        OpenNIDeviceManager*    _mgr;
+		OpenNIDeviceManager*    _mgr;
 
 		bool					_isDepthInverted;
 		bool					_enableHistogram;
-        bool                    _enableUserCalibration;
+		bool                    _enableUserCalibration;
 
 		//std::string				_configFile;
 
@@ -279,9 +303,9 @@ namespace V
 		// User Calibrations
 		bool					_isOneTimeCalibration;
 		bool					_isFirstCalibrationComplete;
-        
-        // User confidence threshold (below this value, user is not computed. Still it remains active until openni removes it)
-        float                   _confidenceThreshold;
+		
+		// User confidence threshold (below this value, user is not computed. Still it remains active until openni removes it)
+		float                   _confidenceThreshold;
 
 		xn::Generator*			_primaryGen;
 		xn::DepthGenerator*		_depthGen;
@@ -413,7 +437,7 @@ namespace V
 		uint32_t			mMaxNumOfUsers;
 	};
 
-    
+	
 	struct SBone
 	{
 		XnPoint3D			mPos;	// Real world position

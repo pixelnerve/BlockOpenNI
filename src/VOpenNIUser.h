@@ -79,12 +79,13 @@ namespace V
 		// This can be used to find a center point for local transformations
 		uint16_t		getMinZDistance()				{ return mUserMinZDistance;	}
 		uint16_t	
-        getMaxZDistance()				{ return mUserMaxZDistance;	}
+		getMaxZDistance()				{ return mUserMaxZDistance;	}
+
+		XnVector3D		GetForwardVector();
+		XnVector3D		GetUpVector();
 
 	protected:
 		void			allocate( int width, int height );
-
-
 	protected:
 		OpenNIDevice*	_device;
 		boost::shared_ptr<OpenNIDevice>	_deviceRef;
@@ -115,8 +116,8 @@ namespace V
 		uint32_t		mWidth;		//
 		uint32_t		mHeight;	// Current dimensions of depthmap
 
-        float           mAvgPosConfidence;
-        
+		float           mAvgPosConfidence;
+		
 		OpenNIBoneList	mBoneList;
 
 		XnBoundingBox3D mBoundingBox;

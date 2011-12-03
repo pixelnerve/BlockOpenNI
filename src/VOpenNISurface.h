@@ -1,6 +1,6 @@
 #pragma once
 
-#include "VOpenNICommon.h"
+//#include "VOpenNICommon.h"
 
 
 namespace V
@@ -81,7 +81,6 @@ namespace V
 	};
 
 
-	//typedef OpenNISurfaceT<uint8_t> OpenNISurfaceColorLuminance;
 	typedef OpenNISurfaceT<uint8_t> OpenNISurfaceColorRGB;
 	typedef OpenNISurfaceT<uint16_t> OpenNISurfaceIR;
 	typedef OpenNISurfaceT<uint16_t> OpenNISurfaceDepth;

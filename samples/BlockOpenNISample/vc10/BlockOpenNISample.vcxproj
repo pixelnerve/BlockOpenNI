@@ -47,7 +47,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\include;e:\development\OpenNI\Include;..\include;e:\Development\Cinder\include;e:\Development\Cinder\boost</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src;e:\dropbox\development\OpenNI\Include;..\include;e:\dropbox\Development\Cinder\include;e:\dropbox\Development\Cinder\boost</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -62,7 +62,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>openni.lib;cinder_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>e:\development\OpenNI\Lib;e:\Development\cinder\lib;e:\\Development\cinder\lib\msw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>e:\dropbox\development\OpenNI\Lib;e:\dropbox\Development\cinder\lib;e:\dropbox\Development\cinder\lib\msw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -74,7 +74,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>c:\Program Files (x86)\OpenNI\Include;..\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\include;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\boost</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src;e:\dropbox\development\OpenNI\Include;..\include;e:\dropbox\Development\Cinder\include;e:\dropbox\Development\Cinder\boost</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
@@ -89,8 +89,8 @@
       <AdditionalIncludeDirectories>..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\include;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>cinder.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>c:\Program Files (x86)\OpenNI\Lib;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\lib;..\..\..\..\..\..\..\..\Development\cinder_0.8.2_vc2010\lib\msw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>openni.lib;cinder.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>e:\dropbox\development\OpenNI\Lib;e:\dropbox\Development\cinder\lib;e:\dropbox\Development\cinder\lib\msw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
@@ -111,16 +111,15 @@
     <ClCompile Include="..\src\BlockOpenNISampleApp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\include\SkeletonPoseDetector.h" />
-    <ClInclude Include="..\..\..\include\VOpenNIBone.h" />
-    <ClInclude Include="..\..\..\include\VOpenNICommon.h" />
-    <ClInclude Include="..\..\..\include\VOpenNIDevice.h" />
-    <ClInclude Include="..\..\..\include\VOpenNIDeviceManager.h" />
-    <ClInclude Include="..\..\..\include\VOpenNIHeaders.h" />
-    <ClInclude Include="..\..\..\include\VOpenNINetwork.h" />
-    <ClInclude Include="..\..\..\include\VOpenNISurface.h" />
-    <ClInclude Include="..\..\..\include\VOpenNIUser.h" />
-    <ClInclude Include="..\..\..\include\VOpenNIUserListener.h" />
+    <ClInclude Include="..\..\..\src\VOpenNIBone.h" />
+    <ClInclude Include="..\..\..\src\VOpenNICommon.h" />
+    <ClInclude Include="..\..\..\src\VOpenNIDevice.h" />
+    <ClInclude Include="..\..\..\src\VOpenNIDeviceManager.h" />
+    <ClInclude Include="..\..\..\src\VOpenNIHeaders.h" />
+    <ClInclude Include="..\..\..\src\VOpenNINetwork.h" />
+    <ClInclude Include="..\..\..\src\VOpenNISurface.h" />
+    <ClInclude Include="..\..\..\src\VOpenNIUser.h" />
+    <ClInclude Include="..\..\..\src\VOpenNIUserListener.h" />
     <ClInclude Include="..\include\Resources.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

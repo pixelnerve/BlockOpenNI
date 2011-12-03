@@ -152,9 +152,9 @@ namespace V
 		}
 		//if( WSAGetLastError() == 0 )
 // 				{
- 			std::stringstream ss;
- 			ss << "Size: " << bytesReceived << "   Message: " << message[2] << " " << std::endl;
- 			OutputDebugStringA( ss.str().c_str() );
+			std::stringstream ss;
+			ss << "Size: " << bytesReceived << "   Message: " << message[2] << " " << std::endl;
+			OutputDebugStringA( ss.str().c_str() );
 // 				}
 
 		return bytesReceived;
@@ -175,7 +175,8 @@ namespace V
 			{
 				AcceptSocket = accept( mSocketId, NULL, NULL );
 
-				boost::this_thread::sleep( boost::posix_time::millisec(1) ); 
+				Sleep( 1 );
+				//boost::this_thread::sleep( boost::posix_time::millisec(1) ); 
 			}
 
 			// else, accept the connection...

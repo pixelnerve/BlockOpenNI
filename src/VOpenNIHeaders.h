@@ -8,6 +8,7 @@
 #include "VOpenNIBone.h"
 #include "VOpenNIDevice.h"
 #include "VOpenNIDeviceManager.h"
+#include "VOpenNIUserListener.h"
 #include "VOpenNISurface.h"
 #include "VOpenNIUser.h"
 

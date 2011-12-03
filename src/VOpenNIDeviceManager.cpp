@@ -47,7 +47,7 @@ namespace V
 
 		_idCount = 0;
 		mMaxNumOfUsers = 20;
-        mNumOfUsers = 0;
+		mNumOfUsers = 0;
 		mDebugInfo = "No debug information\n";
 #ifdef WIN32
 		mNetworkMsg = NULL;
@@ -72,18 +72,19 @@ namespace V
 		Release();
 	}
 
-    
-    void OpenNIDeviceManager::Init()
+	
+	void OpenNIDeviceManager::Init()
 	{
-		_context.Init();
-        
+		XnStatus status = _context.Init();
+		CHECK_RC( status, "Cant init context" );
+		
 		XnCallbackHandle hDummy;
 		_context.RegisterToErrorStateChange( onErrorStateChanged, NULL, hDummy );
-        
+		
 		mIsContextInit = true;
 	}
 
-    
+	
 /***
 	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( const std::string& xmlFile, bool allocUserIfNoNode )
 	{
@@ -92,17 +93,17 @@ namespace V
 		// Make sure we initialize our context
 		if( !mIsContextInit ) 
 			Init();
-        
 		
-        // Make sure we have a device connected
-        NodeInfoList list;
-        EnumerationErrors errors;
-        XnStatus status = _context.EnumerateProductionTrees( XN_NODE_TYPE_DEVICE, NULL, list, &errors );
-        CHECK_RC( status, "No kinect device was found" );
-        if( status != XN_STATUS_OK )
-        {
-            return OpenNIDeviceRef();            
-        }
+		
+		// Make sure we have a device connected
+		NodeInfoList list;
+		EnumerationErrors errors;
+		XnStatus status = _context.EnumerateProductionTrees( XN_NODE_TYPE_DEVICE, NULL, list, &errors );
+		CHECK_RC( status, "No kinect device was found" );
+		if( status != XN_STATUS_OK )
+		{
+			return OpenNIDeviceRef();            
+		}
 
 		// Bail out if its an empty filename
 		if( xmlFile == "" )
@@ -110,7 +111,7 @@ namespace V
 			DEBUG_MESSAGE( "not implemented" );
 			return OpenNIDeviceRef();
 		}        
-        
+		
 		// Local copy of the filename
 		std::string path = xmlFile;
 		
@@ -139,17 +140,17 @@ namespace V
 		if( !mIsContextInit ) 
 			Init();
 
-        // Make sure we have a device connected
-        xn::NodeInfoList deviceList;
-        //xn::EnumerationErrors errors;
-        XnStatus status = _context.EnumerateProductionTrees( XN_NODE_TYPE_DEVICE, NULL, deviceList, NULL );
-        CHECK_RC( status, "No kinect device was found" );
-        if( status != XN_STATUS_OK )
-        {
-            return OpenNIDeviceRef();            
-        }
+		// Make sure we have a device connected
+		xn::NodeInfoList deviceList;
+		//xn::EnumerationErrors errors;
+		XnStatus status = _context.EnumerateProductionTrees( XN_NODE_TYPE_DEVICE, NULL, deviceList, NULL );
+		CHECK_RC( status, "No kinect device was found" );
+		if( status != XN_STATUS_OK )
+		{
+			return OpenNIDeviceRef();            
+		}
 
-        
+		
 		OpenNIDeviceRef dev = OpenNIDeviceRef( new OpenNIDevice( 0, this) );
 		if( !dev->init( nodeTypeFlags ) ) 
 		{
@@ -180,48 +181,50 @@ namespace V
 		status = _context.EnumerateProductionTrees( XN_NODE_TYPE_DEVICE, NULL, device_nodes, NULL );
 		for( xn::NodeInfoList::Iterator nodeIt=device_nodes.Begin(); nodeIt!=device_nodes.End(); ++nodeIt ) 
 		{
-            const xn::NodeInfo& info = *nodeIt;
-            const XnProductionNodeDescription& description = info.GetDescription(); 
-        
-            std::cout << "Device Name: " << description.strName << 
-                "  Vendor: " << description.strVendor << 
-                info.GetInstanceName() << std::endl;
-            
+			const xn::NodeInfo& info = *nodeIt;
+			const XnProductionNodeDescription& description = info.GetDescription(); 
+		
+			std::stringstream ss;
+			ss << "Device Name: " << description.strName << 
+				"  Vendor: " << description.strVendor << 
+				info.GetInstanceName() << std::endl;
+			DEBUG_MESSAGE( ss.str().c_str() );
+			
 			mDeviceCount++;
 		}
-        
-        
-        if( mDeviceCount == 0 )
-        {
-            _context.Release();
-            DEBUG_MESSAGE( "No device is present" );
-            return;
-        }
-        
-        
-        /*
-        //
-        // List all devices present
-        //
-        for( xn::NodeInfoList::Iterator nodeIt=device_nodes.Begin(); 
-            nodeIt!=device_nodes.End(); 
-            nodeIt++ ) 
-        {
-            xn::Device device;
+		
+		
+		if( mDeviceCount == 0 )
+		{
+			_context.Release();
+			DEBUG_MESSAGE( "No device is present" );
+			return;
+		}
+		
+		
+		/*
+		//
+		// List all devices present
+		//
+		for( xn::NodeInfoList::Iterator nodeIt=device_nodes.Begin(); 
+			nodeIt!=device_nodes.End(); 
+			nodeIt++ ) 
+		{
+			xn::Device device;
 
-            xn::NodeInfo deviceNode = *nodeIt;
-            status = _context.CreateProductionTree( deviceNode, device );
-            CHECK_RC( status, "DeviceCreation" );
-            //status = deviceNode.GetInstance( device );
-            //CHECK_RC( status, "DeviceCreation" );
+			xn::NodeInfo deviceNode = *nodeIt;
+			status = _context.CreateProductionTree( deviceNode, device );
+			CHECK_RC( status, "DeviceCreation" );
+			//status = deviceNode.GetInstance( device );
+			//CHECK_RC( status, "DeviceCreation" );
 
-            mDevicesList.push_back( device );
-        }*/
+			mDevicesList.push_back( device );
+		}*/
 
 
 		// Make sure we do not allocate more than the ones needed
 		if( mDeviceCount > deviceCount ) 
-            mDeviceCount = deviceCount;
+			mDeviceCount = deviceCount;
 
 
 		// Allocate devices
@@ -243,21 +246,21 @@ namespace V
 		xn::NodeInfoList hands_nodes; 
 		//xn::NodeInfoList audio_nodes; 
 		status = _context.EnumerateProductionTrees( XN_NODE_TYPE_IMAGE, NULL, image_nodes, NULL );
-        CHECK_RC( status, "Enumeration Tree" );
+		CHECK_RC( status, "Enumeration Tree" );
 		status = _context.EnumerateProductionTrees( XN_NODE_TYPE_IR, NULL, ir_nodes, NULL );
-        CHECK_RC( status, "Enumeration Tree" );
+		CHECK_RC( status, "Enumeration Tree" );
 		status = _context.EnumerateProductionTrees( XN_NODE_TYPE_DEPTH, NULL, depth_nodes, NULL );
-        CHECK_RC( status, "Enumeration Tree" );
+		CHECK_RC( status, "Enumeration Tree" );
 		status = _context.EnumerateProductionTrees( XN_NODE_TYPE_USER, NULL, user_nodes, NULL );
-        CHECK_RC( status, "Enumeration Tree" );
+		CHECK_RC( status, "Enumeration Tree" );
 		status = _context.EnumerateProductionTrees( XN_NODE_TYPE_SCENE, NULL, scene_nodes, NULL );
-        CHECK_RC( status, "Enumeration Tree" );
+		CHECK_RC( status, "Enumeration Tree" );
 		status = _context.EnumerateProductionTrees( XN_NODE_TYPE_HANDS, NULL, hands_nodes, NULL );
-        CHECK_RC( status, "Enumeration Tree" );
+		CHECK_RC( status, "Enumeration Tree" );
 		//_status = _context.EnumerateProductionTrees( XN_NODE_TYPE_AUDIO, NULL, audio_nodes, NULL );
 
 
-        
+		
 		if( nodeTypeFlags & NODE_TYPE_DEPTH )
 		{
 			OpenNIDeviceList::iterator devIt = mDevices.begin();
@@ -268,14 +271,14 @@ namespace V
 
 				OpenNIDevice::Ref dev = *devIt;
 				xn::NodeInfo nodeInfo = *nodeIt;
-                
+				
 				xn::DepthGenerator gen;
 				status = _context.CreateProductionTree( nodeInfo, gen ); 
 				CHECK_RC( status, "(createDevices)  DepthGenerator" );
 				/*status = _context.CreateProductionTree( nodeInfo ); 
 				CHECK_RC( status, "(createDevices)  DepthGenerator" );
 				status = nodeInfo.GetInstance( gen );
-                CHECK_RC( status, "DepthGenerator" );*/
+				CHECK_RC( status, "DepthGenerator" );*/
 				mDepthGenList.push_back( gen );
 
 
@@ -283,10 +286,10 @@ namespace V
 				mDepthGenCount++;
 			}
 		}
-        std::cout << "+++ Depth nodes: \t" << mDepthGenCount << std::endl;
+		std::cout << "+++ Depth nodes: \t" << mDepthGenCount << std::endl;
 
 
-        
+		
 		if( nodeTypeFlags & NODE_TYPE_IR )
 		{
 			OpenNIDeviceList::iterator devIt = mDevices.begin();
@@ -302,18 +305,18 @@ namespace V
 				status = _context.CreateProductionTree( nodeInfo, gen ); 
 				CHECK_RC( status, "(createDevices) IRGenerator" );
 				/*status = _context.CreateProductionTree( nodeInfo ); 
-                CHECK_RC( status, "(createDevices)  IRGenerator" );
+				CHECK_RC( status, "(createDevices)  IRGenerator" );
 				status = nodeInfo.GetInstance( gen );
-                CHECK_RC( status, "IRGenerator" );*/
+				CHECK_RC( status, "IRGenerator" );*/
 				mIRGenList.push_back( gen );
 
 				++devIt;
 				mIRGenCount++;
 			}
 		}
-        std::cout << "+++ IR nodes: \t" << mIRGenCount << std::endl;
+		std::cout << "+++ IR nodes: \t" << mIRGenCount << std::endl;
 
-        
+		
 		if( nodeTypeFlags & NODE_TYPE_IMAGE )
 		{
 			OpenNIDeviceList::iterator devIt = mDevices.begin();
@@ -329,16 +332,16 @@ namespace V
 				status = _context.CreateProductionTree( nodeInfo, gen ); 
 				CHECK_RC( status, "(createDevices)  ImageGenerator" );
 				/*status = _context.CreateProductionTree( nodeInfo );
-                CHECK_RC( status, "(createDevices)  ImageGenerator" );
+				CHECK_RC( status, "(createDevices)  ImageGenerator" );
 				status = nodeInfo.GetInstance( gen );
-                CHECK_RC( status, "ImageGenerator" );*/
+				CHECK_RC( status, "ImageGenerator" );*/
 				mImageGenList.push_back( gen );
 
 				++devIt;
 				mImageGenCount++;
 			}
 		}
-        std::cout << "+++ Image nodes: \t" << mImageGenCount << std::endl;
+		std::cout << "+++ Image nodes: \t" << mImageGenCount << std::endl;
 
 
 		if( nodeTypeFlags & NODE_TYPE_USER )
@@ -356,16 +359,16 @@ namespace V
 				status = _context.CreateProductionTree( nodeInfo, gen ); 
 				CHECK_RC( status, "(createDevices)  UserGenerator" );
 				/*status = _context.CreateProductionTree( nodeInfo ); 
-                CHECK_RC( status, "(createDevices)  UserGenerator" );
+				CHECK_RC( status, "(createDevices)  UserGenerator" );
 				status = nodeInfo.GetInstance( gen );
-                CHECK_RC( status, "UserGenerator" );*/
+				CHECK_RC( status, "UserGenerator" );*/
 				mUserGenList.push_back( gen );
 
 				++devIt;
 				mUserGenCount++;
 			}
 		}
-        std::cout << "+++ User nodes: \t" << mUserGenCount << std::endl;
+		std::cout << "+++ User nodes: \t" << mUserGenCount << std::endl;
 
 
 		if( nodeTypeFlags & NODE_TYPE_SCENE )
@@ -383,18 +386,18 @@ namespace V
 				status = _context.CreateProductionTree( nodeInfo, gen ); 
 				CHECK_RC( status, "(createDevices)  SceneAnalyzer" );
 				/*status = _context.CreateProductionTree( nodeInfo ); 
-                CHECK_RC( status, "(createDevices)  SceneAnalyzer" );
+				CHECK_RC( status, "(createDevices)  SceneAnalyzer" );
 				status = nodeInfo.GetInstance( gen );
-                CHECK_RC( status, "SceneAnalyzer" );*/
+				CHECK_RC( status, "SceneAnalyzer" );*/
 				mSceneAnalyzerList.push_back( gen );
 
 				++devIt;
 				mSceneAnalyzerCount++;
 			}
 		}
-        std::cout << "+++ Scene nodes: \t" << mSceneAnalyzerCount << std::endl;
+		std::cout << "+++ Scene nodes: \t" << mSceneAnalyzerCount << std::endl;
 
-        
+		
 		if( nodeTypeFlags & NODE_TYPE_HANDS )
 		{
 			OpenNIDeviceList::iterator devIt = mDevices.begin();
@@ -410,31 +413,31 @@ namespace V
 				status = _context.CreateProductionTree( nodeInfo, gen ); 
 				CHECK_RC( status, "(createDevices)  HandsGenerator" );
 				/*status = _context.CreateProductionTree( nodeInfo ); 
-                CHECK_RC( status, "(createDevices)  HandsGenerator" );
+				CHECK_RC( status, "(createDevices)  HandsGenerator" );
 				status = nodeInfo.GetInstance( gen );
-                CHECK_RC( status, "HandsGenerator" );
+				CHECK_RC( status, "HandsGenerator" );
 				mHandsGenList.push_back( gen );*/
 
 				++devIt;
 				mHandsGenCount++;
 			}
 		}
-        std::cout << "+++ Hands nodes: \t" << mHandsGenCount << std::endl;
+		std::cout << "+++ Hands nodes: \t" << mHandsGenCount << std::endl;
 
 
-        
-        // Initialize devices
-        for( OpenNIDeviceList::iterator it=mDevices.begin();
-            it!=mDevices.end();
-            ++it )
+		
+		// Initialize devices
+		for( OpenNIDeviceList::iterator it=mDevices.begin();
+			it!=mDevices.end();
+			++it )
 		{
-            bool result = (*it)->init( nodeTypeFlags, resolution );
-            if( !result )
-            {
-                DEBUG_MESSAGE( "(OpenNIDeviceManager)  Failed to initialize device\n" );
-                break;
-            }
-        }
+			bool result = (*it)->init( nodeTypeFlags, resolution );
+			if( !result )
+			{
+				DEBUG_MESSAGE( "(OpenNIDeviceManager)  Failed to initialize device\n" );
+				break;
+			}
+		}
 	}
 
 
@@ -443,6 +446,9 @@ namespace V
 	{
 		mDepthMap = new uint16_t[width*height];
 		mColorMap = new uint8_t[width*height];
+		std::stringstream ss;
+		ss << width << "x" << height << std::endl;
+		DEBUG_MESSAGE( ss.str().c_str() );
 	}
 
 
@@ -452,44 +458,45 @@ namespace V
 		{
 			std::stringstream ss;
 			ss << "[OpenNIDeviceManager]  Device '" << deviceIdx << "' is not available" << std::endl;
+			DEBUG_MESSAGE( ss.str().c_str() );
 			//throw std::exception( ss.str().c_str() );
 			return OpenNIDevice::Ref();
 		}
 
-//        OpenNIDeviceList::iterator currDevice;
-//        currDevice = std::find( mDevices.begin(), mDevices.end(), deviceIdx );
-//        return *currDevice;        
+		//OpenNIDeviceList::iterator currDevice;
+		//currDevice = std::find( mDevices.begin(), mDevices.end(), deviceIdx );
+		//return *currDevice;        
 		int count = 0;
 		OpenNIDeviceList::iterator devIt = mDevices.begin();
 		while( 1 )
 		{
 			if( count == deviceIdx )
 				return *devIt;
-            
-            devIt++;
-            count++;
+			
+			devIt++;
+			count++;
 		}
 		return OpenNIDevice::Ref();
 	}
 
 
-    
+
 	void OpenNIDeviceManager::Release( void )
 	{
-        this->stop();
-        
+		this->stop();
+		
 		// Stop thread
 		if( USE_THREAD )
 		{
-            if( _thread )
-            {
-                DEBUG_MESSAGE( "Stop running thread on device manager\n" );
-                assert( _thread );
-                DEBUG_MESSAGE( "Wait for thread to be done\n" );
-                _thread->join();
-                DEBUG_MESSAGE( "Delete thread's memory\n" );
-                _thread.reset();                
-            }
+			if( _thread )
+			{
+				DEBUG_MESSAGE( "Stop running thread on device manager\n" );
+				assert( _thread );
+				DEBUG_MESSAGE( "Wait for thread to be done\n" );
+				_thread->join();
+				DEBUG_MESSAGE( "Delete thread's memory\n" );
+				_thread.reset();                
+			}
 		}
 
 		mDepthGenList.clear();
@@ -541,10 +548,10 @@ namespace V
 
 	OpenNIUserRef OpenNIDeviceManager::addUser( xn::UserGenerator* userGen, uint32_t id )
 	{
-        
-        if( USE_THREAD ) 
+		
+		if( USE_THREAD ) 
 		{
-            _mutex.lock();
+			_mutex.lock();
 			//boost::mutex::scoped_lock lock( _mutex );
 		}
 
@@ -552,46 +559,46 @@ namespace V
 		OpenNIDeviceList::iterator it = mDevices.begin();
 		OpenNIUserRef newUser = OpenNIUserRef( new OpenNIUser(id, it->get()) );
 		mUserList.push_back( newUser );
-        mNumOfUsers ++;
-        
-        
-        if( USE_THREAD ) 
+		mNumOfUsers ++;
+		
+		
+		if( USE_THREAD ) 
 		{
-            _mutex.unlock();
+			_mutex.unlock();
 		}
-         
-        
+		 
+		
 		return newUser;
 	}
 
 	void OpenNIDeviceManager::removeUser( uint32_t id )
 	{
-        if( USE_THREAD ) 
+		if( USE_THREAD ) 
 		{
-            _mutex.lock();
+			_mutex.lock();
 			//boost::mutex::scoped_lock lock( _mutex );
 		}
 
-        // bail out is no users left
+		// bail out is no users left
 		if( mUserList.empty() ) return;
-        
-        // Remove user with id
+		
+		// Remove user with id
 		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); ++it )
 		{
 			if( id == (*it)->getId() )
 			{
 				mUserList.remove( *it );
-                mNumOfUsers --;
+				mNumOfUsers --;
 				return;
 			}
 		}
-        
-        
-        if( USE_THREAD ) 
+		
+		
+		if( USE_THREAD ) 
 		{
-            _mutex.unlock();
+			_mutex.unlock();
 		}
-         
+		 
 
 	}
 
@@ -712,41 +719,41 @@ namespace V
 		}
 		else
 		{
-			rc = _context.WaitNoneUpdateAll();
+			//rc = _context.WaitNoneUpdateAll();
 			//rc = _context.WaitAndUpdateAll();
-			//rc = _context.WaitAnyUpdateAll();
+			rc = _context.WaitAnyUpdateAll();
 		}
-        CHECK_RC( rc, "WaitAndUpdateAll" );
+		CHECK_RC( rc, "WaitAndUpdateAll" );
 
 
-        
-        if( USE_THREAD ) 
+		
+		if( USE_THREAD ) 
 		{
-            _mutex.lock();
+			_mutex.lock();
 			//boost::mutex::scoped_lock lock( _mutex );
 		}
 
-        
-        // Handle device update
-        for( OpenNIDeviceList::iterator it = mDevices.begin(); it != mDevices.end(); ++it )
-        {
-            (*it)->readFrame();
-        }
-
-        // Handle user update
-        for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); ++it )
-        {
-            (*it)->update();
-        }
-
-        
-		if( USE_THREAD ) 
+		
+		// Handle device update
+		for( OpenNIDeviceList::iterator it = mDevices.begin(); it != mDevices.end(); ++it )
 		{
-            _mutex.unlock();
+			(*it)->readFrame();
 		}
 
-        
-        // Sleep
+		// Handle user update
+		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); ++it )
+		{
+			(*it)->update();
+		}
+
+		
+		if( USE_THREAD ) 
+		{
+			_mutex.unlock();
+		}
+
+		
+		// Sleep
 //		if( USE_THREAD ) 
 //          boost::this_thread::sleep( boost::posix_time::millisec(1) ); 
 	}
@@ -759,8 +766,8 @@ namespace V
 		//boost::mutex::scoped_lock lock( _mutex );
 
 		if( mUserList.empty() ) 
-            return;
-        
+			return;
+		
 		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); ++it )
 		{
 			(*it)->renderJoints( width, height, depth, pointSize, renderDepth );
@@ -780,7 +787,7 @@ namespace V
 		//if( USE_THREAD ) boost::mutex::scoped_lock lock( _mutex );
 
 		if( !mDepthGenList[deviceIdx].IsValid() ) 
-            return NULL;
+			return NULL;
 
 		mDepthGenList[deviceIdx].GetMetaData( mDepthMD );
 
@@ -793,7 +800,7 @@ namespace V
 		//if( USE_THREAD ) boost::mutex::scoped_lock lock( _mutex );
 
 		if( !mDepthGenList[deviceIdx].IsValid() ) 
-            return NULL;
+			return NULL;
 
 		mDepthGenList[deviceIdx].GetMetaData( mDepthMD );
 
@@ -855,66 +862,66 @@ namespace V
 		return NULL;
 	}
 
-    
-    
-    void OpenNIDeviceManager::GetUserMap( uint32_t deviceIdx, uint32_t labelId, uint16_t* labelMap )
+	
+	
+	void OpenNIDeviceManager::GetUserMap( uint32_t deviceIdx, uint32_t labelId, uint16_t* labelMap )
 	{
 		//boost::mutex::scoped_lock lock( _mutex );
-        
+		
 		SceneAnalyzer& scene = mSceneAnalyzerList[deviceIdx];
 		// Make sure scene is available
 		if( !scene.IsValid() ) 
-            return;
-        
+			return;
+		
 		scene.GetMetaData( mSceneMD );
 		const XnLabel* labels = mSceneMD.Data();
-        
+		
 		if( labels )
 		{
 			int depthWidth = mSceneMD.XRes();
 			int depthHeight = mSceneMD.YRes();
-            
+			
 			memset( labelMap, 0, depthWidth*depthHeight*sizeof(uint16_t) );
-            
-            mDepthGenList[deviceIdx].GetMetaData( mDepthMD );
+			
+			mDepthGenList[deviceIdx].GetMetaData( mDepthMD );
 			const XnDepthPixel* pDepth = mDepthMD.Data();
 			uint16_t* map = labelMap;
-            
-            if( labelId > 0 )
-            {
-                //int index = 0;
-                for( int j=0; j<depthHeight; j++ )
-                {
-                    for( int i=0; i<depthWidth; i++ )
-                    {
-                        XnLabel label = *labels;
-                        
-                        if( label == labelId )
-                        {
-                            *map = *pDepth;
-                        }
-                        
-                        pDepth++;
-                        map++;
-                        labels++;
-                    }
-                }                
-            }
-            else
-            {
-                // Common user map
-                for( int i=0; i<depthWidth*depthHeight; i++ )
-                {
-                    XnLabel label = *labels;
+			
+			if( labelId > 0 )
+			{
+				//int index = 0;
+				for( int j=0; j<depthHeight; j++ )
+				{
+					for( int i=0; i<depthWidth; i++ )
+					{
+						XnLabel label = *labels;
+						
+						if( label == labelId )
+						{
+							*map = *pDepth;
+						}
+						
+						pDepth++;
+						map++;
+						labels++;
+					}
+				}                
+			}
+			else
+			{
+				// Common user map
+				for( int i=0; i<depthWidth*depthHeight; i++ )
+				{
+					XnLabel label = *labels;
 
-                    if( label == labelId )
-                        *map = *pDepth;
+					if( label == labelId )
+						*map = *pDepth;
 
-                    map++;
-                    pDepth++;
-                    labels++;
-                }
-            }
+					map++;
+					pDepth++;
+					labels++;
+				}
+			}
 		}
 	}
 
@@ -949,13 +956,13 @@ namespace V
 		/*for( uint32_t y=0; y<mDepthMD.YRes(); y++ )
 		{
 			for(uint32_t x=0; x<mDepthMD.XRes(); x++ )
-            {*/
-        
-            uint32_t bufSize = mDepthMD.XRes() * mDepthMD.YRes();
-            for(uint32_t i=0; i<bufSize; i++ )
-            {
-                int x = i % mDepthMD.XRes();
-                int y = i / mDepthMD.XRes();
+			{*/
+		
+			uint32_t bufSize = mDepthMD.XRes() * mDepthMD.YRes();
+			for(uint32_t i=0; i<bufSize; i++ )
+			{
+				int x = i % mDepthMD.XRes();
+				int y = i / mDepthMD.XRes();
 				if( *src > 0 )
 				{
 					destMap->X = (float)x;
@@ -979,7 +986,7 @@ namespace V
 	}
 
 
-    
+	
 
 	void OpenNIDeviceManager::SetFrameSync( uint32_t deviceIdx, uint32_t index1 )
 	{
@@ -1182,7 +1189,7 @@ namespace V
 		}*/
 	}
 
-    
+	
 	void OpenNIDeviceManager::SendNetworkUserPixels( uint32_t deviceIdx, uint32_t userId, uint32_t sendBlocksSize/*=65535*/ )
 	{
 		if( !mEnableNetwork ) return;

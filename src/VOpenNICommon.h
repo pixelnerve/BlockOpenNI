@@ -7,19 +7,19 @@
 #undef max
 #include <gl/gl.h>
 #ifndef DEBUG_MESSAGE
-    #define DEBUG_MESSAGE( x ) OutputDebugStringA( x )
+	#define DEBUG_MESSAGE( x ) OutputDebugStringA( x )
 #endif
 #elif defined(linux) || defined(__linux) || defined(__linux__)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
 #ifndef DEBUG_MESSAGE
-    #define DEBUG_MESSAGE( x ) printf( "%s", x )
+	#define DEBUG_MESSAGE( x ) printf( "%s", x )
 #endif
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
 #ifndef DEBUG_MESSAGE
-    #define DEBUG_MESSAGE( x ) printf( "%s", x )
+	#define DEBUG_MESSAGE( x ) printf( "%s", x )
 #endif
 #else
 #error "Unknown platform"
@@ -37,6 +37,7 @@
 //#define _SECURE_SCL 0
 #include <string>
 #include <vector>
+#include <iostream>
 
 // OpenNI
 #include "XnOpenNI.h"
@@ -48,8 +49,7 @@
 #include "XnUtils.h"
 
 
-
-//#define OPENNI_POSE_SAVE_CAPABILITY
+#define OPENNI_POSE_SAVE_CAPABILITY
 
 
 
@@ -94,21 +94,21 @@ namespace V
 	#define MAX_DEVICES 4
 	// Maximum depth bins for the histogram image
 	#define MAX_DEPTH 10000
-    
-    
-    
-    
-    enum NodeResolution
-    {
-        RES_320x240 = XN_RES_QVGA,
-        RES_640x480 = XN_RES_VGA,
-        RES_800x600 = XN_RES_SVGA,
-        RES_1024x768 = XN_RES_XGA,
-        RES_1280x1024 = XN_RES_SXGA,
-        RES_1600x1200 = XN_RES_UXGA
-    };
-    
-    
+	
+	
+	
+	
+	enum NodeResolution
+	{
+		RES_320x240 = XN_RES_QVGA,
+		RES_640x480 = XN_RES_VGA,
+		RES_800x600 = XN_RES_SVGA,
+		RES_1024x768 = XN_RES_XGA,
+		RES_1280x1024 = XN_RES_SXGA,
+		RES_1600x1200 = XN_RES_UXGA
+	};
+	
+	
 
 	// Enumeration of production nodes
 	enum ProductionNodeType
@@ -131,26 +131,26 @@ namespace V
 		SKEL_NECK = 2, 
 		SKEL_TORSO = 3, 
 		SKEL_WAIST = 4, 
-        
+		
 		SKEL_LEFT_COLLAR = 5, 
 		SKEL_LEFT_SHOULDER = 6, 
 		SKEL_LEFT_ELBOW = 7, 
 		SKEL_LEFT_WRIST = 8, 
 		SKEL_LEFT_HAND = 9, 
 		SKEL_LEFT_FINGERTIP = 10, 
-        
+		
 		SKEL_RIGHT_COLLAR = 11, 
 		SKEL_RIGHT_SHOULDER = 12, 
 		SKEL_RIGHT_ELBOW = 13, 
 		SKEL_RIGHT_WRIST = 14, 
 		SKEL_RIGHT_HAND = 15, 
 		SKEL_RIGHT_FINGERTIP = 16, 
-        
+		
 		SKEL_LEFT_HIP = 17, 
 		SKEL_LEFT_KNEE = 18, 
 		SKEL_LEFT_ANKLE = 19, 
 		SKEL_LEFT_FOOT = 20, 
-        
+		
 		SKEL_RIGHT_HIP = 21, 
 		SKEL_RIGHT_KNEE = 22, 
 		SKEL_RIGHT_ANKLE = 23, 

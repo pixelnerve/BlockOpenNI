@@ -32,6 +32,35 @@ namespace V
 	int g_UsedBoneIndexArray[15] = { 1, 2, 3, 6, 7, 9, 12, 13, 15, 17, 18, 20, 21, 22, 24 };
 
 
+
+	inline XnVector3D sub( const XnVector3D& v0, const XnVector3D& v1 )
+	{
+		XnVector3D res;
+		res.X = v0.X - v1.X;
+		res.Y = v0.Y - v1.Y;
+		res.Z = v0.Z - v1.Z;
+		return res;
+	}
+	inline XnVector3D cross( const XnVector3D& v0, const XnVector3D& v1 )
+	{
+		XnVector3D res;
+		res.X = v0.Y * v1.Z - v1.Y * v0.Z;
+		res.Y = v0.Z * v1.X - v1.Z * v0.X;
+		res.Z = v0.X * v1.Y - v1.X * v0.Y;
+		return res;
+	}
+	inline XnVector3D normalize( const XnVector3D& v0 )
+	{
+		XnVector3D res;
+		float len = sqrtf( res.X*res.X + res.Y*res.Y + res.Z*res.Z );
+		if( len < 0.00001f ) return XnVector3D();
+		float invS = 1.0f / len;
+		res.X = v0.X * invS;
+		res.Y = v0.Y * invS;
+		res.Z = v0.Z * invS;
+	}
+
+
 	OpenNIUser::OpenNIUser( int32_t id, OpenNIDevice* device ) 
 		: mUserState(USER_NONE)
 	{
@@ -118,8 +147,8 @@ namespace V
 
 			mBoneList.push_back( bone );
 		}
-        
-        mAvgPosConfidence = 0.0f;
+		
+		mAvgPosConfidence = 0.0f;
 
 
 		// TODO: Fix this. Remove hardcoded values
@@ -163,13 +192,13 @@ namespace V
 	void OpenNIUser::loadCalibrationDataToFile( const std::string& filename )
 	{
 #ifdef OPENNI_POSE_SAVE_CAPABILITY
-		mSkelCap = &_device->getUserGenerator()->GetSkeletonCap();
+		xn::SkeletonCapability skelCap = _device->getUserGenerator()->GetSkeletonCap();
 
-		if( mSkelCap->IsCalibrated( mId ) )
+		if( skelCap.IsCalibrated( mId ) )
 			//if( _device->getUserGenerator() && _device->getUserGenerator()->GetSkeletonCap().IsCalibrated( mId ) )
 		{
 			// Save user's calibration to file
-			XnStatus rc = mSkelCap->LoadCalibrationDataFromFile( mId, filename.c_str() );
+			XnStatus rc = skelCap.LoadCalibrationDataFromFile( mId, filename.c_str() );
 			//XnStatus rc = _device->getUserGenerator()->GetSkeletonCap().LoadCalibrationDataFromFile( mId, filename.c_str() );
 			CHECK_RC( rc, "OpenNIUser::loadCalibrationDataToFile()" );
 			if( rc == XN_STATUS_OK )
@@ -177,7 +206,7 @@ namespace V
 				// Make sure state 
 				mUserState = USER_TRACKING;
 				_device->getUserGenerator()->GetPoseDetectionCap().StopPoseDetection( mId );
-				mSkelCap->StartTracking( mId );
+				skelCap.StartTracking( mId );
 			}
 		}
 #else
@@ -191,13 +220,13 @@ namespace V
 	void OpenNIUser::saveCalibrationDataToFile( const std::string& filename )
 	{
 #ifdef OPENNI_POSE_SAVE_CAPABILITY
-		mSkelCap = &_device->getUserGenerator()->GetSkeletonCap();
+		xn::SkeletonCapability skelCap = _device->getUserGenerator()->GetSkeletonCap();
 
-		if( mSkelCap->IsCalibrated( mId ) )
+		if( skelCap.IsCalibrated( mId ) )
 			//if( _device->getUserGenerator() && _device->getUserGenerator()->GetSkeletonCap().IsCalibrated( mId ) )
 		{
 			// Save user's calibration to file
-			XnStatus rc = mSkelCap->SaveCalibrationDataToFile( mId, filename.c_str() );
+			XnStatus rc = skelCap.SaveCalibrationDataToFile( mId, filename.c_str() );
 			CHECK_RC( rc, "OpenNIUser::saveCalibrationDataToFile()" );
 		}
 #else
@@ -425,9 +454,9 @@ namespace V
 			XnPoint3D projectivePos;
 			xn::SkeletonCapability skelCap = user->GetSkeletonCap();
 
-            
-            mAvgPosConfidence = 0.0f;
-            
+			
+			mAvgPosConfidence = 0.0f;
+			
 			int index = 0;
 			for( OpenNIBoneList::iterator it = mBoneList.begin(); it != mBoneList.end(); ++it )
 			//for( int i=0; i<BONE_COUNT; i++ )
@@ -481,41 +510,91 @@ namespace V
 				skelCap.GetSkeletonJointPosition( mId, (XnSkeletonJoint)(g_BoneIndexArray[index]), jointPos );
 				skelCap.GetSkeletonJointOrientation( mId, (XnSkeletonJoint)(g_BoneIndexArray[index]), jointOri );
 
-                OpenNIBone* bone = *it;
+				OpenNIBone* bone = *it;
 
-                //bone->id = g_BoneIndexArray[i];
-                // Is active?
-                bone->active = true;
+				//bone->id = g_BoneIndexArray[i];
+				// Is active?
+				bone->active = true;
 
-                // Position (actual position in world coordinates)
-                bone->position[0] = jointPos.position.X;
-                bone->position[1] = jointPos.position.Y;
-                bone->position[2] = jointPos.position.Z;
-                //memcpy( bone->position, (float*)&jointPos.position.X, 3*sizeof(float) );
+				// Position (actual position in world coordinates)
+				bone->position[0] = jointPos.position.X;
+				bone->position[1] = jointPos.position.Y;
+				bone->position[2] = jointPos.position.Z;
+				//memcpy( bone->position, (float*)&jointPos.position.X, 3*sizeof(float) );
 
-                // Compute Projective position coordinates
-                mDepthGen->ConvertRealWorldToProjective( 1, &jointPos.position, &projectivePos );
-                bone->positionProjective[0] = (projectivePos.X > 0) ? projectivePos.X : 0;
-                bone->positionProjective[1] = (projectivePos.Y > 0) ? projectivePos.Y : 0;
-                bone->positionProjective[2] = (projectivePos.Z > 0) ? projectivePos.Z : 0;
+				// Compute Projective position coordinates
+				mDepthGen->ConvertRealWorldToProjective( 1, &jointPos.position, &projectivePos );
+				bone->positionProjective[0] = (projectivePos.X > 0) ? projectivePos.X : 0;
+				bone->positionProjective[1] = (projectivePos.Y > 0) ? projectivePos.Y : 0;
+				bone->positionProjective[2] = (projectivePos.Z > 0) ? projectivePos.Z : 0;
 
-                // Orientation
-                memcpy( bone->orientation, jointOri.orientation.elements, 9*sizeof(float) );
+				// Orientation
+				memcpy( bone->orientation, jointOri.orientation.elements, 9*sizeof(float) );
 
-                // Confidence
-                bone->positionConfidence = jointPos.fConfidence;
-                bone->orientationConfidence = jointOri.fConfidence;
-                
-                mAvgPosConfidence += jointPos.fConfidence;
+				// Confidence
+				bone->positionConfidence = jointPos.fConfidence;
+				bone->orientationConfidence = jointOri.fConfidence;
+				
+				mAvgPosConfidence += jointPos.fConfidence;
 
 				index++;
 			}
-            
-            // Compute average position confidence.
-            mAvgPosConfidence /= (float)mBoneList.size();
-            
+			
+			// Compute average position confidence.
+			mAvgPosConfidence /= (float)mBoneList.size();
+			
 
 			mUserState = USER_TRACKING;
+		}
+	}
+
+
+	XnVector3D OpenNIUser::GetForwardVector()
+	{
+		if( mId ) 
+		{
+			UserGenerator* userGen = _device->getUserGenerator();
+
+			// OpenNI's orientation does not work very well.
+			/*
+			XnSkeletonJointTransformation t;
+			m_userGen->GetSkeletonCap().GetSkeletonJoint(userID, XN_SKEL_TORSO, t);	
+			float* e = t.orientation.orientation.elements;
+			return XV3(e[6], e[7], -e[8]);
+			*/
+
+			XnSkeletonJointPosition p0, p1, p2;
+			userGen->GetSkeletonCap().GetSkeletonJointPosition( mId, XN_SKEL_RIGHT_SHOULDER, p0 );
+			userGen->GetSkeletonCap().GetSkeletonJointPosition( mId, XN_SKEL_TORSO, p1 );
+			userGen->GetSkeletonCap().GetSkeletonJointPosition( mId, XN_SKEL_LEFT_SHOULDER, p2 );
+			XnVector3D v0(p0.position), v1(p1.position), v2(p2.position);
+
+			XnVector3D res1, res2;
+			res1 = sub( v1, v0 );
+			res2 = sub( v2, v0 );
+			XnVector3D res = cross( res1, res2 );
+			res = normalize( res );
+		} else {
+			return XnVector3D();
+		}
+	}
+
+	XnVector3D OpenNIUser::GetUpVector()
+	{
+		if( mId ) 
+		{
+			UserGenerator* userGen = _device->getUserGenerator();
+
+			XnSkeletonJointPosition p0, p1;
+			userGen->GetSkeletonCap().GetSkeletonJointPosition( mId, XN_SKEL_TORSO, p0 );
+			userGen->GetSkeletonCap().GetSkeletonJointPosition( mId, XN_SKEL_NECK, p1 );
+			XnVector3D v0(p0.position), v1(p1.position);
+			XnVector3D res1 = sub( v1, v0 );
+			res1 = sub( v1, v0 );
+			res1 = normalize( res1 );
+			return res1;
+		} else {
+			return XnVector3D();
 		}
 	}
 
@@ -532,17 +611,17 @@ namespace V
 				DEBUG_MESSAGE( ss.str().c_str() );
 				return;
 			}
-            
-            
-            // Low confidence, bail out!
-            if( mAvgPosConfidence < _device->getConfidenceThreshold() )
-                return;
+			
+			
+			// Low confidence, bail out!
+			if( mAvgPosConfidence < _device->getConfidenceThreshold() )
+				return;
 
-            
-            
-            //
+			
+			
+			//
 			// Old OpenGL rendering method. it's fine for now.
-            //
+			//
 			glBegin( GL_QUADS );
 			int index = 1;
 			for( std::vector<OpenNIBone*>::iterator it = mBoneList.begin(); it != mBoneList.end(); ++it, index++ )
@@ -550,9 +629,9 @@ namespace V
 				OpenNIBone* bone = *it;
 
 
-                // Bail out in case any bone is not confident
-                if( bone->positionConfidence < 0.5f || bone->orientationConfidence < 0.5f )
-                    break;
+				// Bail out in case any bone is not confident
+				if( bone->positionConfidence < 0.5f || bone->orientationConfidence < 0.5f )
+					break;
 
 				XnPoint3D point;
 				point.X = bone->positionProjective[0];
@@ -646,10 +725,10 @@ namespace V
 				DEBUG_MESSAGE( ss.str().c_str() );
 				return;
 			}
-            
-            // Low confidence, bail out!
-            if( mAvgPosConfidence < _device->getConfidenceThreshold() )
-                return;
+			
+			// Low confidence, bail out!
+			if( mAvgPosConfidence < _device->getConfidenceThreshold() )
+				return;
 
 
 			// Old OpenGL rendering method. it's fine for now.
@@ -684,30 +763,30 @@ namespace V
 			// Render body connecting lines
 			//
 			renderBone( SKEL_HEAD, SKEL_NECK, false );
-            
+			
 			renderBone( SKEL_TORSO, SKEL_LEFT_SHOULDER, false );
 			renderBone( SKEL_LEFT_SHOULDER, SKEL_LEFT_ELBOW, false );
 			renderBone( SKEL_LEFT_ELBOW, SKEL_LEFT_HAND, false );
-            
+			
 			renderBone( SKEL_TORSO, SKEL_RIGHT_SHOULDER, false );
 			renderBone( SKEL_RIGHT_SHOULDER, SKEL_RIGHT_ELBOW, false );
 			renderBone( SKEL_RIGHT_ELBOW, SKEL_RIGHT_HAND, false );
-            
+			
 //			renderBone( SKEL_LEFT_SHOULDER, SKEL_TORSO, width, height, depth, true, renderDepth );
 //			renderBone( SKEL_RIGHT_SHOULDER, SKEL_TORSO, width, height, depth, true, renderDepth );
-            
+			
 			renderBone( SKEL_TORSO, SKEL_LEFT_HIP, false );
 			renderBone( SKEL_LEFT_HIP, SKEL_LEFT_KNEE, false );
 			renderBone( SKEL_LEFT_KNEE, SKEL_LEFT_FOOT, false );
-            
+			
 			renderBone( SKEL_TORSO, SKEL_RIGHT_HIP, false );
 			renderBone( SKEL_RIGHT_HIP, SKEL_RIGHT_KNEE, false );
 			renderBone( SKEL_RIGHT_KNEE, SKEL_RIGHT_FOOT, false );
-            
+			
 			renderBone( SKEL_TORSO, SKEL_RIGHT_HIP, false );
 			renderBone( SKEL_TORSO, SKEL_LEFT_HIP, false );
 //            renderBone( SKEL_LEFT_HIP, SKEL_RIGHT_HIP, width, height, depth, true, renderDepth );
-            
+			
 			renderBone( SKEL_TORSO, SKEL_NECK, false );
 
 			// Restore texture

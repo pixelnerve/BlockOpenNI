@@ -41,34 +41,31 @@
     <ClInclude Include="..\include\Resources.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\VOpenNIBone.h">
+    <ClInclude Include="..\..\..\src\VOpenNIBone.h">
       <Filter>Addons\OpenNI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\VOpenNICommon.h">
+    <ClInclude Include="..\..\..\src\VOpenNICommon.h">
       <Filter>Addons\OpenNI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\VOpenNIDevice.h">
+    <ClInclude Include="..\..\..\src\VOpenNIDevice.h">
       <Filter>Addons\OpenNI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\VOpenNIDeviceManager.h">
+    <ClInclude Include="..\..\..\src\VOpenNIDeviceManager.h">
       <Filter>Addons\OpenNI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\VOpenNIHeaders.h">
+    <ClInclude Include="..\..\..\src\VOpenNIHeaders.h">
       <Filter>Addons\OpenNI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\VOpenNISurface.h">
+    <ClInclude Include="..\..\..\src\VOpenNISurface.h">
       <Filter>Addons\OpenNI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\VOpenNIUser.h">
+    <ClInclude Include="..\..\..\src\VOpenNIUser.h">
       <Filter>Addons\OpenNI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\SkeletonPoseDetector.h">
+    <ClInclude Include="..\..\..\src\VOpenNIUserListener.h">
       <Filter>Addons\OpenNI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\VOpenNINetwork.h">
-      <Filter>Addons\OpenNI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\VOpenNIUserListener.h">
+    <ClInclude Include="..\..\..\src\VOpenNINetwork.h">
       <Filter>Addons\OpenNI</Filter>
     </ClInclude>
   </ItemGroup>

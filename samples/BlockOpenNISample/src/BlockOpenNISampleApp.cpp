@@ -85,14 +85,13 @@ public:
 	static const int WIDTH = 1280;
 	static const int HEIGHT = 720;
 
-	static const int KINECT_COLOR_WIDTH = 640;	//1280;
-	static const int KINECT_COLOR_HEIGHT = 480;	//1024;
-	static const int KINECT_COLOR_FPS = 30;	//15;
-	static const int KINECT_DEPTH_WIDTH = 640;
-	static const int KINECT_DEPTH_HEIGHT = 480;
-	static const int KINECT_DEPTH_FPS = 30;
+	static const int KINECT_COLOR_WIDTH = 1280;
+	static const int KINECT_COLOR_HEIGHT = 1024;
+	static const int KINECT_DEPTH_WIDTH = 1280;
+	static const int KINECT_DEPTH_HEIGHT = 1024;
 
 
+	void prepareSettings( Settings *settings );
 	void setup();
 	void mouseDown( MouseEvent event );	
 	void update();
@@ -113,13 +112,6 @@ public:
 		return ImageSourceRef( new ImageSourceKinectDepth( activeDepth, KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT ) );
 	} 
 
-	ImageSourceRef getDepthImage24()
-	{
-		// register a reference to the active buffer
-		uint8_t *activeDepth = _device0->getDepthMap24();
-		return ImageSourceRef( new ImageSourceKinectColor( activeDepth, KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT ) );
-	}
-
 public:	// Members
 	V::OpenNIDeviceManager*	_manager;
 	V::OpenNIDevice::Ref	_device0;
@@ -130,31 +122,34 @@ public:	// Members
 };
 
 
+
+void BlockOpenNISampleAppApp::prepareSettings( Settings *settings )
+{
+	settings->setWindowSize( WIDTH, HEIGHT );
+}
+
+
 void BlockOpenNISampleAppApp::setup()
 {
 	V::OpenNIDeviceManager::USE_THREAD = false;
 	_manager = V::OpenNIDeviceManager::InstancePtr();
-    _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH );
+	_manager->createDevices( 1, V::NODE_TYPE_DEPTH | V::NODE_TYPE_IMAGE, V::RES_1280x1024 );
 	_device0 = _manager->getDevice( 0 );
 	if( !_device0 ) 
 	{
+		DEBUG_MESSAGE( "(App)  Can't find a kinect device\n" );
 		shutdown();
 		quit();
 		return;
 	}
-    _device0->setDepthInvert( false );
-    _device0->setDepthShiftMul( 4 );
-	if( !_device0 )
-	{
-		DEBUG_MESSAGE( "(App)  Can't find a kinect device\n" );
-        this->shutdown();
-        this->quit();
-	}
+	_device0->setDepthInvert( false );
+	_device0->setDepthShiftMul( 4 );
 
 	mColorTex = gl::Texture( KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT );
 	mDepthTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT );
 
-    //_manager->SetPrimaryBuffer( 0, V::NODE_TYPE_DEPTH );
+
+	//_manager->SetPrimaryBuffer( 0, V::NODE_TYPE_DEPTH );
 	_manager->start();
 }
 
@@ -165,13 +160,13 @@ void BlockOpenNISampleAppApp::mouseDown( MouseEvent event )
 
 
 void BlockOpenNISampleAppApp::update()
-{	
-    if( !V::OpenNIDeviceManager::USE_THREAD )
-    {
-        _manager->update();
-    }
+{
+	if( !V::OpenNIDeviceManager::USE_THREAD )
+	{
+		_manager->update();
+	}
 
-    
+
 	// Update textures
 	mColorTex.update( getColorImage() );
 	mDepthTex.update( getDepthImage() );
@@ -184,10 +179,10 @@ void BlockOpenNISampleAppApp::draw()
 	gl::clear( Color( 0, 0, 0 ) ); 
 
 
-	float sx = 320;
-	float sy = 240;
-	float xoff = 10;
-	float yoff = 10;
+	float sx = 640;
+	float sy = 480;
+	float xoff = 0;
+	float yoff = 0;
 	glEnable( GL_TEXTURE_2D );
 	gl::color( cinder::ColorA(1, 1, 1, 1) );
 	gl::draw( mDepthTex, Rectf( xoff, yoff, xoff+sx, yoff+sy) );
