@@ -47,7 +47,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(OPEN_NI_INCLUDE);..\..\..\src;..\include;e:\dropbox\Development\Cinder\include;e:\dropbox\Development\Cinder\boost</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src;$(OPEN_NI_INCLUDE);..\include;$(CINDER_DIR)\include;$(CINDER_DIR)\boost</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -62,7 +62,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>openni.lib;cinder_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(OPEN_NI_LIB);e:\dropbox\Development\Cinder\lib;e:\dropbox\Development\Cinder\lib\msw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OPEN_NI_LIB);$(CINDER_DIR)\lib\msw;$(CINDER_DIR)\lib</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -74,7 +74,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>c:\Program Files (x86)\OpenNI\Include..\..\..\include;..\include;..\..\..\..\..\..\..\..\Development\Cinder\Cinder\include;..\..\..\..\..\..\..\..\Development\Cinder\Cinder\boost</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src;$(OPEN_NI_INCLUDE);..\include;$(CINDER_DIR)\include;$(CINDER_DIR)\boost</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
@@ -90,7 +90,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>openni.lib;cinder.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>c:\Program Files (x86)\OpenNI\Lib;..\..\..\..\..\..\..\..\Development\Cinder\Cinder\lib;..\..\..\..\..\..\..\..\Development\Cinder\Cinder\lib\msw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OPEN_NI_LIB);$(CINDER_DIR)\lib\msw;$(CINDER_DIR)\lib</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
@@ -106,6 +106,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\src\VOpenNIDevice.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNIDeviceManager.cpp" />
+    <ClCompile Include="..\..\..\src\VOpenNINetwork.cpp" />
     <ClCompile Include="..\..\..\src\VOpenNIUser.cpp" />
     <ClCompile Include="..\src\BlockOpenNISkeletonApp.cpp" />
   </ItemGroup>
@@ -117,13 +118,11 @@
     <ClInclude Include="..\..\..\src\VOpenNIDevice.h" />
     <ClInclude Include="..\..\..\src\VOpenNIDeviceManager.h" />
     <ClInclude Include="..\..\..\src\VOpenNIHeaders.h" />
+    <ClInclude Include="..\..\..\src\VOpenNINetwork.h" />
     <ClInclude Include="..\..\..\src\VOpenNISurface.h" />
     <ClInclude Include="..\..\..\src\VOpenNIUser.h" />
     <ClInclude Include="..\..\..\src\VOpenNIUserListener.h" />
     <ClInclude Include="..\include\Resources.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Resources.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

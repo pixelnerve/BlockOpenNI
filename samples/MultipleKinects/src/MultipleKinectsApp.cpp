@@ -20,7 +20,7 @@ public:
 	void mouseDown( MouseEvent event );	
 	void update();
 	void draw();
-    void keyDown( KeyEvent event );
+	void keyDown( KeyEvent event );
 
 
 	ImageSourceRef getColorImage( V::OpenNIDeviceRef device )
@@ -61,7 +61,7 @@ void MultipleKinectsApp::setup()
 	V::OpenNIDeviceManager::USE_THREAD = false;
 	mManager = V::OpenNIDeviceManager::InstancePtr();
 	// Init 2 devices with image/depth generators. TODO: User generator not working properly.
-	mManager->createDevices( 1, V::NODE_TYPE_DEPTH | V::NODE_TYPE_IMAGE, V::RES_640x480 );
+	mManager->createDevices( 2, V::NODE_TYPE_DEPTH | V::NODE_TYPE_IMAGE, V::RES_640x480 );
 
 
 	// Create device 0 is available
@@ -81,12 +81,12 @@ void MultipleKinectsApp::setup()
 	try 
 	{
 		mDevice1 = mManager->getDevice( 1 );
-        if( mDevice1 )
-        {
-            mDevice1->setDepthShiftMul( 3 );
-            mDevice1->setMirrorMode( V::NODE_TYPE_IMAGE, true );
-            mDevice1->setMirrorMode( V::NODE_TYPE_DEPTH, true );            
-        }
+		if( mDevice1 )
+		{
+			mDevice1->setDepthShiftMul( 3 );
+			mDevice1->setMirrorMode( V::NODE_TYPE_IMAGE, true );
+			mDevice1->setMirrorMode( V::NODE_TYPE_DEPTH, true );            
+		}
 	} catch( std::exception e )
 	{
 		app::console() << "Device 1  " << e.what() << std::endl;
@@ -110,11 +110,11 @@ void MultipleKinectsApp::mouseDown( MouseEvent event )
 
 void MultipleKinectsApp::update()
 {
-    if( !V::OpenNIDeviceManager::USE_THREAD )
-    {
-        mManager->update();
-    }
-    
+	if( !V::OpenNIDeviceManager::USE_THREAD )
+	{
+		mManager->update();
+	}
+	
 	// Update textures
 	if( mDevice0 )
 	{

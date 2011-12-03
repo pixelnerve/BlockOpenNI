@@ -51,13 +51,14 @@ namespace V
 	}
 	inline XnVector3D normalize( const XnVector3D& v0 )
 	{
-		XnVector3D res;
-		float len = sqrtf( res.X*res.X + res.Y*res.Y + res.Z*res.Z );
+		float len = sqrtf( v0.X*v0.X + v0.Y*v0.Y + v0.Z*v0.Z );
 		if( len < 0.00001f ) return XnVector3D();
+		XnVector3D res;
 		float invS = 1.0f / len;
 		res.X = v0.X * invS;
 		res.Y = v0.Y * invS;
 		res.Z = v0.Z * invS;
+		return res;
 	}
 
 
@@ -574,9 +575,9 @@ namespace V
 			res2 = sub( v2, v0 );
 			XnVector3D res = cross( res1, res2 );
 			res = normalize( res );
-		} else {
-			return XnVector3D();
 		}
+		
+		return XnVector3D();
 	}
 
 	XnVector3D OpenNIUser::GetUpVector()
@@ -593,9 +594,9 @@ namespace V
 			res1 = sub( v1, v0 );
 			res1 = normalize( res1 );
 			return res1;
-		} else {
-			return XnVector3D();
 		}
+		
+		return XnVector3D();
 	}
 
 

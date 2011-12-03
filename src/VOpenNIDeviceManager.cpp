@@ -168,6 +168,7 @@ namespace V
 	V::OpenNIDeviceRef OpenNIDeviceManager::createDevice( int nodeTypeFlags, int colorResolution, int depthResolution )
 	{
 		createDevices( 1, nodeTypeFlags, colorResolution, depthResolution );
+		return getDevice( 0 );
 	}
 
 	void OpenNIDeviceManager::createDevices( uint32_t deviceCount, int nodeTypeFlags, int colorResolution, int depthResolution )
