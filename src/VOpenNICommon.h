@@ -33,8 +33,10 @@
 #include <boost/thread/thread.hpp>
 
 // Std
-//#define _HAS_ITERATOR_DEBUGGING 0
-//#define _SECURE_SCL 0
+#ifndef _DEBUG
+    #define _HAS_ITERATOR_DEBUGGING 0
+    #define _SECURE_SCL 0
+#endif
 #include <string>
 #include <vector>
 #include <iostream>
@@ -47,6 +49,9 @@
 #include "XnPropNames.h"
 #include "XnVersion.h"
 #include "XnUtils.h"
+#include <XnUSB.h>
+
+
 
 
 #define OPENNI_POSE_SAVE_CAPABILITY

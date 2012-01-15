@@ -37,8 +37,8 @@ inline void Log( std::string msg )
 
 // Make sure we link libraries
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#pragma comment( lib, "openni.lib" )	// 32bit version
-//#pragma comment( lib, "openNI64.lib" )	// 64bit version
+	#pragma comment( lib, "openni.lib" )	// 32bit version
+	//#pragma comment( lib, "openNI64.lib" )	// 64bit version
 #endif
 
 
@@ -54,8 +54,52 @@ namespace V
 	/************************************************************************/
 	
 	static char g_strPose[1023];
-	static bool g_bNeedPose;
+	static bool g_bNeedPose = false;
 
+
+	void XN_CALLBACK_TYPE OpenNIDevice::Callback_UserExit( xn::UserGenerator& generator, XnUserID nId, void* pCookie )
+	{
+		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
+
+		// Send events to all listeners
+		for( UserListenerList::iterator it=device->mListeners.begin(); it!=device->mListeners.end(); ++it )
+		{
+			//if( listener )
+			{
+				UserEvent event;
+				event.mId = nId;
+				//event.mUser = OpenNIDeviceManager::Instance().getUser( nId );
+
+				(*it)->onUserExit( event );
+			}
+		}
+		std::stringstream ss2;
+		ss2 << "Send user exit event: '" << nId << std::endl;
+		DEBUG_MESSAGE( ss2.str().c_str() );
+
+	}
+
+	void XN_CALLBACK_TYPE OpenNIDevice::Callback_UserReEnter( xn::UserGenerator& generator, XnUserID nId, void* pCookie )
+	{
+		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
+
+		// Send events to all listeners
+		for( UserListenerList::iterator it=device->mListeners.begin(); it!=device->mListeners.end(); ++it )
+		{
+			//if( listener )
+			{
+				UserEvent event;
+				event.mId = nId;
+				//event.mUser = OpenNIDeviceManager::Instance().getUser( nId );
+
+				(*it)->onUserReEnter( event );
+			}
+		}
+		std::stringstream ss2;
+		ss2 << "Send user reenter event: '" << nId << std::endl;
+		DEBUG_MESSAGE( ss2.str().c_str() );
+
+	}
 
 	// Callback: New user was detected
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_NewUser( xn::UserGenerator& generator, XnUserID nId, void* pCookie )
@@ -68,7 +112,6 @@ namespace V
 			DEBUG_MESSAGE( ss.str().c_str() );
 			return;
 		}
-
 		
 		OpenNIDevice* device = static_cast<OpenNIDevice*>(pCookie);
 
@@ -110,7 +153,14 @@ namespace V
 					std::stringstream ss2;
 					ss2 << "Start Pose Detection For User: '" << nId << "'  Slot: " << slot << std::endl;
 					DEBUG_MESSAGE( ss2.str().c_str() );
-					generator.GetPoseDetectionCap().StartPoseDetection( g_strPose, nId );
+					if( g_bNeedPose )
+					{
+						device->getUserGenerator()->GetPoseDetectionCap().StartPoseDetection( g_strPose, nId );
+					}
+					else
+					{
+						device->getUserGenerator()->GetSkeletonCap().RequestCalibration( nId, TRUE );
+					}
 				}                
 			}
 
@@ -188,44 +238,44 @@ namespace V
 	// Callback: pose detection in progress
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_PoseInProgress( xn::PoseDetectionCapability& pose, const XnChar* strPose, XnUserID nId, XnPoseDetectionStatus poseError, void* pCookie )
 	{
-// 		std::stringstream ss;
-// 		ss << "Pose detection in progress: '" << strPose << "' on User: " << nId << std::endl;
-// 		DEBUG_MESSAGE( ss.str().c_str() );
-// 
-// 		OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
+ 		std::stringstream ss;
+ 		ss << "Pose detection in progress: '" << strPose << "' on User: " << nId << std::endl;
+ 		DEBUG_MESSAGE( ss.str().c_str() );
+ 
+ 		OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
 	}
 	
 	
 	// Callback: When the user is out of pose
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_PoseDetectionEnd( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie )
 	{
-// 		std::stringstream ss;
-// 		ss << "Pose detection end. User: '" << strPose << "'. Id: " << nId << std::endl;
-// 		DEBUG_MESSAGE( ss.str().c_str() );
-// 
-// 		OpenNIDeviceManager::Instance().setText( ss.str() );
+ 		std::stringstream ss;
+ 		ss << "Pose detection end. User: '" << strPose << "'. Id: " << nId << std::endl;
+ 		DEBUG_MESSAGE( ss.str().c_str() );
+ 
+ 		OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 	
 
 	// Callback: Started calibration
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationStart( xn::SkeletonCapability& capability, XnUserID nId, void* pCookie )
 	{
-// 		std::stringstream ss;
-// 		ss << "Calibration started for user " << nId << std::endl;
-// 		DEBUG_MESSAGE( ss.str().c_str() );
-// 
-// 		OpenNIDeviceManager::Instance().setText( ss.str() );
+ 		std::stringstream ss;
+ 		ss << "Calibration started for user " << nId << std::endl;
+ 		DEBUG_MESSAGE( ss.str().c_str() );
+ 
+ 		OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 
 	
 	// Callback: Started calibration
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationInProgress( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie )
 	{
-// 		std::stringstream ss;
-// 		ss << "Calibration in progress for user " << nId << std::endl;
-// 		DEBUG_MESSAGE( ss.str().c_str() );
-// 
-// 		OpenNIDeviceManager::Instance().setText( ss.str() );
+ 		std::stringstream ss;
+ 		ss << "Calibration in progress for user " << nId << std::endl;
+ 		DEBUG_MESSAGE( ss.str().c_str() );
+ 
+ 		OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 
 	
@@ -336,9 +386,9 @@ namespace V
 		_index = index;
 		_mgr = mgr;
 		_context = mgr->getContext();
-		_device = *device;
+		//_device = *device;
 
-		log_.open( "E:\\kinect_log.txt" );
+//		log_.open( "kinect_log.txt" );
 
 		privateInit();
 	}
@@ -346,7 +396,7 @@ namespace V
 
 	OpenNIDevice::~OpenNIDevice()
 	{
-		log_.close();
+//		log_.close();
 		release();
 	}
 
@@ -452,20 +502,6 @@ namespace V
 			}
 			_isDepthOn = true;
 		}
-		if( nodeTypeFlags & NODE_TYPE_USER )
-		{
-			_userGen = &_mgr->mUserGenList[_index];
-			if( !_userGen->IsValid() ) 
-			{
-				Log( "*** (OpenNIDevice)  User generator is not valid" );
-				DEBUG_MESSAGE( "*** (OpenNIDevice)  User generator is not valid" );
-				return false;
-			}
-			//_sceneMetaData = new xn::SceneMetaData();
-			//_status = _userGen->Create( *_context );	//, NULL, &_errors );
-			//CHECK_RC( _status, "Create user generator" );
-			_isUserOn = true;
-		}
 		if( nodeTypeFlags & NODE_TYPE_SCENE )
 		{
 			_sceneAnalyzer = &_mgr->mSceneAnalyzerList[_index];
@@ -477,7 +513,19 @@ namespace V
 			}
 			_isSceneOn = true;
 		}
-		if( nodeTypeFlags & NODE_TYPE_HANDS )
+		if( nodeTypeFlags & NODE_TYPE_USER )
+		{
+			_userGen = &_mgr->mUserGenList[_index];
+			if( !_userGen->IsValid() ) 
+			{
+				Log( "*** (OpenNIDevice)  User generator is not valid" );
+				DEBUG_MESSAGE( "*** (OpenNIDevice)  User generator is not valid" );
+				return false;
+			}
+			_isUserOn = true;
+		}
+
+		/*if( nodeTypeFlags & NODE_TYPE_HANDS )
 		{
 			// Hand Gestures
 			_handsGen = &_mgr->mHandsGenList[_index];
@@ -488,7 +536,7 @@ namespace V
 				return false;
 			}
 			_isHandsOn = true;
-		}
+		}*/
 		//if( nodeTypeFlags & NODE_TYPE_AUDIO )
 		//{
 		//	// Audio
@@ -500,51 +548,8 @@ namespace V
 		//}
 
 
-
-
-		//// Pick the right resolution
-		//int xRes = 640, yRes = 480;
-		//int fps = 30;
-		//switch( resolution )
-		//{
-		//case RES_320x240:
-		//	xRes = 320;
-		//	yRes = 240;
-		//	fps = 30;
-		//	break;
-		//case RES_640x480:
-		//	xRes = 640;
-		//	yRes = 480;
-		//	fps = 30;
-		//	break;
-		//case RES_800x600:
-		//	xRes = 800;
-		//	yRes = 600;
-		//	fps = 30;
-		//	break;
-		//case RES_1024x768:
-		//	xRes = 1024;
-		//	yRes = 768;
-		//	fps = 30;
-		//	break;
-		//case RES_1280x1024:
-		//	xRes = 1280;
-		//	yRes = 1024;
-		//	fps = 15;
-		//	break;
-		//default:
-		//	xRes = 640;
-		//	yRes = 480;
-		//	fps = 30;
-		//	break;
-		//}
-		//std::stringstream ss;
-		//ss << xRes << "x" << yRes << "x" << fps;
-		//Log( ss.str() );
-
-		
-
-		if( _isImageOn ) {
+		if( _isImageOn ) 
+		{
 			int fps = 30;
 			switch( colorResolution )
 			{
@@ -555,7 +560,8 @@ namespace V
 			setResolution( NODE_TYPE_IMAGE, colorResolution, fps );
 			//_imageGen->GetMetaData( _imageMetaData );
 		}
-		if( _isIROn )	{
+		if( _isIROn )	
+		{
 			int fps = 30;
 			switch( colorResolution )
 			{
@@ -578,18 +584,18 @@ namespace V
 			setResolution( NODE_TYPE_DEPTH, depthResolution, fps );
 			//_depthGen->GetMetaData( _depthMetaData );
 		}
-		if( _isSceneOn )
-		{
-			int fps = 30;
-			switch( colorResolution )
-			{
-			case RES_1280x1024:
-				fps = 15;
-				break;
-			}
-			setResolution( NODE_TYPE_SCENE, depthResolution, fps );
-			//_sceneAnalyzer->GetMetaData( _sceneMetaData );
-		}
+		//if( _isSceneOn )
+		//{
+		//	int fps = 30;
+		//	switch( colorResolution )
+		//	{
+		//	case RES_1280x1024:
+		//		fps = 15;
+		//		break;
+		//	}
+		//	//setResolution( NODE_TYPE_SCENE, depthResolution, fps );
+		//	//_sceneAnalyzer->GetMetaData( _sceneMetaData );
+		//}
 
 		//if( _userGen ) {
 		//	_userGen->GetUserPixels( 0, *_sceneMetaData );
@@ -839,11 +845,11 @@ namespace V
 		SAFE_DELETE_ARRAY( g_pTexMap );
 		SAFE_DELETE_ARRAY( g_pDepthHist );
 
-		_primaryGen = NULL;	// just null the pointer 
+		//_primaryGen = NULL;	// just null the pointer 
 		
 		//_device.Release();
 
-		_context = NULL;	// just null the pointer 
+		//_context = NULL;	// just null the pointer 
 
 //		SAFE_DELETE( _imageMetaData ); 
 //		SAFE_DELETE( _irMetaData );
@@ -852,13 +858,6 @@ namespace V
 //		SAFE_DELETE( _audioMetaData );
 
 		//SAFE_DELETE( _callback );
-	}
-
-
-
-	void OpenNIDevice::start()
-	{
-		// empty
 	}
 
 
@@ -874,7 +873,6 @@ namespace V
 				int h = _imageMetaData.YRes();
 				mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, w, h );
 			}
-
 		}
 		if( flags & NODE_TYPE_IR )
 		{
@@ -922,10 +920,14 @@ namespace V
 	bool OpenNIDevice::requestUserCalibration()
 	{
 		XnCallbackHandle hUserCallbacks = 0;
-		//XnCallbackHandle hCalibrationCallbacks = 0;
+		XnCallbackHandle hUserExitCallback = 0;
+		XnCallbackHandle hUserReEnterCallback = 0;
 		XnCallbackHandle hCalibrationStartCallback = 0;
 		XnCallbackHandle hCalibrationInProgressCallback = 0;
+		XnCallbackHandle hPoseInProgressCallback = 0;
 		XnCallbackHandle hCalibrationCompleteCallback = 0;
+		XnCallbackHandle hPoseDetectedCallback = 0;
+
 		if( !_userGen->IsCapabilitySupported(XN_CAPABILITY_SKELETON) )
 		{
 			DEBUG_MESSAGE( "Supplied user generator doesn't support skeleton\n" );
@@ -934,42 +936,40 @@ namespace V
 		_status = _userGen->RegisterUserCallbacks( &V::OpenNIDevice::Callback_NewUser, &V::OpenNIDevice::Callback_LostUser, this, hUserCallbacks );
 		CHECK_RC( _status, "Register User Callbacks" );
 
-		// New version for NITE 1.4.*.*
+		_status = _userGen->RegisterToUserExit( &V::OpenNIDevice::Callback_UserExit, this, hUserExitCallback );
+		CHECK_RC( _status, "Register User Exit Callback" );
+
+		_status = _userGen->RegisterToUserExit( &V::OpenNIDevice::Callback_UserReEnter, this, hUserReEnterCallback );
+		CHECK_RC( _status, "Register User ReEnter Callback" );
+
 		_status = _userGen->GetSkeletonCap().RegisterToCalibrationStart( &V::OpenNIDevice::Callback_CalibrationStart, this, hCalibrationStartCallback );
 		CHECK_RC( _status, "Register Calibration Start" );
-		_status = _userGen->GetSkeletonCap().RegisterToCalibrationInProgress( &V::OpenNIDevice::Callback_CalibrationInProgress, this, hCalibrationInProgressCallback );
-		CHECK_RC( _status, "Register Calibration InProgress" );
+
 		_status = _userGen->GetSkeletonCap().RegisterToCalibrationComplete( &V::OpenNIDevice::Callback_CalibrationComplete, this, hCalibrationCompleteCallback );
 		CHECK_RC( _status, "Register Calibration Complete" );
-		
-		// Old version
-		//_userGen->GetSkeletonCap().RegisterCalibrationCallbacks( &V::OpenNIDevice::Callback_CalibrationStart, &V::OpenNIDevice::Callback_CalibrationEnd, this, hCalibrationCallbacks );
+
 		if( _userGen->GetSkeletonCap().NeedPoseForCalibration() )
 		{
-			g_bNeedPose = TRUE;
+			g_bNeedPose = true;
 			if( !_userGen->IsCapabilitySupported(XN_CAPABILITY_POSE_DETECTION) )
 			{
 				DEBUG_MESSAGE( "Pose required, but not supported\n" );
 				return false;
 			}
 			
-			XnCallbackHandle hPoseDetectedCallback = 0;
-			XnCallbackHandle hPoseInProgressCallback = 0;
-			//XnCallbackHandle hPoseCallbacks = 0;
-
-			// New version for NITE 1.4.*.*
 			_status = _userGen->GetPoseDetectionCap().RegisterToPoseDetected( &V::OpenNIDevice::Callback_PoseDetected, this, hPoseDetectedCallback );
 			CHECK_RC( _status, "Register Pose Detected" );
-			_status = _userGen->GetPoseDetectionCap().RegisterToPoseInProgress( &V::OpenNIDevice::Callback_PoseInProgress, this, hPoseInProgressCallback );
-			CHECK_RC( _status, "Register Pose InProgress" );
-			// Old version
-			//_userGen->GetPoseDetectionCap().RegisterToPoseCallbacks( &V::OpenNIDevice::Callback_PoseDetected, &V::OpenNIDevice::Callback_PoseDetectionEnd, this, hPoseCallbacks );
 			_userGen->GetSkeletonCap().GetCalibrationPose( g_strPose );
 			std::stringstream ss;
 			ss << "--> User pose name: '" << g_strPose << "'" << std::endl;
 			DEBUG_MESSAGE( ss.str().c_str() );
 		}
 		_userGen->GetSkeletonCap().SetSkeletonProfile( mSkeletonProfile );
+
+		//_status = _userGen->GetSkeletonCap().RegisterToCalibrationInProgress( &V::OpenNIDevice::Callback_CalibrationInProgress, this, hCalibrationInProgressCallback );
+		//CHECK_RC( _status, "Register Calibration InProgress" );
+		//_status = _userGen->GetPoseDetectionCap().RegisterToPoseInProgress( &V::OpenNIDevice::Callback_PoseInProgress, this, hPoseInProgressCallback );
+		//CHECK_RC( _status, "Register Pose InProgress" );
 
 		return true;
 	}
@@ -1204,7 +1204,7 @@ namespace V
 			xnOSMemSet( _depthData, 0, w*h*sizeof(uint16_t) );
 			xnOSMemSet( _backDepthData, 0, w*h*sizeof(uint16_t) );
 
-			/**/
+			/*/
 			pDepth = _depthMetaData.Data();
 			for( uint32_t i=0; i<w*h; i++ )
 			{
@@ -1354,29 +1354,62 @@ namespace V
 	}
 
 
-	void OpenNIDevice::calcDepthImageRealWorld()
+
+	void OpenNIDevice::calcDepthImageRealWorld( XnPoint3D* buffer )
 	{
 		if( !_depthMapRealWorld ) return;
 		const XnDepthPixel* pDepth = _depthMetaData.Data();
-		XnPoint3D* map = _backDepthMapRealWorld;
-
 		uint32_t bufSize = _depthMetaData.XRes() * _depthMetaData.YRes();
+		XnPoint3D* map = _backDepthMapRealWorld;
 		for( uint32_t y=0; y<_depthMetaData.YRes(); y++ )
 		{
 			for(uint32_t x=0; x<_depthMetaData.XRes(); x++ )
 			{
-				if( *pDepth > 0 )
+				//if( *pDepth > 0 )
 				{
 					map->X = (float)x;
 					map->Y = (float)y;
 					map->Z = (float)(*pDepth);
 				}
-				else
+				//else
+				//{
+				//	map->X = 0;
+				//	map->Y = 0;
+				//	map->Z = -9999;
+				//}
+
+				pDepth++;
+				map++;
+			}
+		}
+
+		// Convert all point into real world coordinates
+		_status = _depthGen->ConvertProjectiveToRealWorld( bufSize, _backDepthMapRealWorld, buffer );
+		//CHECK_RC( _status, "calcDepthImageRealWorld()" );
+	}
+
+	void OpenNIDevice::calcDepthImageRealWorld()
+	{
+		if( !_depthMapRealWorld ) return;
+		const XnDepthPixel* pDepth = _depthMetaData.Data();
+		uint32_t bufSize = _depthMetaData.XRes() * _depthMetaData.YRes();
+		XnPoint3D* map = _backDepthMapRealWorld;
+		for( uint32_t y=0; y<_depthMetaData.YRes(); y++ )
+		{
+			for(uint32_t x=0; x<_depthMetaData.XRes(); x++ )
+			{
+				//if( *pDepth > 0 )
 				{
-					map->X = 0;
-					map->Y = 0;
-					map->Z = -9999;
+					map->X = (float)x;
+					map->Y = (float)y;
+					map->Z = (float)(*pDepth);
 				}
+				//else
+				//{
+				//	map->X = 0;
+				//	map->Y = 0;
+				//	map->Z = -9999;
+				//}
 
 				pDepth++;
 				map++;
@@ -1388,30 +1421,28 @@ namespace V
 		//CHECK_RC( _status, "calcDepthImageRealWorld()" );
 	}
 
+
 	void OpenNIDevice::calcDepthImageRealWorld( uint16_t* pixelData, XnPoint3D* worldData )
 	{
-		if( !_depthMapRealWorld ) return;
-
 		const XnDepthPixel* pDepth = pixelData;
-		XnPoint3D* map = worldData;
-
-		uint32_t bufSize = _depthMetaData.XRes() * _depthMetaData.YRes();
+		const uint32_t bufSize = _depthMetaData.XRes() * _depthMetaData.YRes();
+		XnPoint3D* map = _backDepthMapRealWorld;
 		for( uint32_t y=0; y<_depthMetaData.YRes(); y++ )
 		{
 			for(uint32_t x=0; x<_depthMetaData.XRes(); x++ )
 			{
-				if( *pDepth > 0 )
+				//if( *pDepth > 0 )
 				{
 					map->X = (float)x;
 					map->Y = (float)y;
 					map->Z = (float)(*pDepth);
 				}
-				else
-				{
-					map->X = 0;
-					map->Y = 0;
-					map->Z = -9999;
-				}
+				//else
+				//{
+				//	map->X = 0;
+				//	map->Y = 0;
+				//	map->Z = -9999;
+				//}
 
 				pDepth++;
 				map++;
@@ -1419,8 +1450,9 @@ namespace V
 		}
 
 		// Convert all point into real world coordinates
-		_status = _depthGen->ConvertProjectiveToRealWorld( bufSize, worldData, worldData );
+		_status = _depthGen->ConvertProjectiveToRealWorld( bufSize, _backDepthMapRealWorld, worldData );
 	}
+
 
 
 

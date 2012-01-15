@@ -2,6 +2,7 @@
 
 
 #include "VOpenNIDevice.h"
+#include "VOpenNIMotor.h"
 
 
 namespace V
@@ -139,6 +140,7 @@ namespace V
 		//typedef boost::shared_ptr<sDevice> SDeviceRef;
 		//std::vector<SDevice::Ref>		mDeviceList;
 
+		xn::Query						mQuery;
 		xn::Generator*					mPrimaryGen;
 		std::vector<xn::Device>         mDevicesList;
 		std::vector<xn::DepthGenerator>	mDepthGenList;

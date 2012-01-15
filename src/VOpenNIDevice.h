@@ -64,6 +64,8 @@ namespace V
 		virtual void onLostUser( UserEvent event ) {};
 		virtual void onCalibrationStart( UserEvent event ) {};
 		virtual void onCalibrationComplete( UserEvent event ) {};
+		virtual void onUserExit( UserEvent event ) {};
+		virtual void onUserReEnter( UserEvent event ) {};
 	};
 
 
@@ -99,6 +101,7 @@ namespace V
 
 		void calcDepthImageRealWorld();
 		void calcDepthImageRealWorld( uint16_t* pixelData, XnPoint3D* worldData );
+		void calcDepthImageRealWorld( XnPoint3D* buffer );
 		void getLabelMap( uint32_t labelId, uint16_t* labelMap );
 		void calculateHistogram();
 
@@ -223,6 +226,8 @@ namespace V
 		}
 		UserListenerList getListeners()			{ return mListeners;	}
 
+		static void XN_CALLBACK_TYPE Callback_UserExit( xn::UserGenerator& generator, XnUserID nId, void* pCookie );
+		static void XN_CALLBACK_TYPE Callback_UserReEnter( xn::UserGenerator& generator, XnUserID nId, void* pCookie );
 		static void XN_CALLBACK_TYPE Callback_NewUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie );
 		static void XN_CALLBACK_TYPE Callback_LostUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie );
 		static void XN_CALLBACK_TYPE Callback_PoseDetected( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie );
@@ -252,7 +257,7 @@ namespace V
 		xn::Context*            _context;	// Pointer to context in device manager
 		xn::ScriptNode			mScriptNode;
 
-		xn::Device				_device;	// Device object
+//		xn::Device				_device;	// Device object
 
 		xn::EnumerationErrors	_errors;
 		XnStatus				_status;

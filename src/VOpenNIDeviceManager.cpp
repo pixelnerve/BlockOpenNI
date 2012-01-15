@@ -190,6 +190,9 @@ namespace V
 			const xn::NodeInfo& info = *nodeIt;
 			const XnProductionNodeDescription& description = info.GetDescription(); 
 		
+			// create a query to depend on this node
+			status = mQuery.AddNeededNode( info.GetInstanceName() ); 
+
 			std::stringstream ss;
 			ss << "Device Name: " << description.strName << 
 				"  Vendor: " << description.strVendor << 
@@ -279,7 +282,8 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 				
 				xn::DepthGenerator gen;
-				status = _context.CreateProductionTree( nodeInfo, gen ); 
+				//status = _context.CreateProductionTree( nodeInfo, gen ); 
+				status = _context.CreateAnyProductionTree( XN_NODE_TYPE_DEPTH, &mQuery, gen ); 
 				CHECK_RC( status, "(createDevices)  DepthGenerator" );
 				/*status = _context.CreateProductionTree( nodeInfo ); 
 				CHECK_RC( status, "(createDevices)  DepthGenerator" );
@@ -308,7 +312,8 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				xn::IRGenerator gen;
-				status = _context.CreateProductionTree( nodeInfo, gen ); 
+				status = _context.CreateAnyProductionTree( XN_NODE_TYPE_IR, &mQuery, gen ); 
+				//status = _context.CreateProductionTree( nodeInfo, gen ); 
 				CHECK_RC( status, "(createDevices) IRGenerator" );
 				/*status = _context.CreateProductionTree( nodeInfo ); 
 				CHECK_RC( status, "(createDevices)  IRGenerator" );
@@ -335,7 +340,8 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				xn::ImageGenerator gen;
-				status = _context.CreateProductionTree( nodeInfo, gen ); 
+				status = _context.CreateAnyProductionTree( XN_NODE_TYPE_IMAGE, &mQuery, gen ); 
+				//status = _context.CreateProductionTree( nodeInfo, gen ); 
 				CHECK_RC( status, "(createDevices)  ImageGenerator" );
 				/*status = _context.CreateProductionTree( nodeInfo );
 				CHECK_RC( status, "(createDevices)  ImageGenerator" );
@@ -362,8 +368,10 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				xn::UserGenerator gen;
-				status = _context.CreateProductionTree( nodeInfo, gen ); 
+				status = _context.CreateAnyProductionTree( XN_NODE_TYPE_USER, &mQuery, gen ); 
 				CHECK_RC( status, "(createDevices)  UserGenerator" );
+				//status = _context.CreateProductionTree( nodeInfo, gen ); 
+				//CHECK_RC( status, "(createDevices)  UserGenerator" );
 				/*status = _context.CreateProductionTree( nodeInfo ); 
 				CHECK_RC( status, "(createDevices)  UserGenerator" );
 				status = nodeInfo.GetInstance( gen );
@@ -389,7 +397,8 @@ namespace V
 				xn::NodeInfo nodeInfo = *nodeIt;
 
 				xn::SceneAnalyzer gen;
-				status = _context.CreateProductionTree( nodeInfo, gen ); 
+				status = _context.CreateAnyProductionTree( XN_NODE_TYPE_SCENE, &mQuery, gen ); 
+				//status = _context.CreateProductionTree( nodeInfo, gen ); 
 				CHECK_RC( status, "(createDevices)  SceneAnalyzer" );
 				/*status = _context.CreateProductionTree( nodeInfo ); 
 				CHECK_RC( status, "(createDevices)  SceneAnalyzer" );
@@ -404,31 +413,31 @@ namespace V
 		std::cout << "+++ Scene nodes: \t" << mSceneAnalyzerCount << std::endl;
 
 		
-		if( nodeTypeFlags & NODE_TYPE_HANDS )
-		{
-			OpenNIDeviceList::iterator devIt = mDevices.begin();
-			for( xn::NodeInfoList::Iterator nodeIt=hands_nodes.Begin(); nodeIt!=hands_nodes.End(); ++nodeIt ) 
-			{
-				if( mHandsGenCount >= mDeviceCount )	
-					break;
+		//if( nodeTypeFlags & NODE_TYPE_HANDS )
+		//{
+		//	OpenNIDeviceList::iterator devIt = mDevices.begin();
+		//	for( xn::NodeInfoList::Iterator nodeIt=hands_nodes.Begin(); nodeIt!=hands_nodes.End(); ++nodeIt ) 
+		//	{
+		//		if( mHandsGenCount >= mDeviceCount )	
+		//			break;
 
-				OpenNIDevice::Ref dev = *devIt;
-				xn::NodeInfo nodeInfo = *nodeIt;
+		//		OpenNIDevice::Ref dev = *devIt;
+		//		xn::NodeInfo nodeInfo = *nodeIt;
 
-				xn::HandsGenerator gen;
-				status = _context.CreateProductionTree( nodeInfo, gen ); 
-				CHECK_RC( status, "(createDevices)  HandsGenerator" );
-				/*status = _context.CreateProductionTree( nodeInfo ); 
-				CHECK_RC( status, "(createDevices)  HandsGenerator" );
-				status = nodeInfo.GetInstance( gen );
-				CHECK_RC( status, "HandsGenerator" );
-				mHandsGenList.push_back( gen );*/
+		//		xn::HandsGenerator gen;
+		//		status = _context.CreateProductionTree( nodeInfo, gen ); 
+		//		CHECK_RC( status, "(createDevices)  HandsGenerator" );
+		//		/*status = _context.CreateProductionTree( nodeInfo ); 
+		//		CHECK_RC( status, "(createDevices)  HandsGenerator" );
+		//		status = nodeInfo.GetInstance( gen );
+		//		CHECK_RC( status, "HandsGenerator" );
+		//		mHandsGenList.push_back( gen );*/
 
-				++devIt;
-				mHandsGenCount++;
-			}
-		}
-		std::cout << "+++ Hands nodes: \t" << mHandsGenCount << std::endl;
+		//		++devIt;
+		//		mHandsGenCount++;
+		//	}
+		//}
+		//std::cout << "+++ Hands nodes: \t" << mHandsGenCount << std::endl;
 
 
 		
@@ -505,11 +514,34 @@ namespace V
 			}
 		}
 
+		// stop generators		
+		_context.StopGeneratingAll();
+
+		//mPrimaryGen->StopGenerating();
+		//mPrimaryGen->Release();
+
+		for ( size_t i = 0; i < mDepthGenList.size(); i++ )
+			mDepthGenList[ i ].Release();
 		mDepthGenList.clear();
+
+		for ( size_t i = 0; i < mImageGenList.size(); i++ )
+			mImageGenList[ i ].Release();
 		mImageGenList.clear();
+
+		for ( size_t i = 0; i < mIRGenList.size(); i++ )
+			mIRGenList[ i ].Release();
 		mIRGenList.clear();
+
+		for ( size_t i = 0; i < mSceneAnalyzerList.size(); i++ )
+			mSceneAnalyzerList[ i ].Release();
 		mSceneAnalyzerList.clear();
+
+		for ( size_t i = 0; i < mUserGenList.size(); i++ )
+			mUserGenList[ i ].Release();
 		mUserGenList.clear();
+
+		for ( size_t i = 0; i < mHandsGenList.size(); i++ )
+			mHandsGenList[ i ].Release();
 		mHandsGenList.clear();
 
 //		mDepthMDList.clear();
@@ -519,11 +551,7 @@ namespace V
 
 
 		SAFE_DELETE_ARRAY( mDepthMap );
-		SAFE_DELETE_ARRAY( mColorMap );
-
-
-		// stop generators
-		_context.StopGeneratingAll();
+		SAFE_DELETE_ARRAY( mColorMap );		
 
 
 		//mDeviceList.clear();
