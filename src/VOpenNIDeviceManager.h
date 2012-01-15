@@ -2,7 +2,6 @@
 
 
 #include "VOpenNIDevice.h"
-#include "VOpenNIMotor.h"
 
 
 namespace V

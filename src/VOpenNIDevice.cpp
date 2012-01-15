@@ -7,8 +7,8 @@
 
 
 	Current version:
-		OpenNI	1.4.0.2
-		NITE	1.5.0.2
+		OpenNI	1.5.2.7
+		NITE	1.5.2.7
 ***/
 
 //#include "VOpenNICommon.h"
