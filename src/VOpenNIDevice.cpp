@@ -26,14 +26,13 @@
 #include <ostream>
 
 
-std::ofstream log_;
-
-
-inline void Log( std::string msg )
-{
-	log_ << msg << std::endl;
-	log_.flush();
-}
+//std::ofstream log_;
+//
+//inline void Log( std::string msg )
+//{
+//	log_ << msg << std::endl;
+//	log_.flush();
+//}
 
 // Make sure we link libraries
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
@@ -53,7 +52,7 @@ namespace V
 	*/
 	/************************************************************************/
 	
-	static char g_strPose[1023];
+	static char g_strPose[128];
 	static bool g_bNeedPose = false;
 
 
@@ -474,7 +473,7 @@ namespace V
 			_imageGen = &_mgr->mImageGenList[_index];
 			if( !_imageGen->IsValid() )
 			{
-				Log( "*** (OpenNIDevice)  Image generator is not valid\n" );
+				//Log( "*** (OpenNIDevice)  Image generator is not valid\n" );
 				DEBUG_MESSAGE( "*** (OpenNIDevice)  Image generator is not valid\n" );
 				return false;
 			}
@@ -485,7 +484,7 @@ namespace V
 			_irGen = &_mgr->mIRGenList[_index];
 			if( !_irGen->IsValid() ) 
 			{
-				Log( "*** (OpenNIDevice)  IR generator is not valid" );
+				//Log( "*** (OpenNIDevice)  IR generator is not valid" );
 				DEBUG_MESSAGE( "*** (OpenNIDevice)  IR generator is not valid" );
 				return false;
 			}
@@ -496,7 +495,7 @@ namespace V
 			_depthGen = &_mgr->mDepthGenList[_index];
 			if( !_depthGen->IsValid() ) 
 			{
-				Log( "*** (OpenNIDevice)  Depth generator is not valid" );
+				//Log( "*** (OpenNIDevice)  Depth generator is not valid" );
 				DEBUG_MESSAGE( "*** (OpenNIDevice)  Depth generator is not valid" );
 				return false;
 			}
@@ -507,7 +506,7 @@ namespace V
 			_sceneAnalyzer = &_mgr->mSceneAnalyzerList[_index];
 			if( !_sceneAnalyzer->IsValid() ) 
 			{
-				Log( "*** (OpenNIDevice)  Scene generator is not valid" );
+				//Log( "*** (OpenNIDevice)  Scene generator is not valid" );
 				DEBUG_MESSAGE( "*** (OpenNIDevice)  Scene generator is not valid" );
 				return false;
 			}
@@ -518,7 +517,7 @@ namespace V
 			_userGen = &_mgr->mUserGenList[_index];
 			if( !_userGen->IsValid() ) 
 			{
-				Log( "*** (OpenNIDevice)  User generator is not valid" );
+				//Log( "*** (OpenNIDevice)  User generator is not valid" );
 				DEBUG_MESSAGE( "*** (OpenNIDevice)  User generator is not valid" );
 				return false;
 			}
@@ -1016,7 +1015,6 @@ namespace V
 
 		std::stringstream ss;
 		ss << "(setResolution)  " << mode.nXRes << "x" << mode.nYRes << "x" << mode.nFPS;
-		Log( ss.str() );
 
 		XnStatus nRetVal = gen->SetMapOutputMode( mode );
 		CHECK_RC( nRetVal, "setResolution" );
