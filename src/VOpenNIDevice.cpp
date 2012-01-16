@@ -965,10 +965,10 @@ namespace V
 		}
 		_userGen->GetSkeletonCap().SetSkeletonProfile( mSkeletonProfile );
 
-		//_status = _userGen->GetSkeletonCap().RegisterToCalibrationInProgress( &V::OpenNIDevice::Callback_CalibrationInProgress, this, hCalibrationInProgressCallback );
-		//CHECK_RC( _status, "Register Calibration InProgress" );
-		//_status = _userGen->GetPoseDetectionCap().RegisterToPoseInProgress( &V::OpenNIDevice::Callback_PoseInProgress, this, hPoseInProgressCallback );
-		//CHECK_RC( _status, "Register Pose InProgress" );
+		_status = _userGen->GetSkeletonCap().RegisterToCalibrationInProgress( &V::OpenNIDevice::Callback_CalibrationInProgress, this, hCalibrationInProgressCallback );
+		CHECK_RC( _status, "Register Calibration InProgress" );
+		_status = _userGen->GetPoseDetectionCap().RegisterToPoseInProgress( &V::OpenNIDevice::Callback_PoseInProgress, this, hPoseInProgressCallback );
+		CHECK_RC( _status, "Register Pose InProgress" );
 
 		return true;
 	}
