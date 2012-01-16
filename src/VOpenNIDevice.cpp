@@ -938,7 +938,7 @@ namespace V
 		_status = _userGen->RegisterToUserExit( &V::OpenNIDevice::Callback_UserExit, this, hUserExitCallback );
 		CHECK_RC( _status, "Register User Exit Callback" );
 
-		_status = _userGen->RegisterToUserExit( &V::OpenNIDevice::Callback_UserReEnter, this, hUserReEnterCallback );
+		_status = _userGen->RegisterToUserReEnter( &V::OpenNIDevice::Callback_UserReEnter, this, hUserReEnterCallback );
 		CHECK_RC( _status, "Register User ReEnter Callback" );
 
 		_status = _userGen->GetSkeletonCap().RegisterToCalibrationStart( &V::OpenNIDevice::Callback_CalibrationStart, this, hCalibrationStartCallback );
