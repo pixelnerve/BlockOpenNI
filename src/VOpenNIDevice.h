@@ -109,6 +109,7 @@ namespace V
 
 		void setPrimaryBuffer( int type );
 		void setMirrorMode( int type, bool flag );
+		void setSkeletonSmoothing( float value );
 		
 		/*
 			Get Horizontal FOV

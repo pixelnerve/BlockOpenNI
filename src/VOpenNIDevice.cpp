@@ -46,15 +46,14 @@ namespace V
 	using namespace xn;
 
 
+	static char g_strPose[128];
+	static bool g_bNeedPose = false;
+
 
 	/************************************************************************/
 	/* Callbacks
 	*/
 	/************************************************************************/
-	
-	static char g_strPose[128];
-	static bool g_bNeedPose = false;
-
 
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_UserExit( xn::UserGenerator& generator, XnUserID nId, void* pCookie )
 	{
@@ -1577,6 +1576,12 @@ namespace V
 	XnPoint3D* OpenNIDevice::getDepthMapRealWorld()
 	{
 		return _depthMapRealWorld;
+	}
+
+	void OpenNIDevice::setSkeletonSmoothing( float value )
+	{
+		if( _userGen && _userGen->IsValid() )
+			getUserGenerator()->GetSkeletonCap().SetSmoothing( value );
 	}
 
 	/*void OpenNIDevice::addUser( uint32_t id )
