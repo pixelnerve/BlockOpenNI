@@ -82,7 +82,7 @@ namespace V
 
 		bool							mIsContextInit;
 
-		boost::shared_ptr<boost::thread> _thread;
+		std::shared_ptr<boost::thread> _thread;
 		boost::mutex					 _mutex;
 
 		bool							_isRunning;
