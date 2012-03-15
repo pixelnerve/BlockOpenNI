@@ -240,7 +240,7 @@ namespace V
  		ss << "Pose detection in progress: '" << strPose << "' on User: " << nId << std::endl;
  		DEBUG_MESSAGE( ss.str().c_str() );
  
- 		OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
+ 		//OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
 	}
 	
 	
@@ -250,8 +250,7 @@ namespace V
  		std::stringstream ss;
  		ss << "Pose detection end. User: '" << strPose << "'. Id: " << nId << std::endl;
  		DEBUG_MESSAGE( ss.str().c_str() );
- 
- 		OpenNIDeviceManager::Instance().setText( ss.str() );
+ 		//OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 	
 
@@ -261,19 +260,17 @@ namespace V
  		std::stringstream ss;
  		ss << "Calibration started for user " << nId << std::endl;
  		DEBUG_MESSAGE( ss.str().c_str() );
- 
- 		OpenNIDeviceManager::Instance().setText( ss.str() );
+ 		//OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 
 	
 	// Callback: Started calibration
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationInProgress( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie )
 	{
- 		std::stringstream ss;
- 		ss << "Calibration in progress for user " << nId << std::endl;
- 		DEBUG_MESSAGE( ss.str().c_str() );
- 
- 		OpenNIDeviceManager::Instance().setText( ss.str() );
+ 		//std::stringstream ss;
+ 		//ss << "Calibration in progress for user " << nId << std::endl;
+ 		//DEBUG_MESSAGE( ss.str().c_str() );
+ 		//OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 
 	
