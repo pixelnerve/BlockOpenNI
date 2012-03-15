@@ -116,11 +116,11 @@ namespace V
 		std::string path = xmlFile;
 		
 		// Initialize device
-		boost::shared_ptr<OpenNIDevice> dev = boost::shared_ptr<OpenNIDevice>( new OpenNIDevice( 0, this) );
+		std::shared_ptr<OpenNIDevice> dev = std::shared_ptr<OpenNIDevice>( new OpenNIDevice( 0, this) );
 		if( !dev->initFromXmlFile( path, allocUserIfNoNode ) ) 
 		{
 			DEBUG_MESSAGE( "[OpenNIDeviceManager]  Couldn't create device from xml\n" );
-			return boost::shared_ptr<OpenNIDevice>();
+			return std::shared_ptr<OpenNIDevice>();
 		}
 		// By default set depth as primary generator
 		dev->setPrimaryBuffer( V::NODE_TYPE_DEPTH );
@@ -733,7 +733,7 @@ namespace V
 		{
 			DEBUG_MESSAGE( "Starting thread on device manager\n" );
 			assert( !_thread );
-			_thread = boost::shared_ptr<boost::thread>( new boost::thread(&OpenNIDeviceManager::run, this) );
+			_thread = std::shared_ptr<boost::thread>( new boost::thread(&OpenNIDeviceManager::run, this) );
 			_isRunning = true;
 		}
 

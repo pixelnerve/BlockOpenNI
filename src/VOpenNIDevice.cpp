@@ -250,8 +250,7 @@ namespace V
  		std::stringstream ss;
  		ss << "Pose detection end. User: '" << strPose << "'. Id: " << nId << std::endl;
  		DEBUG_MESSAGE( ss.str().c_str() );
- 
- 		OpenNIDeviceManager::Instance().setText( ss.str() );
+ 		//OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 	
 
@@ -261,19 +260,17 @@ namespace V
  		std::stringstream ss;
  		ss << "Calibration started for user " << nId << std::endl;
  		DEBUG_MESSAGE( ss.str().c_str() );
- 
- 		OpenNIDeviceManager::Instance().setText( ss.str() );
+ 		//OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 
 	
 	// Callback: Started calibration
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationInProgress( xn::SkeletonCapability& capability, XnUserID nId, XnCalibrationStatus calibrationError, void* pCookie )
 	{
- 		std::stringstream ss;
- 		ss << "Calibration in progress for user " << nId << std::endl;
- 		DEBUG_MESSAGE( ss.str().c_str() );
- 
- 		OpenNIDeviceManager::Instance().setText( ss.str() );
+ 		//std::stringstream ss;
+ 		//ss << "Calibration in progress for user " << nId << std::endl;
+ 		//DEBUG_MESSAGE( ss.str().c_str() );
+ 		//OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 
 	
@@ -747,13 +744,13 @@ namespace V
 		if( flags & NODE_TYPE_IMAGE )
 		{
 			_imageGen->GetMapOutputMode( mode );
-			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
+			//_colorData = new uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, mode.nXRes, mode.nYRes );
 		}
 		if( flags & NODE_TYPE_IR )
 		{
 			_irGen->GetMapOutputMode( mode );
-			//_colorData = new boost::uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
+			//_colorData = new uint8_t[mode.nXRes*mode.nYRes*mBitsPerPixel];
 			mColorSurface = new OpenNISurface8( NODE_TYPE_IMAGE, mode.nXRes, mode.nYRes );
 			_irData = new uint16_t[mode.nXRes*mode.nYRes];
 			_irData8 = new uint8_t[mode.nXRes*mode.nYRes];
@@ -878,9 +875,9 @@ namespace V
 			int w = _irMetaData.XRes();
 			int h = _irMetaData.YRes();
 			if( !_irData ) 
-				_irData = new boost::uint16_t[w*h];
+				_irData = new uint16_t[w*h];
 			if( !_irData8 ) 
-				_irData8 = new boost::uint8_t[w*h];
+				_irData8 = new uint8_t[w*h];
 			if( !mIRSurface ) 
 				mIRSurface = new OpenNISurface8( NODE_TYPE_IR, w, h);
 			if( !mColorSurface ) 
@@ -894,11 +891,11 @@ namespace V
 
 			g_MaxDepth = MAX_DEPTH;
 			if( !_backDepthData ) 
-				_backDepthData = new boost::uint16_t[w*h];
+				_backDepthData = new uint16_t[w*h];
 			if( !_depthData ) 
-				_depthData = new boost::uint16_t[w*h];
+				_depthData = new uint16_t[w*h];
 			if( !_depthDataRGB ) 
-				_depthDataRGB = new boost::uint8_t[w*h*mBitsPerPixel];
+				_depthDataRGB = new uint8_t[w*h*mBitsPerPixel];
 			if( !_depthMapRealWorld ) 
 				_depthMapRealWorld = new XnPoint3D[w*h];
 			if( !_backDepthMapRealWorld ) 
@@ -1540,7 +1537,7 @@ namespace V
 		_isDepthInverted = flag;
 	}
 
-	boost::uint8_t* OpenNIDevice::getColorMap()
+	uint8_t* OpenNIDevice::getColorMap()
 	{
 		return mColorSurface->getData();
 	}
@@ -1556,18 +1553,18 @@ namespace V
 	//}
 
 
-	boost::uint16_t* OpenNIDevice::getRawDepthMap()
+	uint16_t* OpenNIDevice::getRawDepthMap()
 	{
 		return _backDepthData;
 	}
 
 
-	boost::uint16_t* OpenNIDevice::getDepthMap()
+	uint16_t* OpenNIDevice::getDepthMap()
 	{
 		return _depthData;
 	}
 
-	boost::uint8_t* OpenNIDevice::getDepthMap24()
+	uint8_t* OpenNIDevice::getDepthMap24()
 	{
 		return _depthDataRGB;
 	}
