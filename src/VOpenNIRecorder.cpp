@@ -31,11 +31,10 @@ namespace V
 	OpenNIRecorder::~OpenNIRecorder()
 	{
 		stop();
-		mDevice.reset();
 	}
 
 
-	void OpenNIRecorder::start( uint64_t nodeTypeFlags, std::string& filename )
+	void OpenNIRecorder::addNodes( uint64_t nodeTypeFlags, const std::string& filename )
 	{
 		XnStatus result;
 
@@ -48,24 +47,26 @@ namespace V
 		CHECK_RC( result, "[Recorder]  Set destination" );
 
 
-
 		ImageGenerator* image = NULL;
 		IRGenerator* ir = NULL;
 		DepthGenerator* depth = NULL;
 		if( nodeTypeFlags & NODE_TYPE_IMAGE )
 		{
 			image = mDevice->getImageGenerator();
-			mRecorder.AddNodeToRecording( *image );	//, XN_CODEC_JPEG );
+			mRecorder.AddNodeToRecording( *image, XN_CODEC_JPEG );
+			configuration.mIsImageOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_IR )
 		{
 			ir = mDevice->getIRGenerator();
-			mRecorder.AddNodeToRecording( *ir );	//, XN_CODEC_JPEG );
+			mRecorder.AddNodeToRecording( *ir, XN_CODEC_JPEG );
+			configuration.mIsIROn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_DEPTH )
 		{
 			depth = mDevice->getDepthGenerator();
-			mRecorder.AddNodeToRecording( *depth );	//, XN_CODEC_16Z_EMB_TABLES );
+			mRecorder.AddNodeToRecording( *depth, XN_CODEC_16Z_EMB_TABLES );
+			configuration.mIsDepthOn = true;
 		}
 		if( nodeTypeFlags & NODE_TYPE_USER )
 		{
@@ -80,6 +81,7 @@ namespace V
 				{
 					result = depth->GetFrameSyncCap().FrameSyncWith( *image );
 					CHECK_RC( result, "Enable frame sync");
+					configuration.mHasFrameSync = true;
 				}
 			}
 			else if( (mNodeFlags&NODE_TYPE_DEPTH) && (mNodeFlags&NODE_TYPE_IR) )
@@ -88,22 +90,48 @@ namespace V
 				{
 					result = depth->GetFrameSyncCap().FrameSyncWith( *ir );
 					CHECK_RC( result, "Enable frame sync");
+					configuration.mHasFrameSync = true;
 				}
 			}
 		}
-
-
-		// If everything is ok, set to record.
-		mIsRecording = true;
-		mIsPaused = false;
 	}
 
-	void OpenNIRecorder::start( Configuration& config )
+	void OpenNIRecorder::start()
 	{
+		if( mRecorder.IsValid() )
+		{
+			// If everything is ok, set to record.
+			mIsRecording = true;
+			mIsPaused = false;
 
+			mRecorder.Record();
+		}
 	}
 
-
+	void OpenNIRecorder::removeNode( uint64_t nodeTypeFlags )
+	{
+		ImageGenerator* image = NULL;
+		IRGenerator* ir = NULL;
+		DepthGenerator* depth = NULL;
+		if( nodeTypeFlags & NODE_TYPE_IMAGE )
+		{
+			image = mDevice->getImageGenerator();
+			mRecorder.RemoveNodeFromRecording( *image );
+		}
+		if( nodeTypeFlags & NODE_TYPE_IR )
+		{
+			ir = mDevice->getIRGenerator();
+			mRecorder.RemoveNodeFromRecording( *ir );
+		}
+		if( nodeTypeFlags & NODE_TYPE_DEPTH )
+		{
+			depth = mDevice->getDepthGenerator();
+			mRecorder.RemoveNodeFromRecording( *depth );
+		}
+		if( nodeTypeFlags & NODE_TYPE_USER )
+		{
+		}
+	}
 	void OpenNIRecorder::stop()
 	{
 		if( mIsRecording )
@@ -117,12 +145,16 @@ namespace V
 
 	void OpenNIRecorder::update()
 	{
-		mRecorder.Record();
+		if( mIsRecording )
+			mRecorder.Record();
 	}
 
 
 	void OpenNIRecorder::pause()
 	{
 		mIsPaused = true;
+		mIsRecording = false;
 	}
+
+
 }

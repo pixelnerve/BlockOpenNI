@@ -757,8 +757,8 @@ namespace V
 		else
 		{
 			//rc = _context.WaitNoneUpdateAll();
-			//rc = _context.WaitAndUpdateAll();
-			rc = _context.WaitAnyUpdateAll();
+			rc = _context.WaitAndUpdateAll();
+			//rc = _context.WaitAnyUpdateAll();
 		}
 		//CHECK_RC( rc, "WaitAndUpdateAll" );
 
