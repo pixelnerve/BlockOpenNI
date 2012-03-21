@@ -240,7 +240,7 @@ namespace V
  		ss << "Pose detection in progress: '" << strPose << "' on User: " << nId << std::endl;
  		DEBUG_MESSAGE( ss.str().c_str() );
  
- 		OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
+ 		//OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
 	}
 	
 	
