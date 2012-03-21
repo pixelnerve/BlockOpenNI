@@ -104,6 +104,8 @@ namespace V
 		void calcDepthImageRealWorld( XnPoint3D* buffer );
 		void getLabelMap( uint32_t labelId, uint16_t* labelMap );
 		void calculateHistogram();
+        void remapDepthMap( uint16_t* newDepthMap, uint16_t depthExtraScale = 1, bool invertDepth = false );
+
 
 		void setLimits( int nearClip, int farClip );
 

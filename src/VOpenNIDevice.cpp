@@ -1448,12 +1448,75 @@ namespace V
 	}
 
 
+    
+    // Map our depth map values to be between Near and Far Cut Planes
+    void OpenNIDevice::remapDepthMap( uint16_t* newDepthMap, uint16_t depthExtraScale, bool invertDepth )
+    {
+		const XnDepthPixel* pDepth = _depthMetaData.Data();
+		const uint32_t bufSize = _depthMetaData.XRes() * _depthMetaData.YRes();
+        
+        uint16_t* map = newDepthMap;
+
+		double range = static_cast<double>( mFarClipPlane-mNearClipPlane );
+        
+		float nearZ = 99999, farZ = 0;
+		for(uint32_t y=0; y<_depthMetaData.YRes(); y++ )
+		for(uint32_t x=0; x<_depthMetaData.XRes(); x++ )
+		{
+			double newDepth = 0.0;
+
+            double depth = static_cast<double>( *pDepth );
+
+			if( depth < mNearClipPlane )
+				depth = mNearClipPlane;
+			if( depth > mFarClipPlane )
+				depth = mFarClipPlane;
+
+			//XnPoint3D depthPoint;
+			//depthPoint.X = (float)x;
+			//depthPoint.Y = (float)y;
+			//depthPoint.Z = (float)depth;
+			//_depthGen->ConvertProjectiveToRealWorld( 1, &depthPoint, &depthPoint );
+
+			//if( depthPoint.Z < nearZ ) 
+			//	nearZ = depthPoint.Z;
+			//if( depthPoint.Z > farZ ) 
+			//	farZ = depthPoint.Z;
+
+			//newDepth = ( depthPoint.Z - mNearClipPlane ) / range;
+			newDepth = ( depth - mNearClipPlane ) / range;
+
+			//newDepth = sqrt( newDepth * 4 );
+			newDepth = newDepth * newDepth;
+			newDepth *= depthExtraScale;
+
+			if( newDepth > 1.0 )
+				newDepth = 1.0;
+
+			if( invertDepth )
+				newDepth = 1.0 - newDepth;
+
+			newDepth *= 65536.0;
+
+			if( newDepth > 65536.0 )
+				newDepth = 65536.0;
+
+            *map = static_cast<uint16_t>( newDepth );
+
+            map ++;
+			pDepth ++;
+		}
+
+		//char buf[256];
+		//sprintf( buf, "%f   %f\n", nearZ, farZ );
+		//OutputDebugStringA( buf );
+    }
 
 
 
 	void OpenNIDevice::calculateHistogram()
 	{
-		if( !_isDepthOn )	//_depthGen == NULL)	
+		if( !_isDepthOn )	
 			return;
 
 		xnOSMemSet( g_pDepthHist, 0, MAX_DEPTH*sizeof(float) );
