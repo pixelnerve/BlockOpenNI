@@ -86,6 +86,7 @@ namespace V
 		boost::mutex					 _mutex;
 
 		bool							_isRunning;
+		bool							_isStarted;
 
 		xn::Context						_context;
 

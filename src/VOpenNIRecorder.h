@@ -10,6 +10,8 @@ namespace V
 	class OpenNIRecorder
 	{
 	public:
+		typedef		std::shared_ptr<OpenNIRecorder>		Ref;
+
 		struct Configuration
 		{
 			bool	mIsMirrored;
@@ -28,14 +30,13 @@ namespace V
 		~OpenNIRecorder();
 
 
-		void start( uint64_t nodeTypeFlags, std::string& filename );
-		void start( Configuration& config );
+		void addNodes( uint64_t nodeTypeFlags, const std::string& filename );
+		void removeNode( uint64_t nodeTypeFlags );
+		void start();
 		void stop();
 		void pause();
 		void update();
-
 		bool isRecording()		{ return mIsRecording;	}
-
 
 	private:
 		OpenNIDeviceRef			mDevice;
@@ -47,6 +48,8 @@ namespace V
 		xn::MockIRGenerator		mMockIR;
 
 		uint64_t				mNodeFlags;
+
+		Configuration			configuration;
 
 		bool					mIsRecording;
 		bool					mIsPaused;

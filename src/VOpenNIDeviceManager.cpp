@@ -82,6 +82,9 @@ namespace V
 		_context.RegisterToErrorStateChange( onErrorStateChanged, NULL, hDummy );
 		
 		mIsContextInit = true;
+		
+		// Tells us if generators have started
+		_isStarted = false;
 	}
 
 	
@@ -478,12 +481,9 @@ namespace V
 			return OpenNIDevice::Ref();
 		}
 
-		//OpenNIDeviceList::iterator currDevice;
-		//currDevice = std::find( mDevices.begin(), mDevices.end(), deviceIdx );
-		//return *currDevice;        
-		int count = 0;
+		uint32_t count = 0;
 		OpenNIDeviceList::iterator devIt = mDevices.begin();
-		while( 1 )
+		while( count < mDevices.size() )
 		{
 			if( count == deviceIdx )
 				return *devIt;
@@ -586,7 +586,6 @@ namespace V
 		if( USE_THREAD ) 
 		{
 			_mutex.lock();
-			//boost::mutex::scoped_lock lock( _mutex );
 		}
 
 		// Currently works with first device only.
@@ -610,7 +609,6 @@ namespace V
 		if( USE_THREAD ) 
 		{
 			_mutex.lock();
-			//boost::mutex::scoped_lock lock( _mutex );
 		}
 
 		// bail out is no users left
@@ -740,12 +738,17 @@ namespace V
 
 		// Start generators
 		_context.StartGeneratingAll();
+
+		_isStarted = true;
 	}
 
 
 
 	void OpenNIDeviceManager::update()
 	{
+		if( !USE_THREAD && !_isStarted ) // In case we forget to call start(). Usually happens when not using threads
+			start();
+
 		XnStatus rc = XN_STATUS_OK;
 		if( mPrimaryGen )
 		{
@@ -754,17 +757,16 @@ namespace V
 		else
 		{
 			//rc = _context.WaitNoneUpdateAll();
-			//rc = _context.WaitAndUpdateAll();
-			rc = _context.WaitAnyUpdateAll();
+			rc = _context.WaitAndUpdateAll();
+			//rc = _context.WaitAnyUpdateAll();
 		}
-		CHECK_RC( rc, "WaitAndUpdateAll" );
+		//CHECK_RC( rc, "WaitAndUpdateAll" );
 
 
 		
 		if( USE_THREAD ) 
 		{
 			_mutex.lock();
-			//boost::mutex::scoped_lock lock( _mutex );
 		}
 
 		
@@ -787,9 +789,9 @@ namespace V
 		}
 
 		
-		// Sleep
-//		if( USE_THREAD ) 
-//          boost::this_thread::sleep( boost::posix_time::millisec(1) ); 
+		//// Sleep
+		//if( USE_THREAD ) 
+  //        boost::this_thread::sleep( boost::posix_time::millisec(1) ); 
 	}
 
 

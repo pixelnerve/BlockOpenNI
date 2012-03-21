@@ -1448,12 +1448,36 @@ namespace V
 	}
 
 
+    
+    // Map our depth map values to be between Near and Far Cut Planes
+    void OpenNIDevice::remapDepthMap( uint16_t* newDepthMap, uint16_t depthExtraScale )
+    {
+		const XnDepthPixel* pDepth = newDepthMap;
+		const uint32_t bufSize = _depthMetaData.XRes() * _depthMetaData.YRes();
+        
+        uint16_t* map = newDepthMap;
+        
+		for( uint32_t y=0; y<_depthMetaData.YRes(); y++ )
+		{
+			for(uint32_t x=0; x<_depthMetaData.XRes(); x++ )
+			{
+                uint16_t depth = *pDepth;
+                uint16_t newDepth = ( depth - mNearClipPlane ) / ( mFarClipPlane );
+                newDepth *= ( mFarClipPlane - mNearClipPlane ) * depthExtraScale;
+                
+                *map = newDepth;
+                
+                map ++;
+				pDepth ++;
+			}
+		}
+    }
 
 
 
 	void OpenNIDevice::calculateHistogram()
 	{
-		if( !_isDepthOn )	//_depthGen == NULL)	
+		if( !_isDepthOn )	
 			return;
 
 		xnOSMemSet( g_pDepthHist, 0, MAX_DEPTH*sizeof(float) );
