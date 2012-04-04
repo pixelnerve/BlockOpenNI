@@ -6,3 +6,6 @@ samples/BlockOpenNISkeleton/xcode/BlockOpenNISkeleton.xcodeproj/project.xcworksp
 /samples/BlockOpenNISample/vc10/Release
 /samples/BlockOpenNISample/vc10/Debug
 /samples/BlockOpenNISample/vc10/ipch
+/samples/BlockOpenNISkeleton/vc10/Debug
+/samples/BlockOpenNISkeleton/vc10/ipch
+/samples/BlockOpenNISkeleton/vc10/Release

@@ -150,42 +150,35 @@ public:
 	
 	uint16_t*				pixels;
     
-    float                   startTime, endTime, frameTime;
+    double                   startTime, endTime, frameTime;
 };
 
 
 
-BlockOpenNISampleAppApp::BlockOpenNISampleAppApp() {}
+BlockOpenNISampleAppApp::BlockOpenNISampleAppApp() 
+{
+	pixels = NULL;
+}
 BlockOpenNISampleAppApp::~BlockOpenNISampleAppApp()
 {
-	if( pixels )
-	{
-		delete[] pixels;
-		pixels = NULL;
-	}
+	delete [] pixels;
+	pixels = NULL;
 }
-
 
 void BlockOpenNISampleAppApp::prepareSettings( Settings *settings )
 {
 	settings->setFrameRate( 60 );
 	settings->setWindowSize( WIDTH, HEIGHT );
-	settings->setFullScreenSize( WIDTH, HEIGHT );
 	settings->setTitle( "BlockOpenNI Skeleton Sample" );
-	//settings->setShouldQuit( true );
-	//settings->setFullScreen( true );
 }
-
 
 void BlockOpenNISampleAppApp::setup()
 {
     V::OpenNIDeviceManager::USE_THREAD = false;
 	_manager = V::OpenNIDeviceManager::InstancePtr();
-    _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_USER );
-//    _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_SCENE | V::NODE_TYPE_USER );
+    _manager->createDevices( 1, V::NODE_TYPE_IMAGE | V::NODE_TYPE_DEPTH | V::NODE_TYPE_SCENE | V::NODE_TYPE_USER );
 	_device0 = _manager->getDevice( 0 );
-    _device0->setDepthInvert( false );
-    _device0->setDepthShiftMul( 4 );
+    _device0->setDepthShiftMul( 3 );
 	if( !_device0 ) 
 	{
 		DEBUG_MESSAGE( "(App)  Can't find a kinect device\n" );
@@ -194,12 +187,10 @@ void BlockOpenNISampleAppApp::setup()
 	}
     _device0->addListener( this );
 
-	pixels = NULL;
-	pixels = new uint16_t[ KINECT_DEPTH_WIDTH*KINECT_DEPTH_HEIGHT ];
+	pixels = new uint16_t[ KINECT_DEPTH_WIDTH * KINECT_DEPTH_HEIGHT ];
 
 	mColorTex = gl::Texture( KINECT_COLOR_WIDTH, KINECT_COLOR_HEIGHT );
 	mDepthTex = gl::Texture( KINECT_DEPTH_WIDTH, KINECT_DEPTH_HEIGHT );
-
 
 	_manager->start();
 }
@@ -250,10 +241,10 @@ void BlockOpenNISampleAppApp::draw()
 	gl::disableDepthWrite();
 	gl::disableDepthRead();
 
-	float sx = 320/2;
-	float sy = 240/2;
-	float xoff = 10;
-	float yoff = 10;
+	int sx = 320/2;
+	int sy = 240/2;
+	int xoff = 10;
+	int yoff = 10;
 	//glEnable( GL_TEXTURE_2D );
 	gl::color( cinder::ColorA(1, 1, 1, 1) );
 	gl::draw( mDepthTex, Rectf( xoff, yoff, xoff+sx, yoff+sy) );
