@@ -17,7 +17,7 @@ namespace V
 	   Device Manager
 	*/
 
-	bool OpenNIDeviceManager::USE_THREAD = true;
+	bool OpenNIDeviceManager::USE_THREAD = false;
 	OpenNIDeviceManager OpenNIDeviceManager::_singletonPointer;
 
 
