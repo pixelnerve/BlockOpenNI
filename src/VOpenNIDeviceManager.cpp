@@ -811,6 +811,19 @@ namespace V
 	}
 
 
+	void OpenNIDeviceManager::renderJointsWS( float pointSize, float zScale )
+	{
+		//boost::lock_guard<boost::recursive_mutex> lock( _rmutex );
+		//boost::mutex::scoped_lock lock( _mutex );
+
+		if( mUserList.empty() ) 
+			return;
+
+		for( OpenNIUserList::iterator it = mUserList.begin(); it != mUserList.end(); ++it )
+		{
+			(*it)->renderJointsRealWorld( pointSize, zScale );
+		}
+	}
 
 
 

@@ -41,7 +41,7 @@ namespace V
 		void            updatePixels();
 		void            updateBody();
 		void            renderJoints( float width, float height, float depth, float pointSize=5, bool renderDepth=false );
-		void            renderJointsRealWorld( float pointSize );
+		void            renderJointsRealWorld( float pointSize, float zScale = 1.0f );
 		void            renderBone( int joint1, int joint2, float width=640, float height=480, float depth=1, bool doProjective = true, bool renderDepthInProjective=false );
 
 		//bool			isTracking()		{ return _device->getUserGenerator()->GetSkeletonCap().IsTracking(mId); }
@@ -70,8 +70,6 @@ namespace V
 
 		uint32_t		getWidth()			{ return mWidth;	}
 		uint32_t		getHeight()			{ return mHeight;	}
-
-		void			setSkeletonSmoothing( float t );
 
 		void			setEnablePixels( bool flag )	{ _enablePixels = flag;	}
 
@@ -106,8 +104,6 @@ namespace V
 
 		uint16_t		mUserMinZDistance, mUserMaxZDistance;
 		uint16_t		mUserMinPixelIdx, mUserMaxPixelIdx;
-
-		float			mSkeletonSmoothing;
 
 		uint32_t		mId;
 		float			mCenter[3];	// Center point

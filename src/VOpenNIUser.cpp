@@ -160,12 +160,6 @@ namespace V
 
 		//mUserGen = _device->getUserGenerator();
 		mDepthGen = _device->getDepthGenerator();
-
-		mSkeletonSmoothing = 0.4f;
-		if( _device->getUserGenerator()->IsCapabilitySupported(XN_CAPABILITY_SKELETON) )
-		{
-			_device->getUserGenerator()->GetSkeletonCap().SetSmoothing( mSkeletonSmoothing );
-		}
 	}
 
 	void OpenNIUser::allocate( int width, int height )
@@ -713,7 +707,7 @@ namespace V
 		}
 	}
 
-	void OpenNIUser::renderJointsRealWorld( float pointSize )
+	void OpenNIUser::renderJointsRealWorld( float pointSize, float zScale )
 	{
 		if( mUserState == USER_TRACKING )
 		//if( !mBoneList.empty() && _device->getUserGenerator()->GetSkeletonCap().IsTracking(mId) )
@@ -743,7 +737,7 @@ namespace V
 				XnPoint3D point;
 				point.X = bone->position[0];
 				point.Y = bone->position[1];
-				point.Z = bone->position[2];
+				point.Z = bone->position[2]; // * zScale;
 				float sx = pointSize;
 				float sy = pointSize;
 
@@ -763,32 +757,32 @@ namespace V
 			//
 			// Render body connecting lines
 			//
-			renderBone( SKEL_HEAD, SKEL_NECK, false );
+			renderBone( SKEL_HEAD, SKEL_NECK, 0, 0, 1, false, false );
 			
-			renderBone( SKEL_TORSO, SKEL_LEFT_SHOULDER, false );
-			renderBone( SKEL_LEFT_SHOULDER, SKEL_LEFT_ELBOW, false );
-			renderBone( SKEL_LEFT_ELBOW, SKEL_LEFT_HAND, false );
+			renderBone( SKEL_TORSO, SKEL_LEFT_SHOULDER, 0, 0, 1, false, false );
+			renderBone( SKEL_LEFT_SHOULDER, SKEL_LEFT_ELBOW, 0, 0, 1, false, false );
+			renderBone( SKEL_LEFT_ELBOW, SKEL_LEFT_HAND, 0, 0, 1, false, false );
 			
-			renderBone( SKEL_TORSO, SKEL_RIGHT_SHOULDER, false );
-			renderBone( SKEL_RIGHT_SHOULDER, SKEL_RIGHT_ELBOW, false );
-			renderBone( SKEL_RIGHT_ELBOW, SKEL_RIGHT_HAND, false );
+			renderBone( SKEL_TORSO, SKEL_RIGHT_SHOULDER, 0, 0, 1, false, false );
+			renderBone( SKEL_RIGHT_SHOULDER, SKEL_RIGHT_ELBOW, 0, 0, 1, false, false );
+			renderBone( SKEL_RIGHT_ELBOW, SKEL_RIGHT_HAND, 0, 0, 1, false, false );
 			
 //			renderBone( SKEL_LEFT_SHOULDER, SKEL_TORSO, width, height, depth, true, renderDepth );
 //			renderBone( SKEL_RIGHT_SHOULDER, SKEL_TORSO, width, height, depth, true, renderDepth );
 			
-			renderBone( SKEL_TORSO, SKEL_LEFT_HIP, false );
-			renderBone( SKEL_LEFT_HIP, SKEL_LEFT_KNEE, false );
-			renderBone( SKEL_LEFT_KNEE, SKEL_LEFT_FOOT, false );
+			renderBone( SKEL_TORSO, SKEL_LEFT_HIP, 0, 0, 1, false, false );
+			renderBone( SKEL_LEFT_HIP, SKEL_LEFT_KNEE, 0, 0, 1, false, false );
+			renderBone( SKEL_LEFT_KNEE, SKEL_LEFT_FOOT, 0, 0, 1, false, false );
 			
-			renderBone( SKEL_TORSO, SKEL_RIGHT_HIP, false );
-			renderBone( SKEL_RIGHT_HIP, SKEL_RIGHT_KNEE, false );
-			renderBone( SKEL_RIGHT_KNEE, SKEL_RIGHT_FOOT, false );
+			renderBone( SKEL_TORSO, SKEL_RIGHT_HIP, 0, 0, 1, false, false );
+			renderBone( SKEL_RIGHT_HIP, SKEL_RIGHT_KNEE, 0, 0, 1, false, false );
+			renderBone( SKEL_RIGHT_KNEE, SKEL_RIGHT_FOOT, 0, 0, 1, false, false );
 			
-			renderBone( SKEL_TORSO, SKEL_RIGHT_HIP, false );
-			renderBone( SKEL_TORSO, SKEL_LEFT_HIP, false );
+			renderBone( SKEL_TORSO, SKEL_RIGHT_HIP, 0, 0, 1, false, false );
+			renderBone( SKEL_TORSO, SKEL_LEFT_HIP, 0, 0, 1, false, false );
 //            renderBone( SKEL_LEFT_HIP, SKEL_RIGHT_HIP, width, height, depth, true, renderDepth );
 			
-			renderBone( SKEL_TORSO, SKEL_NECK, false );
+			renderBone( SKEL_TORSO, SKEL_NECK, 0, 0, 1, false, false );
 
 			// Restore texture
 			//glEnable( GL_TEXTURE_2D );
@@ -919,21 +913,4 @@ namespace V
 		mCenter[2] = com.Z;
 		return mCenter; 
 	}
-
-
-	void OpenNIUser::setSkeletonSmoothing( float value )
-	{
-		if( !_device->getDepthGenerator()->IsCapabilitySupported( XN_CAPABILITY_SKELETON ) )
-			return;
-
-		if( _device->getUserGenerator()->GetSkeletonCap().IsTracking( mId ) )
-		//if( _device->getUserGenerator() && _device->getUserGenerator()->GetSkeletonCap().IsTracking( mId ) )
-		{
-			mSkeletonSmoothing = value;
-			_device->getUserGenerator()->GetSkeletonCap().SetSmoothing( mSkeletonSmoothing );
-		}
-	}
-
-
-
 }

@@ -37,9 +37,11 @@ namespace V
 		const uint32_t          getNumOfUsers();
 		OpenNIUserList          getUserList();
 
-		void start();
+		void					start();
 
-		void renderJoints( float width, float height, float depth, float pointSize, bool renderDepth=false );
+		void					renderJoints( float width, float height, float depth, float pointSize, bool renderDepth=false );		
+		void					renderJointsWS( float pointSize, float zScale = 1.0f );
+
 
 		const std::string& getDebugInfo()			{ return mDebugInfo;}
 		void setText( const std::string& info )		{ mDebugInfo = info; }
