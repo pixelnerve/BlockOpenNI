@@ -74,8 +74,8 @@ namespace V
 
 		//_userPixels = NULL;
 		//_backUserPixels = NULL;
-		_userDepthPixels = NULL;
-		_backUserDepthPixels = NULL;
+		//_userDepthPixels = NULL;
+		//_backUserDepthPixels = NULL;
 		//_depthMapRealWorld = NULL;
 		//_backDepthMapRealWorld = NULL;
 
@@ -111,8 +111,8 @@ namespace V
 
 		//SAFE_DELETE_ARRAY( _userPixels );
 		//SAFE_DELETE_ARRAY( _backUserPixels );
-		SAFE_DELETE_ARRAY( _userDepthPixels );
-		SAFE_DELETE_ARRAY( _backUserDepthPixels );
+		//SAFE_DELETE_ARRAY( _userDepthPixels );
+		//SAFE_DELETE_ARRAY( _backUserDepthPixels );
 		//SAFE_DELETE_ARRAY( _depthMapRealWorld );
 		//SAFE_DELETE_ARRAY( _backDepthMapRealWorld );
 
@@ -131,9 +131,10 @@ namespace V
 	void OpenNIUser::init()
 	{
 		// Set default color
-		std::stringstream ss;
-		ss << "INIT USER ID: " << mId << std::endl;
-		DEBUG_MESSAGE( ss.str().c_str() );
+		//std::stringstream ss;
+		//ss << "INIT USER ID: " << mId << std::endl;
+		//DEBUG_MESSAGE( ss.str().c_str() );
+
 		mColor[0] = g_Colors[(mId-1)%nColors][0];
 		mColor[1] = g_Colors[(mId-1)%nColors][1];
 		mColor[2] = g_Colors[(mId-1)%nColors][2];
@@ -152,33 +153,33 @@ namespace V
 		mAvgPosConfidence = 0.0f;
 
 
-		// TODO: Fix this. Remove hardcoded values
-		mWidth = 640;
-		mHeight = 480;
-		allocate( mWidth, mHeight );
+		//// TODO: Fix this. Remove hardcoded values
+		//mWidth = 640;
+		//mHeight = 480;
+		//allocate( mWidth, mHeight );
 
 
 		//mUserGen = _device->getUserGenerator();
 		mDepthGen = _device->getDepthGenerator();
 	}
 
-	void OpenNIUser::allocate( int width, int height )
-	{
-		//SAFE_DELETE_ARRAY( _backUserPixels );
-		//SAFE_DELETE_ARRAY( _userPixels );
-		//_userPixels = new uint8_t[width*height*3];
-		//_backUserPixels = new uint8_t[width*height*3];
+	//void OpenNIUser::allocate( int width, int height )
+	//{
+	//	//SAFE_DELETE_ARRAY( _backUserPixels );
+	//	//SAFE_DELETE_ARRAY( _userPixels );
+	//	//_userPixels = new uint8_t[width*height*3];
+	//	//_backUserPixels = new uint8_t[width*height*3];
 
-		SAFE_DELETE_ARRAY( _userDepthPixels );
-		SAFE_DELETE_ARRAY( _backUserDepthPixels );
-		_userDepthPixels = new uint16_t[width*height];
-		_backUserDepthPixels = new uint16_t[width*height];
+	//	SAFE_DELETE_ARRAY( _userDepthPixels );
+	//	SAFE_DELETE_ARRAY( _backUserDepthPixels );
+	//	_userDepthPixels = new uint16_t[width*height];
+	//	_backUserDepthPixels = new uint16_t[width*height];
 
-		//SAFE_DELETE_ARRAY( _depthMapRealWorld );
-		//SAFE_DELETE_ARRAY( _backDepthMapRealWorld );
-		//_depthMapRealWorld = new XnPoint3D[width*height];
-		//_backDepthMapRealWorld = new XnPoint3D[width*height];
-	}
+	//	//SAFE_DELETE_ARRAY( _depthMapRealWorld );
+	//	//SAFE_DELETE_ARRAY( _backDepthMapRealWorld );
+	//	//_depthMapRealWorld = new XnPoint3D[width*height];
+	//	//_backDepthMapRealWorld = new XnPoint3D[width*height];
+	//}
 
 
 	//
@@ -889,11 +890,11 @@ namespace V
 		return false;
 	}
 
-	uint16_t* OpenNIUser::getDepthPixels()
-	{
-		_device->getLabelMap( mId, _userDepthPixels );
-		return _userDepthPixels;
-	}
+	//uint16_t* OpenNIUser::getDepthPixels()
+	//{
+	//	_device->getLabelMap( mId, _userDepthPixels );
+	//	return _userDepthPixels;
+	//}
 	//void OpenNIUser::calcDepthImageRealWorld( XnPoint3D* points )
 	//{
 	//	// convert all point into realworld coord

@@ -71,10 +71,9 @@ namespace V
 				(*it)->onUserExit( event );
 			}
 		}
-		std::stringstream ss2;
-		ss2 << "Send user exit event: '" << nId << std::endl;
-		DEBUG_MESSAGE( ss2.str().c_str() );
-
+		//std::stringstream ss2;
+		//ss2 << "Send user exit event: '" << nId << std::endl;
+		//DEBUG_MESSAGE( ss2.str().c_str() );
 	}
 
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_UserReEnter( xn::UserGenerator& generator, XnUserID nId, void* pCookie )
@@ -93,10 +92,9 @@ namespace V
 				(*it)->onUserReEnter( event );
 			}
 		}
-		std::stringstream ss2;
-		ss2 << "Send user reenter event: '" << nId << std::endl;
-		DEBUG_MESSAGE( ss2.str().c_str() );
-
+		//std::stringstream ss2;
+		//ss2 << "Send user reenter event: '" << nId << std::endl;
+		//DEBUG_MESSAGE( ss2.str().c_str() );
 	}
 
 	// Callback: New user was detected
@@ -119,11 +117,11 @@ namespace V
 			// Add new user
 			OpenNIDeviceManager::Instance().addUser( &generator, nId );
 
-			XnUInt32 epochTime = 0;
-			xnOSGetEpochTime( &epochTime );
-			std::stringstream ss;
-			ss << epochTime << " " << "New User '" << nId << "' / '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
-			DEBUG_MESSAGE( ss.str().c_str() );
+			//XnUInt32 epochTime = 0;
+			//xnOSGetEpochTime( &epochTime );
+			//std::stringstream ss;
+			//ss << epochTime << " " << "New User '" << nId << "' / '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
+			//DEBUG_MESSAGE( ss.str().c_str() );
 
 
 			// Only use calibration is asked for it. 
@@ -132,9 +130,9 @@ namespace V
 			{
 				// TODO! Enable slot change. For now only slot 0 is used
 				int slot = 0;
-				
+
 				if( device->isOneTimeCalibration() && device->_isFirstCalibrationComplete )
-				{
+				{		
 					// Load Data For Each User
 					if( device->getUserGenerator()->GetSkeletonCap().IsCalibrationData(slot) )
 					{
@@ -148,9 +146,10 @@ namespace V
 				}
 				else
 				{
-					std::stringstream ss2;
-					ss2 << "Start Pose Detection For User: '" << nId << "'  Slot: " << slot << std::endl;
-					DEBUG_MESSAGE( ss2.str().c_str() );
+					//std::stringstream ss2;
+					//ss2 << "Start Pose Detection For User: '" << nId << "'  Slot: " << slot << std::endl;
+					//DEBUG_MESSAGE( ss2.str().c_str() );
+
 					if( g_bNeedPose )
 					{
 						device->getUserGenerator()->GetPoseDetectionCap().StartPoseDetection( g_strPose, nId );
@@ -174,13 +173,14 @@ namespace V
 
 					(*it)->onNewUser( event );
 
-					std::stringstream ss2;
-					ss2 << "Send new user event: '" << nId << std::endl;
-					DEBUG_MESSAGE( ss2.str().c_str() );
+					//std::stringstream ss2;
+					//ss2 << "Send new user event: '" << nId << std::endl;
+					//DEBUG_MESSAGE( ss2.str().c_str() );
 				}
 			}
 		}
 	}
+
 
 	// Callback: An existing user was lost
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_LostUser( xn::UserGenerator& generator, XnUserID nId, void* pCookie )
@@ -198,33 +198,33 @@ namespace V
 				event.mId = nId;
 				//event.mUser = OpenNIUserRef();
 
-				std::stringstream ss2;
-				ss2 << "Send lost user event: '" << nId << std::endl;
-				DEBUG_MESSAGE( ss2.str().c_str() );
+				//std::stringstream ss2;
+				//ss2 << "Send lost user event: '" << nId << std::endl;
+				//DEBUG_MESSAGE( ss2.str().c_str() );
 
 				(*it)->onLostUser( event );
 			}
 			
-			XnUInt32 epochTime = 0;
-			xnOSGetEpochTime( &epochTime );
-			std::stringstream ss;
-			ss << epochTime << " " << "Lost User '" << nId << "'.     Total: '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
-			DEBUG_MESSAGE( ss.str().c_str() );
+			//XnUInt32 epochTime = 0;
+			//xnOSGetEpochTime( &epochTime );
+			//std::stringstream ss;
+			//ss << epochTime << " " << "Lost User '" << nId << "'.     Total: '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
+			//DEBUG_MESSAGE( ss.str().c_str() );
 		}
 	}
 
 	// Callback: Detected a pose
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_PoseDetected( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie )
 	{
-		std::stringstream ss;
-		ss << "Pose detection start: '" << strPose << "' on User: " << nId << std::endl;
-		DEBUG_MESSAGE( ss.str().c_str() );
+		//std::stringstream ss;
+		//ss << "Pose detection start: '" << strPose << "' on User: " << nId << std::endl;
+		//DEBUG_MESSAGE( ss.str().c_str() );
 
 		OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
 		
 		//if( OpenNIDeviceManager::Instance().hasUser(nId) ) 
 		{
-			OpenNIDeviceManager::Instance().setText( ss.str() );
+			//OpenNIDeviceManager::Instance().setText( ss.str() );
 
 			// Pose found! Now we need skeleton calibration.
 			device->getUserGenerator()->GetPoseDetectionCap().StopPoseDetection( nId );
@@ -236,20 +236,18 @@ namespace V
 	// Callback: pose detection in progress
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_PoseInProgress( xn::PoseDetectionCapability& pose, const XnChar* strPose, XnUserID nId, XnPoseDetectionStatus poseError, void* pCookie )
 	{
- 		std::stringstream ss;
- 		ss << "Pose detection in progress: '" << strPose << "' on User: " << nId << std::endl;
- 		DEBUG_MESSAGE( ss.str().c_str() );
- 
- 		OpenNIDevice* device = static_cast<OpenNIDevice*>( pCookie );
+ 		//std::stringstream ss;
+ 		//ss << "Pose detection in progress: '" << strPose << "' on User: " << nId << std::endl;
+ 		//DEBUG_MESSAGE( ss.str().c_str() );
 	}
 	
 	
 	// Callback: When the user is out of pose
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_PoseDetectionEnd( xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie )
 	{
- 		std::stringstream ss;
- 		ss << "Pose detection end. User: '" << strPose << "'. Id: " << nId << std::endl;
- 		DEBUG_MESSAGE( ss.str().c_str() );
+ 		//std::stringstream ss;
+ 		//ss << "Pose detection end. User: '" << strPose << "'. Id: " << nId << std::endl;
+ 		//DEBUG_MESSAGE( ss.str().c_str() );
  		//OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 	
@@ -257,9 +255,9 @@ namespace V
 	// Callback: Started calibration
 	void XN_CALLBACK_TYPE OpenNIDevice::Callback_CalibrationStart( xn::SkeletonCapability& capability, XnUserID nId, void* pCookie )
 	{
- 		std::stringstream ss;
- 		ss << "Calibration started for user " << nId << std::endl;
- 		DEBUG_MESSAGE( ss.str().c_str() );
+ 		//std::stringstream ss;
+ 		//ss << "Calibration started for user " << nId << std::endl;
+ 		//DEBUG_MESSAGE( ss.str().c_str() );
  		//OpenNIDeviceManager::Instance().setText( ss.str() );
 	}
 
@@ -291,26 +289,24 @@ namespace V
 		//	return;
 		//}
 
-
 		if( calibrationError == XN_CALIBRATION_STATUS_OK )
 		{
 			// Calibration succeeded
-			std::stringstream ss;
-			ss << "Calibration complete, start tracking user " << nId << std::endl;
-			DEBUG_MESSAGE( ss.str().c_str() );
-			OpenNIDeviceManager::Instance().setText( ss.str() );
+			//std::stringstream ss;
+			//ss << "Calibration complete, start tracking user " << nId << std::endl;
+			//DEBUG_MESSAGE( ss.str().c_str() );
+			//OpenNIDeviceManager::Instance().setText( ss.str() );
 
 			// Save calibration data on slot 0
 			// TODO! We should be able to choose a slot
 			int slot = 0;
-
 			if( !device->getUserGenerator()->GetSkeletonCap().IsCalibrationData(slot) &&
 				device->isOneTimeCalibration() )
 			{
 				device->getUserGenerator()->GetSkeletonCap().SaveCalibrationData( nId, slot );
-				std::stringstream ss2;
-				ss2 << "Saving Calibration Data From User: '" << nId << "'  Slot: " << slot << std::endl;
-				DEBUG_MESSAGE( ss2.str().c_str() );
+				//std::stringstream ss2;
+				//ss2 << "Saving Calibration Data From User: '" << nId << "'  Slot: " << slot << std::endl;
+				//DEBUG_MESSAGE( ss2.str().c_str() );
 				device->_isFirstCalibrationComplete = true;
 			}
 			
@@ -324,9 +320,9 @@ namespace V
 					event.mId = nId;
 					//event.mUser = OpenNIDeviceManager::Instance().getUser( nId );
 					
-					std::stringstream ss2;
-					ss2 << "Send calibration-end event: '" << nId << std::endl;
-					DEBUG_MESSAGE( ss2.str().c_str() );
+					//std::stringstream ss2;
+					//ss2 << "Send calibration-end event: '" << nId << std::endl;
+					//DEBUG_MESSAGE( ss2.str().c_str() );
 					
 					listener->onCalibrationComplete( event );
 				}
@@ -338,12 +334,12 @@ namespace V
 		}
 		else
 		{
-			// Calibration failed
-			std::stringstream ss;
-			ss << "Calibration failed for user " << nId << std::endl;
-			DEBUG_MESSAGE( ss.str().c_str() );
+			//// Calibration failed
+			//std::stringstream ss;
+			//ss << "Calibration failed for user " << nId << std::endl;
+			//DEBUG_MESSAGE( ss.str().c_str() );
 
-			OpenNIDeviceManager::Instance().setText( ss.str() );
+			//OpenNIDeviceManager::Instance().setText( ss.str() );
 
 			if( g_bNeedPose )
 			{
@@ -401,10 +397,6 @@ namespace V
 		//_configFile = "";
 		//mDebugInfo = "No debug information\n";
 
-		_isDepthInverted = false;
-		_enableHistogram = false;
-		_enableUserCalibration = true;
-
 		_primaryGen	= NULL;
 		_imageGen	= NULL;
 		//_irGen		= NULL;
@@ -442,10 +434,13 @@ namespace V
 		_isAudioOn = false;
 		_isHandsOn = false;
 
+		_isDepthInverted = false;
+		_enableHistogram = false;
+		_enableUserCalibration = true;
 		_isOneTimeCalibration = false;
 		_isFirstCalibrationComplete = false;
 		
-		_confidenceThreshold = 0.3f;
+		_confidenceThreshold = 0.5f;
 
 		mNearClipPlane = 0;
 		mFarClipPlane = 6000;
@@ -931,17 +926,17 @@ namespace V
 		_status = _userGen->RegisterUserCallbacks( &V::OpenNIDevice::Callback_NewUser, &V::OpenNIDevice::Callback_LostUser, this, hUserCallbacks );
 		CHECK_RC( _status, "Register User Callbacks" );
 
-		_status = _userGen->RegisterToUserExit( &V::OpenNIDevice::Callback_UserExit, this, hUserExitCallback );
-		CHECK_RC( _status, "Register User Exit Callback" );
-
-		_status = _userGen->RegisterToUserReEnter( &V::OpenNIDevice::Callback_UserReEnter, this, hUserReEnterCallback );
-		CHECK_RC( _status, "Register User ReEnter Callback" );
-
 		_status = _userGen->GetSkeletonCap().RegisterToCalibrationStart( &V::OpenNIDevice::Callback_CalibrationStart, this, hCalibrationStartCallback );
 		CHECK_RC( _status, "Register Calibration Start" );
 
 		_status = _userGen->GetSkeletonCap().RegisterToCalibrationComplete( &V::OpenNIDevice::Callback_CalibrationComplete, this, hCalibrationCompleteCallback );
 		CHECK_RC( _status, "Register Calibration Complete" );
+
+		_status = _userGen->RegisterToUserExit( &V::OpenNIDevice::Callback_UserExit, this, hUserExitCallback );
+		CHECK_RC( _status, "Register User Exit Callback" );
+
+		_status = _userGen->RegisterToUserReEnter( &V::OpenNIDevice::Callback_UserReEnter, this, hUserReEnterCallback );
+		CHECK_RC( _status, "Register User ReEnter Callback" );
 
 		if( _userGen->GetSkeletonCap().NeedPoseForCalibration() )
 		{
@@ -959,12 +954,14 @@ namespace V
 			ss << "--> User pose name: '" << g_strPose << "'" << std::endl;
 			DEBUG_MESSAGE( ss.str().c_str() );
 		}
+
 		_userGen->GetSkeletonCap().SetSkeletonProfile( mSkeletonProfile );
 
 		_status = _userGen->GetSkeletonCap().RegisterToCalibrationInProgress( &V::OpenNIDevice::Callback_CalibrationInProgress, this, hCalibrationInProgressCallback );
 		CHECK_RC( _status, "Register Calibration InProgress" );
-		_status = _userGen->GetPoseDetectionCap().RegisterToPoseInProgress( &V::OpenNIDevice::Callback_PoseInProgress, this, hPoseInProgressCallback );
-		CHECK_RC( _status, "Register Pose InProgress" );
+
+		//_status = _userGen->GetPoseDetectionCap().RegisterToPoseInProgress( &V::OpenNIDevice::Callback_PoseInProgress, this, hPoseInProgressCallback );
+		//CHECK_RC( _status, "Register Pose InProgress" );
 
 		return true;
 	}

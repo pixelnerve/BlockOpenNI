@@ -60,7 +60,7 @@ namespace V
 
 		//bool			hasPixels()			{ return (_userPixels)?true:false;}
 		//uint8_t*		getPixels()			{ return _userPixels; }
-		uint16_t*		getDepthPixels();
+		//uint16_t*		getDepthPixels();
 		//XnPoint3D*		getDepthMapRealWorld()	{ return _depthMapRealWorld;	}
 		uint32_t		getId()				{ return mId; }
 		
@@ -68,8 +68,8 @@ namespace V
 
 		UserStateEnum	getUserState()		{ return mUserState;	}
 
-		uint32_t		getWidth()			{ return mWidth;	}
-		uint32_t		getHeight()			{ return mHeight;	}
+		//uint32_t		getWidth()			{ return mWidth;	}
+		//uint32_t		getHeight()			{ return mHeight;	}
 
 		void			setEnablePixels( bool flag )	{ _enablePixels = flag;	}
 
@@ -99,7 +99,7 @@ namespace V
 
 		// User pixels for convenience
 		//uint8_t*		_userPixels, *_backUserPixels;
-		uint16_t*		_userDepthPixels, *_backUserDepthPixels;
+		//uint16_t*		_userDepthPixels, *_backUserDepthPixels;
 		//XnPoint3D*		_depthMapRealWorld, *_backDepthMapRealWorld;
 
 		uint16_t		mUserMinZDistance, mUserMaxZDistance;
@@ -109,8 +109,8 @@ namespace V
 		float			mCenter[3];	// Center point
 		float			mColor[3];
 
-		uint32_t		mWidth;		//
-		uint32_t		mHeight;	// Current dimensions of depthmap
+		//uint32_t		mWidth;		//
+		//uint32_t		mHeight;	// Current dimensions of depthmap
 
 		float           mAvgPosConfidence;
 		
