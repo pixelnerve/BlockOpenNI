@@ -10,8 +10,11 @@ namespace V
 	class OpenNIRecorder
 	{
 	public:
+#ifdef WIN32
 		typedef		std::shared_ptr<OpenNIRecorder>		Ref;
-
+#else
+		typedef		boost::shared_ptr<OpenNIRecorder>		Ref;
+#endif
 		struct Configuration
 		{
 			bool	mIsMirrored;

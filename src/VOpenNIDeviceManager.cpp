@@ -731,7 +731,11 @@ namespace V
 		{
 			DEBUG_MESSAGE( "Starting thread on device manager\n" );
 			assert( !_thread );
+#ifdef WIN32
 			_thread = std::shared_ptr<boost::thread>( new boost::thread(&OpenNIDeviceManager::run, this) );
+#else
+			_thread = boost::shared_ptr<boost::thread>( new boost::thread(&OpenNIDeviceManager::run, this) );
+#endif
 			_isRunning = true;
 		}
 
@@ -756,8 +760,8 @@ namespace V
 		}
 		else
 		{
-			//rc = _context.WaitNoneUpdateAll();
-			rc = _context.WaitAndUpdateAll();
+			rc = _context.WaitNoneUpdateAll();
+			//rc = _context.WaitAndUpdateAll();
 			//rc = _context.WaitAnyUpdateAll();
 		}
 		//CHECK_RC( rc, "WaitAndUpdateAll" );

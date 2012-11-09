@@ -32,7 +32,7 @@
 // Includes
 //---------------------------------------------------------------------------
 #include "XnModuleInterface.h"
-#include "XnList.h"
+#include "XnListT.h"
 #include "XnCppWrapper.h"
 
 //---------------------------------------------------------------------------
@@ -40,7 +40,7 @@
 //---------------------------------------------------------------------------
 namespace xn
 {
-	XN_DECLARE_LIST(XnModuleGetExportedInterfacePtr, ExportedNodesList);
+	typedef XnListT<XnModuleGetExportedInterfacePtr> ExportedNodesList;
 
 	class ModuleProductionNode;
 
@@ -65,8 +65,8 @@ namespace xn
 			}																
 
 			XnUInt32 i = 0;												
-			for (ExportedNodesList::ConstIterator it = m_ExportedNodes.begin();			
-				it != m_ExportedNodes.end();											
+			for (ExportedNodesList::ConstIterator it = m_ExportedNodes.Begin();			
+				it != m_ExportedNodes.End();											
 				++it, ++i)													
 			{																
 				aEntryPoints[i] = *it;										
@@ -521,6 +521,7 @@ namespace xn
 
 		virtual XnStatus StartPoseDetection(const XnChar* strPose, XnUserID user) = 0;
 		virtual XnStatus StopPoseDetection(XnUserID user) = 0;
+		virtual XnStatus StopSinglePoseDetection(XnUserID user, const XnChar* strPose) = 0;
 
 		virtual XnStatus RegisterToPoseDetectionCallbacks(XnModulePoseDetectionCallback StartPoseCB, XnModulePoseDetectionCallback EndPoseCB, void* pCookie, XnCallbackHandle& hCallback) = 0;
 		virtual void UnregisterFromPoseDetectionCallbacks(XnCallbackHandle hCallback) = 0;

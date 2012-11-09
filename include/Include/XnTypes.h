@@ -243,6 +243,27 @@ typedef void (XN_CALLBACK_TYPE* XnFreeHandler)(const void* pData);
 
 typedef void (XN_CALLBACK_TYPE* XnContextShuttingDownHandler)(XnContext* pContext, void* pCookie);
 
+/**
+* Prototype for the 'Node Creation' event handler.
+*
+* @param	[in]	pContext		The context raising the event.
+* @param	[in]	hCreatedNode	A handle to the newly created node.
+* @param	[in]	pCookie			A user-provided cookie that was given when registering to the event.
+*
+* @remark The passed handle (@c hCreatedNode) is not referenced. If your handler keeps this handle for later use,
+*		  it must call @ref xnProductionNodeAddRef().
+*/
+typedef void (XN_CALLBACK_TYPE* XnNodeCreationHandler)(XnContext* pContext, XnNodeHandle hCreatedNode, void* pCookie);
+
+/**
+* Prototype for the 'Node Destruction' event handler.
+*
+* @param	[in]	pContext				The context raising the event.
+* @param	[in]	strDestroyedNodeName	The name of the destroyed node.
+* @param	[in]	pCookie					A user-provided cookie that was given when registering to the event.
+*/
+typedef void (XN_CALLBACK_TYPE* XnNodeDestructionHandler)(XnContext* pContext, const XnChar* strDestroyedNodeName, void* pCookie);
+
 /** Handle to a registered callback function. **/
 typedef void* XnCallbackHandle;
 
@@ -483,7 +504,7 @@ typedef struct XnFieldOfView
 {
 	/** Horizontal Field Of View, in radians. */
 	XnDouble fHFOV;
-	/** Horizontal Field Of View, in radians. */
+	/** Vertical Field Of View, in radians. */
 	XnDouble fVFOV;
 } XnFieldOfView;
 
@@ -646,20 +667,32 @@ typedef enum XnPoseDetectionStatus
 	XN_POSE_DETECTION_STATUS_TOP_FOV	= 2,
 	XN_POSE_DETECTION_STATUS_SIDE_FOV	= 3,
 	XN_POSE_DETECTION_STATUS_ERROR		= 4,
+    XN_POSE_DETECTION_STATUS_NO_TRACKING = 5
 } XnPoseDetectionStatus;
 
+
+/** Possible pose detection states */
+typedef enum XnPoseDetectionState
+{
+    XN_POSE_DETECTION_STATE_IN_POSE     =0,
+    XN_POSE_DETECTION_STATE_OUT_OF_POSE =1,
+    XN_POSE_DETECTION_STATE_UNDEFINED   =2
+} XnPoseDetectionState;
 /** Possible statuses for calibration */
 typedef enum XnCalibrationStatus
 {
-	XN_CALIBRATION_STATUS_OK		= 0,
-	XN_CALIBRATION_STATUS_NO_USER	= 1,
-	XN_CALIBRATION_STATUS_ARM		= 2,
-	XN_CALIBRATION_STATUS_LEG		= 3,
-	XN_CALIBRATION_STATUS_HEAD		= 4,
-	XN_CALIBRATION_STATUS_TORSO		= 5,
-	XN_CALIBRATION_STATUS_TOP_FOV	= 6,
-	XN_CALIBRATION_STATUS_SIDE_FOV	= 7,
-	XN_CALIBRATION_STATUS_POSE		= 8,
+	XN_CALIBRATION_STATUS_OK		    = 0,
+	XN_CALIBRATION_STATUS_NO_USER	    = 1,
+	XN_CALIBRATION_STATUS_ARM		    = 2,
+	XN_CALIBRATION_STATUS_LEG		    = 3,
+	XN_CALIBRATION_STATUS_HEAD		    = 4,
+	XN_CALIBRATION_STATUS_TORSO		    = 5,
+	XN_CALIBRATION_STATUS_TOP_FOV	    = 6,
+	XN_CALIBRATION_STATUS_SIDE_FOV	    = 7,
+	XN_CALIBRATION_STATUS_POSE		    = 8,
+    XN_CALIBRATION_STATUS_MANUAL_ABORT  = 9,
+    XN_CALIBRATION_STATUS_MANUAL_RESET  = 10,
+    XN_CALIBRATION_STATUS_TIMEOUT_FAIL = 11
 } XnCalibrationStatus;
 
 typedef enum XnDirection

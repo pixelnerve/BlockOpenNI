@@ -117,11 +117,11 @@ namespace V
 			// Add new user
 			OpenNIDeviceManager::Instance().addUser( &generator, nId );
 
-			//XnUInt32 epochTime = 0;
-			//xnOSGetEpochTime( &epochTime );
-			//std::stringstream ss;
-			//ss << epochTime << " " << "New User '" << nId << "' / '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
-			//DEBUG_MESSAGE( ss.str().c_str() );
+			XnUInt32 epochTime = 0;
+			xnOSGetEpochTime( &epochTime );
+			std::stringstream ss;
+			ss << epochTime << " " << "New User '" << nId << "' / '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
+			DEBUG_MESSAGE( ss.str().c_str() );
 
 
 			// Only use calibration is asked for it. 
@@ -205,11 +205,11 @@ namespace V
 				(*it)->onLostUser( event );
 			}
 			
-			//XnUInt32 epochTime = 0;
-			//xnOSGetEpochTime( &epochTime );
-			//std::stringstream ss;
-			//ss << epochTime << " " << "Lost User '" << nId << "'.     Total: '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
-			//DEBUG_MESSAGE( ss.str().c_str() );
+			XnUInt32 epochTime = 0;
+			xnOSGetEpochTime( &epochTime );
+			std::stringstream ss;
+			ss << epochTime << " " << "Lost User '" << nId << "'.     Total: '" << OpenNIDeviceManager::Instance().getNumOfUsers() << "'" << std::endl;
+			DEBUG_MESSAGE( ss.str().c_str() );
 		}
 	}
 
@@ -914,7 +914,7 @@ namespace V
 		XnCallbackHandle hUserReEnterCallback = 0;
 		XnCallbackHandle hCalibrationStartCallback = 0;
 		XnCallbackHandle hCalibrationInProgressCallback = 0;
-		XnCallbackHandle hPoseInProgressCallback = 0;
+		//XnCallbackHandle hPoseInProgressCallback = 0;
 		XnCallbackHandle hCalibrationCompleteCallback = 0;
 		XnCallbackHandle hPoseDetectedCallback = 0;
 
@@ -955,7 +955,8 @@ namespace V
 			DEBUG_MESSAGE( ss.str().c_str() );
 		}
 
-		_userGen->GetSkeletonCap().SetSkeletonProfile( mSkeletonProfile );
+        setSkeletonProfile( mSkeletonProfile );
+//		_userGen->GetSkeletonCap().SetSkeletonProfile( mSkeletonProfile );
 
 		_status = _userGen->GetSkeletonCap().RegisterToCalibrationInProgress( &V::OpenNIDevice::Callback_CalibrationInProgress, this, hCalibrationInProgressCallback );
 		CHECK_RC( _status, "Register Calibration InProgress" );
@@ -1450,13 +1451,13 @@ namespace V
     void OpenNIDevice::remapDepthMap( uint16_t* newDepthMap, uint16_t depthExtraScale, bool invertDepth )
     {
 		const XnDepthPixel* pDepth = _depthMetaData.Data();
-		const uint32_t bufSize = _depthMetaData.XRes() * _depthMetaData.YRes();
+		//const uint32_t bufSize = _depthMetaData.XRes() * _depthMetaData.YRes();
         
         uint16_t* map = newDepthMap;
 
 		double range = static_cast<double>( mFarClipPlane-mNearClipPlane );
         
-		float nearZ = 99999, farZ = 0;
+		//float nearZ = 99999, farZ = 0;
 		for(uint32_t y=0; y<_depthMetaData.YRes(); y++ )
 		for(uint32_t x=0; x<_depthMetaData.XRes(); x++ )
 		{
@@ -1638,7 +1639,7 @@ namespace V
 	void OpenNIDevice::setSkeletonSmoothing( float value )
 	{
 		if( _userGen && _userGen->IsValid() )
-			getUserGenerator()->GetSkeletonCap().SetSmoothing( value );
+			_userGen->GetSkeletonCap().SetSmoothing( value );
 	}
 
 	/*void OpenNIDevice::addUser( uint32_t id )

@@ -610,8 +610,8 @@ namespace V
 			
 			
 			// Low confidence, bail out!
-			if( mAvgPosConfidence < _device->getConfidenceThreshold() )
-				return;
+//			if( mAvgPosConfidence < _device->getConfidenceThreshold() )
+//				return;
 
 			
 			
@@ -738,7 +738,7 @@ namespace V
 				XnPoint3D point;
 				point.X = bone->position[0];
 				point.Y = bone->position[1];
-				point.Z = bone->position[2]; // * zScale;
+				point.Z = bone->position[2] * zScale;
 				float sx = pointSize;
 				float sy = pointSize;
 

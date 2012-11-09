@@ -83,8 +83,11 @@ namespace V
 		static OpenNIDeviceManager		_singletonPointer;
 
 		bool							mIsContextInit;
-
+#ifdef WIN32
 		std::shared_ptr<boost::thread> _thread;
+#else
+		boost::shared_ptr<boost::thread> _thread;
+#endif
 		boost::mutex					 _mutex;
 
 		bool							_isRunning;
