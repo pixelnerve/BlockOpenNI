@@ -299,7 +299,9 @@ namespace V
 				mDepthGenCount++;
 			}
 		}
-		std::cout << "+++ Depth nodes: \t" << mDepthGenCount << std::endl;
+		std::stringstream ss0;
+		ss0 << "+++ Depth nodes: \t" << mDepthGenCount << std::endl;
+		DEBUG_MESSAGE( ss0.str().c_str() ); 
 
 
 		
@@ -328,7 +330,10 @@ namespace V
 				mIRGenCount++;
 			}
 		}
-		std::cout << "+++ IR nodes: \t" << mIRGenCount << std::endl;
+		std::stringstream ss1;
+		ss1 << "+++ IR nodes: \t" << mIRGenCount << std::endl;
+		DEBUG_MESSAGE( ss1.str().c_str() ); 
+
 
 		
 		if( nodeTypeFlags & NODE_TYPE_IMAGE )
@@ -356,7 +361,9 @@ namespace V
 				mImageGenCount++;
 			}
 		}
-		std::cout << "+++ Image nodes: \t" << mImageGenCount << std::endl;
+		std::stringstream ss2;
+		ss2 << "+++ Image nodes: \t" << mImageGenCount << std::endl;
+		DEBUG_MESSAGE( ss2.str().c_str() ); 
 
 
 		if( nodeTypeFlags & NODE_TYPE_USER )
@@ -385,7 +392,9 @@ namespace V
 				mUserGenCount++;
 			}
 		}
-		std::cout << "+++ User nodes: \t" << mUserGenCount << std::endl;
+		std::stringstream ss3;
+		ss3 << "+++ User nodes: \t" << mUserGenCount << std::endl;
+		DEBUG_MESSAGE( ss3.str().c_str() ); 
 
 
 		if( nodeTypeFlags & NODE_TYPE_SCENE )
@@ -413,7 +422,9 @@ namespace V
 				mSceneAnalyzerCount++;
 			}
 		}
-		std::cout << "+++ Scene nodes: \t" << mSceneAnalyzerCount << std::endl;
+		std::stringstream ss4;
+		ss4 << "+++ Scene nodes: \t" << mSceneAnalyzerCount << std::endl;
+		DEBUG_MESSAGE( ss4.str().c_str() ); 
 
 		
 		//if( nodeTypeFlags & NODE_TYPE_HANDS )
