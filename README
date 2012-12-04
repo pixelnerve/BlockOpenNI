@@ -54,13 +54,20 @@ Run NiViewer.exe. You should now be looking at a window with the RGB and Depth f
 MacOSX 32bit:
 -------------
 
-1) Download/Install MacPorts
+1.A) Download/Install MacPorts
 	(Snow Leopard 10.6) https://distfiles.macports.org/MacPorts/MacPorts-2.0.0-10.5-Leopard.dmg
 	(Lion 10.7) https://distfiles.macports.org/MacPorts/MacPorts-2.0.0-10.7-Lion.dmg
 
+1.B) OR download/install Homebrew
+	Type and run: ruby -e "$(curl -fsSkL raw.github.com/mxcl/homebrew/go)"
+
 2) Open the terminal, install libtool/libusb.
-	2.1) Type and run: sudo port install libtool
-	2.2) Type and run: sudo port install libusb-devel +universal
+	A) For MacPorts
+		2.1) Type and run: sudo port install libtool
+		2.2) Type and run: sudo port install libusb-devel +universal
+	B) For Homebrew
+		2.1) Type and run: brew install libtool
+		2.2) Type and run: brew install libusb --universal
 
 
 3) Download/Untar OpenNI
