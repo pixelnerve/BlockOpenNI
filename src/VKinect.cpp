@@ -25,10 +25,16 @@ void Kinect::setup()
 
 void Kinect::setup(const Vec2i & size)
 {
-    setup(size, size);
+    setup(size, size, NODE_TYPE_IMAGE | NODE_TYPE_DEPTH | NODE_TYPE_SCENE | NODE_TYPE_USER);
 }
 
-void Kinect::setup(const Vec2i & _depthSize, const Vec2i & _colorSize)
+void Kinect::setup(const Vec2i & size, int nodeTypeFlags)
+{
+    setup(size, size, nodeTypeFlags);
+}
+
+    
+void Kinect::setup(const Vec2i & _depthSize, const Vec2i & _colorSize, int nodeTypeFlags)
 {
     depthSize = _depthSize;
     colorSize = _colorSize;
@@ -36,7 +42,7 @@ void Kinect::setup(const Vec2i & _depthSize, const Vec2i & _colorSize)
     OpenNIDeviceManager::USE_THREAD = false;
     
     manager = OpenNIDeviceManager::InstancePtr();
-    manager->createDevices(1, NODE_TYPE_IMAGE | NODE_TYPE_DEPTH | NODE_TYPE_SCENE | NODE_TYPE_USER);
+    manager->createDevices(1, nodeTypeFlags);
     
     device = manager->getDevice(0);
     if ( !device ) {
@@ -60,12 +66,16 @@ void Kinect::update()
         manager->update();
     }
     
-    tex_Color.update(Surface(getColorImage()));
-    tex_Depth.update(Surface(getDepthImage()));
+    if ( device->_isImageOn && device->getImageGenerator()->IsValid() && device->isImageDataNew() )
+        tex_Color.update(Surface(getColorImage()));
+    if ( device->_isDepthOn && device->getDepthGenerator()->IsValid() && device->isDepthDataNew() )
+        tex_Depth.update(Surface(getDepthImage()));
     
-    BOOST_FOREACH(users_map::value_type &user, users)
-    {
-        user.second.texture.update(Surface(getUserImage(user.first)));
+    if ( device->_isUserOn && device->getUserGenerator()->IsValid() && device->isUserDataNew() ) {
+        BOOST_FOREACH(users_map::value_type &user, users)
+        {
+            user.second.texture.update(Surface(getUserImage(user.first)));
+        }
     }
 }
 
@@ -144,6 +154,19 @@ ImageSourceRef Kinect::getDepthImage()
     uint16_t *activeDepth = device->getDepthMap();
     return ImageSourceRef(new ImageSourceDepth(activeDepth, depthSize.x, depthSize.y));
 }
+    
+XnPoint3D * Kinect::getDepthMapRealWorld()
+{
+    device->calcDepthImageRealWorld();
+    return device->getDepthMapRealWorld();
+}
+    
+ColorA8u Kinect::getColorPixel(Vec2i pixel)
+{
+    uint8_t *r = device->getColorMap() + (pixel.x + pixel.y * colorSize.y);
+    return ColorA8u(*r, *(r + 1), *(r + 2));
+}
+
 
 /*******************************************************************************
  * Kinect::User

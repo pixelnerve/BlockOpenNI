@@ -17,7 +17,8 @@ public:
     
     void setup();
     void setup(const ci::Vec2i & size);
-    void setup(const ci::Vec2i & _depthSize, const ci::Vec2i & _colorSize);
+    void setup(const ci::Vec2i & size, int nodeTypeFlags);
+    void setup(const ci::Vec2i & _depthSize, const ci::Vec2i & _colorSize, int nodeTypeFlags);
     void update();
     
     void drawColor(const ci::Rectf &rect);
@@ -32,11 +33,18 @@ public:
 
     
     ci::ImageSourceRef getColorImage();
+    ci::ColorA8u getColorPixel(ci::Vec2i pixel);
     ci::ImageSourceRef getUserImage(const int id);
     ci::ImageSourceRef getDepthImage();
+    XnPoint3D * getDepthMapRealWorld();
+    
+    ci::gl::Texture * getColorTexture() { return &tex_Color; };
+    ci::gl::Texture * getDepthTexture() { return &tex_Depth; };
     
     ci::Vec2i getDepthSize() { return depthSize; };
     ci::Vec2i getColorSize() { return colorSize; };
+    
+    OpenNIDevice::Ref getDevice() { return device; };
     
     class User {
     public:
