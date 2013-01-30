@@ -15,10 +15,10 @@ public:
     Kinect();
     ~Kinect();
     
-    void setup();
-    void setup(const ci::Vec2i & size);
-    void setup(const ci::Vec2i & size, int nodeTypeFlags);
-    void setup(const ci::Vec2i & _depthSize, const ci::Vec2i & _colorSize, int nodeTypeFlags);
+    virtual void setup();
+    virtual void setup(const ci::Vec2i & size);
+    virtual void setup(const ci::Vec2i & size, int nodeTypeFlags);
+    virtual void setup(const ci::Vec2i & _depthSize, const ci::Vec2i & _colorSize, int nodeTypeFlags);
     void update();
     
     void drawColor(const ci::Rectf &rect);
@@ -67,7 +67,7 @@ public:
     typedef std::map< int, User > users_map;
     users_map users;
     
-private:
+protected:
     OpenNIDeviceManager * manager;
     OpenNIDevice::Ref device;
     ci::gl::Texture tex_Color, tex_Depth;
