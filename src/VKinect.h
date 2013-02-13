@@ -73,6 +73,7 @@ protected:
     ci::gl::Texture tex_Color, tex_Depth;
     uint16_t * pixels;
     ci::Vec2i depthSize, colorSize;
+    bool isDepthMapRealWorldUpdated;
 
 public:
     class ImageSourceColor : public ci::ImageSource

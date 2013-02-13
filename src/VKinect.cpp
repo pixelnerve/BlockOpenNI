@@ -69,6 +69,7 @@ void Kinect::update()
     if ( device->_isImageOn && device->getImageGenerator()->IsValid() && device->isImageDataNew() )
         tex_Color.update(Surface(getColorImage()));
     if ( device->_isDepthOn && device->getDepthGenerator()->IsValid() && device->isDepthDataNew() )
+        isDepthMapRealWorldUpdated = false;
         tex_Depth.update(Surface(getDepthImage()));
     
     if ( device->_isUserOn && device->getUserGenerator()->IsValid() && device->isUserDataNew() ) {
@@ -157,8 +158,13 @@ ImageSourceRef Kinect::getDepthImage()
     
 XnPoint3D * Kinect::getDepthMapRealWorld()
 {
-    device->calcDepthImageRealWorld();
-    return device->getDepthMapRealWorld();
+    if ( isDepthMapRealWorldUpdated ) {
+        return device->getDepthMapRealWorld();
+    } else {
+        device->calcDepthImageRealWorld();
+        isDepthMapRealWorldUpdated = true;
+        return device->getDepthMapRealWorld();
+    }
 }
     
 ColorA8u Kinect::getColorPixel(Vec2i pixel)
