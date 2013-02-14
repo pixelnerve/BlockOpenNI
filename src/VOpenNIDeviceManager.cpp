@@ -8,6 +8,7 @@
 #include "VOpenNIDevice.h"
 #include "VOpenNIDeviceManager.h"
 #include <iostream>
+#include <thread>
 
 namespace V
 {
@@ -745,7 +746,7 @@ namespace V
 #ifdef WIN32
 			_thread = std::shared_ptr<boost::thread>( new boost::thread(&OpenNIDeviceManager::run, this) );
 #else
-			_thread = boost::shared_ptr<boost::thread>( new boost::thread(&OpenNIDeviceManager::run, this) );
+			_thread = boost::shared_ptr<std::thread>( new std::thread(&OpenNIDeviceManager::run, this) );
 #endif
 			_isRunning = true;
 		}

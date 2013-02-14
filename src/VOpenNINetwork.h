@@ -48,7 +48,7 @@ namespace V
 			bool				mIsServer;
 
 			volatile bool		mIsRunning;
-			boost::shared_ptr<boost::thread> _thread;
+			boost::shared_ptr<std::thread> _thread;
 
 			std::string			mHostName;
 			uint16_t			mHostPort;

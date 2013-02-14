@@ -2,6 +2,7 @@
 
 
 #include "VOpenNIDevice.h"
+#include <thread>
 
 
 namespace V
@@ -86,7 +87,7 @@ namespace V
 #ifdef WIN32
 		std::shared_ptr<boost::thread> _thread;
 #else
-		boost::shared_ptr<boost::thread> _thread;
+		boost::shared_ptr<std::thread> _thread;
 #endif
 		boost::mutex					 _mutex;
 
