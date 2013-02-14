@@ -16,6 +16,7 @@
 	#define DEBUG_MESSAGE( x ) printf( "%s", x )
 #endif
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+#define BOOST_NO_CXX11_NUMERIC_LIMITS 1
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
 #ifndef DEBUG_MESSAGE

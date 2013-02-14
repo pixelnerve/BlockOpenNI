@@ -210,8 +210,8 @@ void BlockOpenNISampleAppApp::update()
     }
     
 	// Update textures
-	mColorTex.update( getColorImage() );
-	mDepthTex.update( getDepthImage() );
+	mColorTex.update( Surface(getColorImage()) );
+	mDepthTex.update( Surface(getDepthImage()) );
     
 
 	// Uses manager to handle users.
@@ -219,7 +219,7 @@ void BlockOpenNISampleAppApp::update()
         it != mUsersTexMap.end();
         ++it )
     {
-        it->second.update( getUserImage( it->first ) );
+        it->second.update( Surface(getUserImage( it->first )) );
     }
 }
 

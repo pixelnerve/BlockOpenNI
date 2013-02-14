@@ -98,7 +98,7 @@ namespace V
 		//void setFPS( ProductionNodeType nodeType, int fps );
 		//void setMapOutputMode( ProductionNodeType nodeType, int width, int height, int fps );
 		void readFrame();
-
+        
 		void calcDepthImageRealWorld();
 		void calcDepthImageRealWorld( uint16_t* pixelData, XnPoint3D* worldData );
 		void calcDepthImageRealWorld( XnPoint3D* buffer );
@@ -184,6 +184,12 @@ namespace V
 		xn::UserGenerator* getUserGenerator()		{ return _userGen;	}
 		xn::HandsGenerator* getHandsGenerator()		{ return _handsGen;	}
 		xn::Context*	getContext()				{ return _context;	}
+        
+        bool isImageDataNew()                       { return _imageGen->IsDataNew(); };
+        bool isIRDataNew()                          { return _irGen->IsDataNew(); };
+        bool isDepthDataNew()                       { return _depthGen->IsDataNew(); };
+        bool isUserDataNew()                        { return _userGen->IsDataNew(); };
+        bool isHandsDataNew()                       { return _handsGen->IsDataNew(); };
 
 		bool isOneTimeCalibration()					{ return _isOneTimeCalibration;	}
 		void enableOneTimeCalibration( bool value )	{ _isOneTimeCalibration = value;	}

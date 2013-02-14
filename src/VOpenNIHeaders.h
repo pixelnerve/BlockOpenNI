@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "VOpenNICommon.h"
 // #ifdef _WIN32
 // #include "VOpenNINetwork.h"

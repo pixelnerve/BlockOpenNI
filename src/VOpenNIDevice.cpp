@@ -1167,7 +1167,7 @@ namespace V
 		//
 		// Handle depth map
 		//
-		if( _isDepthOn && _depthGen->IsValid() )
+		if( _isDepthOn && _depthGen->IsValid() && _depthGen->IsDataNew() )
 		{
 			_depthGen->GetMetaData( _depthMetaData );
 			//pDepth = _depthGen->GetDepthMap();	//_depthMetaData.Data();
@@ -1232,7 +1232,7 @@ namespace V
 		}
 
 
-		if( _isImageOn && _imageGen->IsValid() )
+		if( _isImageOn && _imageGen->IsValid() && _imageGen->IsDataNew() )
 		{
 			_imageGen->GetMetaData( _imageMetaData );
 			pImage = _imageMetaData.Data(); //_imageGen->GetImageMap();
@@ -1246,7 +1246,7 @@ namespace V
 		}
 
 
-		if( _isIROn && _irGen->IsValid() )
+		if( _isIROn && _irGen->IsValid()  && _irGen->IsDataNew() )
 		{
 			_irGen->GetMetaData( _irMetaData );
 			pIR = _irMetaData.Data();	//_irGen->GetIRMap();
